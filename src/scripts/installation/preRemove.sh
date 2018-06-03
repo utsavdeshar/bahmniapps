@@ -2,4 +2,4 @@
 
 set -x
 
-service imis-connect stop || true
+service insurance-integration stop || true

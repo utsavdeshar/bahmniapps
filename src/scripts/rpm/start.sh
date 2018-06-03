@@ -1,6 +1,6 @@
 #!/bin/bash
 
-nohup java -jar /opt/imis-connect/bin/imis-connect.jar \
- --spring.config.location=/etc/imis-connect/imis-connect.properties \
- >> /var/log/imis-connect/imis-connect.log \
+nohup java -jar /opt/insurance-integration/bin/insurance-integration.jar \
+ --spring.config.location=/etc/insurance-integration/insurance-integration.properties \
+ >> /var/log/insurance-integration/insurance-integration.log \
  2>&1 &

@@ -17,18 +17,18 @@ fi
 
 usermod -s /usr/sbin/nologin bahmni
 
-mkdir -p /opt/imis-connect/var/log/
-mkdir /etc/imis-connect/
-mkdir /var/log/imis-connect/
+mkdir -p /opt/insurance-integration/var/log/
+mkdir /etc/insurance-integration/
+mkdir /var/log/insurance-integration/
 
-chown -R bahmni:bahmni /opt/imis-connect/
-chmod +x /opt/imis-connect/bin/imis-connect
+chown -R bahmni:bahmni /opt/insurance-integration/
+chmod +x /opt/insurance-integration/bin/insurance-integration
 
-mv /opt/imis-connect/bin/imis-connect*.jar /opt/imis-connect/bin/imis-connect.jar
+mv /opt/insurance-integration/bin/insurance-integration*.jar /opt/insurance-integration/bin/insurance-integration.jar
 
-ln -sf /opt/imis-connect/etc/application.properties /etc/imis-connect/imis-connect.properties
-ln -sf /opt/imis-connect/etc/log4j.properties /etc/imis-connect/log4j.properties
-ln -sf /opt/imis-connect/var/log/imis-connect.log /var/log/imis-connect/imis-connect.log
-ln -sf /opt/imis-connect/bin/imis-connect /etc/init.d/imis-connect
+ln -sf /opt/insurance-integration/etc/application.properties /etc/insurance-integration/insurance-integration.properties
+ln -sf /opt/insurance-integration/etc/log4j.properties /etc/insurance-integration/log4j.properties
+ln -sf /opt/insurance-integration/var/log/insurance-integration.log /var/log/insurance-integration/insurance-integration.log
+ln -sf /opt/insurance-integration/bin/insurance-integration /etc/init.d/insurance-integration
 
-chkconfig --add imis-connect
+chkconfig --add insurance-integration

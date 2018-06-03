@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.possible</groupId>
-	<artifactId>imis-connect</artifactId>
+	<artifactId>insurance-integration</artifactId>
 	<version>1.0.0</version>
 
 	<parent>
@@ -98,7 +98,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<name>imis-connect</name>
+					<name>insurance-integration</name>
 					<group>ict4h.atomfeed</group>
 					<targetOS>Linux</targetOS>
 					<release>${rpm.build.number}</release>
@@ -108,11 +108,11 @@
 								<source>
 									<location>${basedir}/target/</location>
 									<includes>
-										<include>imis-connect*.jar</include>
+										<include>insurance-integration*.jar</include>
 									</includes>
 								</source>
 							</sources>
-							<directory>/opt/imis-connect/bin/</directory>
+							<directory>/opt/insurance-integration/bin/</directory>
 						</mapping>
 						<mapping>
 							<sources>
@@ -120,7 +120,7 @@
 									<location>${basedir}/src/main/resources/application.properties</location>
 								</source>
 							</sources>
-							<directory>/opt/imis-connect/etc/</directory>
+							<directory>/opt/insurance-integration/etc/</directory>
 						</mapping>
 						<mapping>
 							<sources>
@@ -128,7 +128,7 @@
 									<location>${basedir}/src/main/resources/log4j.properties</location>
 								</source>
 							</sources>
-							<directory>/opt/imis-connect/etc/</directory>
+							<directory>/opt/insurance-integration/etc/</directory>
 						</mapping>
 						<mapping>
 							<sources>
@@ -136,7 +136,7 @@
 									<location>${basedir}/src/scripts/rpm/</location>
 								</source>
 							</sources>
-							<directory>/opt/imis-connect/bin/</directory>
+							<directory>/opt/insurance-integration/bin/</directory>
 						</mapping>
 					</mappings>
 

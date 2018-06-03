@@ -2,9 +2,9 @@
 
 set -x
 
-service imis-connect stop || true
+service insurance-integration stop || true
 
-rm -rf /opt/imis-connect/
-rm -f /etc/init.d/imis-connect
-rm -rf /etc/imis-connect/
-rm -rf /var/log/imis-connect/
+rm -rf /opt/insurance-integration/
+rm -f /etc/init.d/insurance-integration
+rm -rf /etc/insurance-integration/
+rm -rf /var/log/insurance-integration/
