@@ -1,4 +1,4 @@
-package com.possible.insurance;
+package com.possible.imisconnect;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +20,15 @@ public class Properties {
 	
 	@Value("${imis.user}")
 	public String imisUser;
+	
+	@Value("${openmrs.url}")
+	public String openmrsUrl;
+	
+	@Value("${openmrs.password}")
+	public String openmrsPassword;
+	
+	@Value("${openmrs.user}")
+	public String openmrsUser;
 	
 	@Value("${log4j.config.file}")
 	public String log4jConfigFile;

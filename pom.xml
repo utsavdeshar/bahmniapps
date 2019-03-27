@@ -63,7 +63,7 @@
 
 	<properties>
 		<java.version>1.8</java.version>
-		<start-class>com.possible.insurance.SpringBootConsoleApplication</start-class>
+		<start-class>com.possible.imisconnect.SpringBootConsoleApplication</start-class>
 		<rpm.build.number>1</rpm.build.number>
 	</properties>
 

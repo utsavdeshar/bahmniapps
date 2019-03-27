@@ -1,4 +1,4 @@
-package com.possible.insurance.model;
+package com.possible.imisconnect.fhir.model;
 
 import java.util.Date;
 

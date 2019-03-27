@@ -1,4 +1,4 @@
-package com.possible.insurance;
+package com.possible.imisconnect;
 
 import javax.sql.DataSource;
 
@@ -8,7 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan("com.possible.insurance")
+@ComponentScan("com.possible.imisconnect")
 public class SpringBootConsoleApplication  {
 
     @Autowired
@@ -16,7 +16,7 @@ public class SpringBootConsoleApplication  {
 
     public static void main(String[] args) throws Exception {
         SpringApplication.run(SpringBootConsoleApplication.class, args);
-        
+        System.out.println("Hello app");
     }
 
     
