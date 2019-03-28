@@ -9,10 +9,10 @@ import com.possible.imisconnect.fhir.model.Customer;
 import java.util.Date;
 import java.util.List;
 
-@Repository
+
 public class CustomerRepository {
 
-    @Autowired
+  /*  @Autowired
     private JdbcTemplate jdbcTemplate;
 
     public List<Customer> findAll() {
@@ -33,6 +33,6 @@ public class CustomerRepository {
                 name, email, new Date());
 
     }
-
+*/
 
 }

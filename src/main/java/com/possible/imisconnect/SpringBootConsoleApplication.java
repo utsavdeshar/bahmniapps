@@ -11,8 +11,8 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan("com.possible.imisconnect")
 public class SpringBootConsoleApplication  {
 
-    @Autowired
-    DataSource dataSource;
+    /*@Autowired
+    DataSource dataSource;*/
 
     public static void main(String[] args) throws Exception {
         SpringApplication.run(SpringBootConsoleApplication.class, args);
