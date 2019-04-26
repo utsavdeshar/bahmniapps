@@ -33,4 +33,9 @@ public class Properties {
 	@Value("${log4j.config.file}")
 	public String log4jConfigFile;
 	
+	
+	@Value("${openmrs.odoo.api}")
+	public String openmrsOdooApi;
+	
+	
 }

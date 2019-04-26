@@ -5,9 +5,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 @Component
-public abstract class InsuranceService {
+public abstract class AInsuranceService {
 
-	public InsuranceService() {
+	public AInsuranceService() {
 
 	}
 

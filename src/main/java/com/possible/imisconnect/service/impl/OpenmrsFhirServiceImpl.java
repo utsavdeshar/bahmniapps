@@ -1,4 +1,4 @@
-package com.possible.imisconnect.service;
+package com.possible.imisconnect.service.impl;
 
 import java.util.Arrays;
 
@@ -10,12 +10,13 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import com.possible.imisconnect.Properties;
+import com.possible.imisconnect.service.AOpernmrsFhirService;
 
 @Component
 @Configurable
-public class OmrsFhirServiceImpl extends OmrsFhirService {
+public class OpenmrsFhirServiceImpl extends AOpernmrsFhirService {
 
-	public OmrsFhirServiceImpl(Properties properties) {
+	public OpenmrsFhirServiceImpl(Properties properties) {
 		super(properties);
 	}
 

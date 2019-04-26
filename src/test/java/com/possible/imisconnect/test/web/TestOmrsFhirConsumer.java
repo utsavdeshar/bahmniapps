@@ -46,12 +46,6 @@ public class TestOmrsFhirConsumer {
 
 	private final MockHttpServletResponse mockResponse = new MockHttpServletResponse();
 
-	@Before
-	public void setUp() {
-		registry = new InterceptorRegistry();
-		registry.addInterceptor(authFilter);
-	}
-
 	public void setupInterceptor() throws Exception {
 		HandlerExecutionChain handlerExecutionChain = handlerMapping.getHandler(mockRequest);
 		HandlerInterceptor[] interceptors = handlerExecutionChain.getInterceptors();
@@ -74,6 +68,19 @@ public class TestOmrsFhirConsumer {
 	@Test
 	public void testGetPatient() throws Exception {
 		mockRequest.setRequestURI("/patient");
+		mockRequest.setMethod("GET");
+
+		setupInterceptor();
+
+		assertEquals(200, mockResponse.getStatus());
+
+		// mvc.perform(get("/patient").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+
+	}
+	
+	@Test
+	public void testGetOrderCost() throws Exception {
+		mockRequest.setRequestURI("/odercost");
 		mockRequest.setMethod("GET");
 
 		setupInterceptor();

@@ -17,7 +17,7 @@ public class SecurityConfig extends WebMvcConfigurerAdapter {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(authenticationFilter);
+        //registry.addInterceptor(authenticationFilter);
     }
 
 }

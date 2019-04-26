@@ -9,25 +9,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.possible.imisconnect.service.InsuranceService;
-import com.possible.imisconnect.service.InsuranceServiceFactory;
+import com.possible.imisconnect.service.AInsuranceService;
+import com.possible.imisconnect.service.FInsuranceServiceFactory;
 
 @RestController
 public class ImisIntegrator {
 
 	private final Logger logger = getLogger(ImisIntegrator.class);
 
-	private final InsuranceServiceFactory insuranceServiceFactory;
+	private final FInsuranceServiceFactory insuranceServiceFactory;
 
 	@Autowired
-	public ImisIntegrator(InsuranceServiceFactory insuranceServiceFactory) {
+	public ImisIntegrator(FInsuranceServiceFactory insuranceServiceFactory) {
 		this.insuranceServiceFactory = insuranceServiceFactory;
 	}
 
 	@RequestMapping(path = "/quotation")
 	public void sendQuotation(HttpServletResponse response) {
 		logger.error("Recieved Quotation");
-		InsuranceService imisInsurance = insuranceServiceFactory.getInsuranceServiceImplFactory(0); // TODO:
+		AInsuranceService imisInsurance = insuranceServiceFactory.getInsuranceServiceImplFactory(0); // TODO:
 		imisInsurance.getInsuranceDetails("claimID");
 
 	}

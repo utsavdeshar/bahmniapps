@@ -4,17 +4,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.possible.imisconnect.Properties;
+import com.possible.imisconnect.service.impl.ImisInsuranceServiceImpl;
 
 @Service
-public class InsuranceServiceFactory {
+public class FInsuranceServiceFactory {
 	private Properties properties;
 
 	@Autowired
-	public InsuranceServiceFactory(Properties properties) {
+	public FInsuranceServiceFactory(Properties properties) {
 		this.properties = properties;
 	}
 
-	public InsuranceService getInsuranceServiceImplFactory(int type) {
+	public AInsuranceService getInsuranceServiceImplFactory(int type) {
 		if (0 == type) {
 			return new ImisInsuranceServiceImpl(properties);
 		} else {

@@ -1,4 +1,4 @@
-package com.possible.imisconnect.service;
+package com.possible.imisconnect.service.impl;
 
 import static org.apache.log4j.Logger.getLogger;
 
@@ -10,11 +10,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import com.possible.imisconnect.Properties;
+import com.possible.imisconnect.service.AInsuranceService;
 import com.possible.imisconnect.web.RestTemplateFactory;
 
 @Component
 @Configurable
-public class ImisInsuranceServiceImpl extends InsuranceService {
+public class ImisInsuranceServiceImpl extends AInsuranceService {
 
 	private Properties properties;
 	

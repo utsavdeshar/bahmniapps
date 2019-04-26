@@ -8,14 +8,14 @@ import com.possible.imisconnect.Properties;
 import com.possible.imisconnect.web.RestTemplateFactory;
 
 @Component
-public abstract class OmrsFhirService {
+public abstract class AOpernmrsFhirService {
 
 	private Properties properties;
 	
 	private final static int OPENMRS_FHIR_MODULE =1;
 
 	@Autowired
-	public OmrsFhirService(Properties properties) {
+	public AOpernmrsFhirService(Properties properties) {
 		this.properties = properties;
 	}
 
