@@ -10,16 +10,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import com.possible.imisconnect.Properties;
+import com.possible.imisconnect.client.RestTemplateFactory;
 import com.possible.imisconnect.service.AInsuranceService;
-import com.possible.imisconnect.web.RestTemplateFactory;
 
 @Component
 @Configurable
 public class ImisInsuranceServiceImpl extends AInsuranceService {
 
 	private Properties properties;
-	
-	private final static int OPENIMIS_FHIR =0;
+
+	private final static int OPENIMIS_FHIR = 0;
 
 	@Autowired
 	public ImisInsuranceServiceImpl(Properties properties) {

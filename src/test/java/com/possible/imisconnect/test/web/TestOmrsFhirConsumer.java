@@ -20,10 +20,10 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 
 import com.possible.imisconnect.auth.AuthenticationFilter;
 import com.possible.imisconnect.auth.OpenMRSAuthenticator;
-import com.possible.imisconnect.web.OmrsFhirConsumer;
+import com.possible.imisconnect.web.RequestProcessor;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@WebMvcTest(OmrsFhirConsumer.class)
+@WebMvcTest(RequestProcessor.class)
 public class TestOmrsFhirConsumer {
 
 	@Mock

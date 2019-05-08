@@ -63,48 +63,34 @@ public class AuthenticationFilter extends HandlerInterceptorAdapter {
 		default:
 			return redirectToLogin(request, response);
 		}
-		
-		
-		/* 
-		 * 	Basic Authentication interception 
-		        AuthenticationResponse authenticationResponse = AuthenticationResponse.NOT_AUTHENTICATED;
 
-		    	if (request instanceof HttpServletRequest) {
-					HttpServletRequest httpRequest = (HttpServletRequest) request;
-					if (httpRequest.getRequestedSessionId() != null && !httpRequest.isRequestedSessionIdValid()) {
-						HttpServletResponse httpResponse = (HttpServletResponse) response;
-						httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Session timed out");
-					}
-					
-					String basicAuth = httpRequest.getHeader("Authorization");
-					if (basicAuth != null) {
-						// this is "Basic ${base64encode(username + ":" + password)}"
-						try {
-							basicAuth = basicAuth.substring(6); // remove the leading "Basic "
-							String decoded = new String(Base64.decodeBase64(basicAuth), Charset.forName("UTF-8"));
-							String[] userAndPass = decoded.split(":");
-							if("testUser".equalsIgnoreCase(userAndPass[0])) {
-								authenticationResponse = AuthenticationResponse.AUTHORIZED;
-								System.out.println("Hurray");
-							}
-							// Context.authenticate(userAndPass[0], userAndPass[1]);
-						} catch (Exception ex) {
-							// This filter never stops execution. If the user failed to
-							// authenticate, that will be caught later.
-						}
-					}
-				}
-		    	
-		        switch (authenticationResponse) {
-		            case AUTHORIZED:
-		                return true;
-		            case UNAUTHORIZED:
-		                response.sendError(HttpServletResponse.SC_FORBIDDEN,
-		                        "Privileges is required to access reports");
-		                return false;
-		            default:
-		                return redirectToLogin(request, response);
-		        }*/
+		/*
+		 * Basic Authentication interception AuthenticationResponse
+		 * authenticationResponse = AuthenticationResponse.NOT_AUTHENTICATED;
+		 * 
+		 * if (request instanceof HttpServletRequest) { HttpServletRequest httpRequest =
+		 * (HttpServletRequest) request; if (httpRequest.getRequestedSessionId() != null
+		 * && !httpRequest.isRequestedSessionIdValid()) { HttpServletResponse
+		 * httpResponse = (HttpServletResponse) response;
+		 * httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN,
+		 * "Session timed out"); }
+		 * 
+		 * String basicAuth = httpRequest.getHeader("Authorization"); if (basicAuth !=
+		 * null) { // this is "Basic ${base64encode(username + ":" + password)}" try {
+		 * basicAuth = basicAuth.substring(6); // remove the leading "Basic " String
+		 * decoded = new String(Base64.decodeBase64(basicAuth),
+		 * Charset.forName("UTF-8")); String[] userAndPass = decoded.split(":");
+		 * if("testUser".equalsIgnoreCase(userAndPass[0])) { authenticationResponse =
+		 * AuthenticationResponse.AUTHORIZED; System.out.println("Hurray"); } //
+		 * Context.authenticate(userAndPass[0], userAndPass[1]); } catch (Exception ex)
+		 * { // This filter never stops execution. If the user failed to //
+		 * authenticate, that will be caught later. } } }
+		 * 
+		 * switch (authenticationResponse) { case AUTHORIZED: return true; case
+		 * UNAUTHORIZED: response.sendError(HttpServletResponse.SC_FORBIDDEN,
+		 * "Privileges is required to access reports"); return false; default: return
+		 * redirectToLogin(request, response); }
+		 */
 	}
 
 	public boolean redirectToLogin(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse)

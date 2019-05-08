@@ -12,12 +12,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @EnableWebMvc
 public class SecurityConfig extends WebMvcConfigurerAdapter {
 
-    @Autowired
-    private AuthenticationFilter authenticationFilter;
+	@Autowired
+	private AuthenticationFilter authenticationFilter;
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        //registry.addInterceptor(authenticationFilter);
-    }
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		// registry.addInterceptor(authenticationFilter);
+	}
 
 }

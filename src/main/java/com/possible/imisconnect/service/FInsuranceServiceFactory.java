@@ -19,7 +19,7 @@ public class FInsuranceServiceFactory {
 		if (0 == type) {
 			return new ImisInsuranceServiceImpl(properties);
 		} else {
-			return new ImisInsuranceServiceImpl(properties); // TODO:
+			return new ImisInsuranceServiceImpl(properties); // TODO: if further any other insurance is to be integrated
 		}
 	}
 
