@@ -16,6 +16,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -24,10 +25,11 @@ import com.possible.imisconnect.ImisConstants;
 import com.possible.imisconnect.Properties;
 import com.possible.imisconnect.client.RequestWrapperConverter;
 import com.possible.imisconnect.client.RestTemplateFactory;
-import com.possible.imisconnect.service.AClientService;
+import com.possible.imisconnect.service.AInsuranceClientService;
 import com.possible.imisconnect.utils.InsuranceUtils;
 
-public class ImisRestClientServiceImpl extends AClientService {
+@Component
+public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	private RestTemplate restTemplate;
 	private final Gson defaultJsonParser = InsuranceUtils.createDefaultGson();
 

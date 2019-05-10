@@ -16,14 +16,14 @@ import com.possible.imisconnect.Properties;
 import com.possible.imisconnect.client.ClientHelperFactory;
 
 @Component
-public abstract class AClientService {
+public abstract class AInsuranceClientService {
 
 	private Properties properties;
 
 	private ClientHelper clientHelper;
 
 	@Autowired
-	public AClientService(Properties properties) {
+	public AInsuranceClientService(Properties properties) {
 		this.properties = properties;
 	}
 

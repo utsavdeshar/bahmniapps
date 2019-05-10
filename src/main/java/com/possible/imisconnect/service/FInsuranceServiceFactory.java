@@ -3,8 +3,9 @@ package com.possible.imisconnect.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.possible.imisconnect.ImisConstants;
 import com.possible.imisconnect.Properties;
-import com.possible.imisconnect.service.impl.ImisInsuranceServiceImpl;
+import com.possible.imisconnect.service.impl.ImisRestClientServiceImpl;
 
 @Service
 public class FInsuranceServiceFactory {
@@ -15,11 +16,11 @@ public class FInsuranceServiceFactory {
 		this.properties = properties;
 	}
 
-	public AInsuranceService getInsuranceServiceImplFactory(int type) {
-		if (0 == type) {
-			return new ImisInsuranceServiceImpl(properties);
+	public AInsuranceClientService getInsuranceServiceImplFactory(int type) {
+		if (ImisConstants.OPENIMIS_FHIR == type) {
+			return new ImisRestClientServiceImpl(properties);
 		} else {
-			return new ImisInsuranceServiceImpl(properties); // TODO: if further any other insurance is to be integrated
+			return new ImisRestClientServiceImpl(properties); // TODO: if further any other insurance is to be integrated
 		}
 	}
 

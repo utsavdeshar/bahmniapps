@@ -24,6 +24,10 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.jayway.jsonpath</groupId>
 			<artifactId>json-path</artifactId>
 			<scope>test</scope>
@@ -53,14 +57,11 @@
 			<artifactId>HikariCP</artifactId>
 		</dependency>
 
-		<!-- For MySQL -->
-		<!-- For MySQL -->
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>8.0.15</version>
+			<version>${mysqlConnectorVersion}</version>
 		</dependency>
-
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -94,13 +95,13 @@
 			<scope>provided</scope>
 			<version>${fhirVersion}</version>
 		</dependency>
-		
+
 		<dependency>
-    <groupId>com.google.code.gson</groupId>
-    <artifactId>gson</artifactId>
-    <version>${gsonVersion}</version>
-</dependency>
-		
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>${gsonVersion}</version>
+		</dependency>
+
 
 	</dependencies>
 
@@ -111,6 +112,7 @@
 		<hapiFhirStructureVersion>3.7.0 </hapiFhirStructureVersion>
 		<fhirVersion>1.18.0</fhirVersion>
 		<gsonVersion>2.8.5</gsonVersion>
+		<mysqlConnectorVersion>8.0.15</mysqlConnectorVersion>
 	</properties>
 
 

@@ -10,11 +10,14 @@ import org.apache.log4j.Logger;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 
-import com.possible.imisconnect.service.AClientService;
+import com.possible.imisconnect.service.AInsuranceClientService;
 import com.possible.imisconnect.service.AOpernmrsFhirConstructorService;
 import com.possible.imisconnect.service.IOpenmrsOdooService;
 import com.possible.imisconnect.service.impl.ImisRestClientServiceImpl;
@@ -27,7 +30,7 @@ public class RequestProcessor {
 	private final Logger logger = getLogger(RequestProcessor.class);
 
 	private final AOpernmrsFhirConstructorService fhirConstructorService;
-	private final AClientService imisClient;
+	private final AInsuranceClientService imisClient;
 	private final IOpenmrsOdooService odooService;
 
 	@Autowired
@@ -65,10 +68,11 @@ public class RequestProcessor {
 
 	}
 
-	@RequestMapping(path = "/patient")
-	public void generatePatient(HttpServletResponse response) {
+	@RequestMapping(method = RequestMethod.GET, value = "/patient/{patientId}", produces = "application/json")
+	@ResponseBody
+	public String generatePatient(HttpServletResponse response, @PathVariable("patientId") String patientId) {
 		logger.debug("generatePatient");
-		System.out.println(fhirConstructorService.getFhirPatient("9065024b-9499-4c9b-9a2f-a53f703be2aa"));
+		return fhirConstructorService.getFhirPatient(patientId); //9065024b-9499-4c9b-9a2f-a53f703be2aa
 
 	}
 

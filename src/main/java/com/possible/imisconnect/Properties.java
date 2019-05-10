@@ -17,6 +17,12 @@ public class Properties {
 
 	@Value("${imis.password}")
 	public String imisPassword;
+	
+	@Value("${imisconnect.user}")
+	public String imisConnectUser;
+
+	@Value("${imisconnect.password}")
+	public String imisConnectPassword;
 
 	@Value("${imis.user}")
 	public String imisUser;

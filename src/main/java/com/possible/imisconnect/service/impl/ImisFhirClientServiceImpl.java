@@ -5,11 +5,13 @@ import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.EligibilityResponse;
 import org.hl7.fhir.dstu3.model.Task;
+import org.springframework.stereotype.Component;
 
 import com.possible.imisconnect.Properties;
-import com.possible.imisconnect.service.AClientService;
+import com.possible.imisconnect.service.AInsuranceClientService;
 
-public class ImisFhirClientServiceImpl extends AClientService {
+@Component
+public class ImisFhirClientServiceImpl extends AInsuranceClientService {
 
 	public ImisFhirClientServiceImpl(Properties properties) {
 		super(properties);
