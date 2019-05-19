@@ -114,6 +114,14 @@
 		<gsonVersion>2.8.5</gsonVersion>
 		<mysqlConnectorVersion>8.0.15</mysqlConnectorVersion>
 	</properties>
+	
+	<repositories>
+		<repository>
+			<id>openmrs-repo</id>
+			<name>OpenMRS Nexus Repository</name>
+			<url>http://mavenrepo.openmrs.org/nexus/content/repositories/public</url>
+		</repository>
+	</repositories>
 
 
 	<build>
