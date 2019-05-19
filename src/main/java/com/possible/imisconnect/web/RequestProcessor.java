@@ -65,7 +65,6 @@ public class RequestProcessor {
 	@RequestMapping(path = "/auth")
 	public void auth(HttpServletResponse response) {
 		logger.debug("Authenticated");
-
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/patient/{patientId}", produces = "application/json")
