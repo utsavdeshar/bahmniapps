@@ -1,6 +1,10 @@
 package com.possible.imisconnect.test.web;
 
 import static org.junit.Assert.assertEquals;
+
+import org.bahmni.insurance.auth.AuthenticationFilter;
+import org.bahmni.insurance.auth.OpenMRSAuthenticator;
+import org.bahmni.insurance.web.RequestProcessor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,10 +21,6 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
-
-import com.possible.imisconnect.auth.AuthenticationFilter;
-import com.possible.imisconnect.auth.OpenMRSAuthenticator;
-import com.possible.imisconnect.web.RequestProcessor;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebMvcTest(RequestProcessor.class)
