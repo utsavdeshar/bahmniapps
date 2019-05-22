@@ -1,6 +1,6 @@
 package org.bahmni.insurance.auth;
 
-import org.bahmni.insurance.Properties;
+import org.bahmni.insuranceConnect.Properties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;

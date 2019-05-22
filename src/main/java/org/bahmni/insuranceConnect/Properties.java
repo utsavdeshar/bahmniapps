@@ -1,4 +1,4 @@
-package org.bahmni.insurance;
+package org.bahmni.insuranceConnect;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;

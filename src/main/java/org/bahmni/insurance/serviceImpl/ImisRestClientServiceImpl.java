@@ -4,12 +4,12 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bahmni.insurance.ImisConstants;
-import org.bahmni.insurance.Properties;
 import org.bahmni.insurance.client.RequestWrapperConverter;
 import org.bahmni.insurance.client.RestTemplateFactory;
 import org.bahmni.insurance.service.AInsuranceClientService;
 import org.bahmni.insurance.utils.InsuranceUtils;
+import org.bahmni.insuranceConnect.ImisConstants;
+import org.bahmni.insuranceConnect.Properties;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;

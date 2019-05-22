@@ -1,6 +1,6 @@
 package org.bahmni.insurance.auth;
 
-import org.bahmni.insurance.Properties;
+import org.bahmni.insuranceConnect.Properties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;

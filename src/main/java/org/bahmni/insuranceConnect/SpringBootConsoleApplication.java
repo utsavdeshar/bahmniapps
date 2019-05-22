@@ -1,4 +1,4 @@
-package org.bahmni.insurance;
+package org.bahmni.insuranceConnect;
 
 
 import javax.sql.DataSource;

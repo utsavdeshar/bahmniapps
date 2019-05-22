@@ -1,6 +1,6 @@
 package org.bahmni.insurance.client;
 
-import org.bahmni.insurance.ImisConstants;
+import org.bahmni.insuranceConnect.ImisConstants;
 import org.openmrs.module.fhir.api.helper.ClientHelper;
 import org.openmrs.module.fhir.api.helper.FHIRClientHelper;
 import org.slf4j.Logger;

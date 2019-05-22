@@ -1,7 +1,7 @@
 package org.bahmni.insurance.client;
 
-import org.bahmni.insurance.ImisConstants;
-import org.bahmni.insurance.Properties;
+import org.bahmni.insuranceConnect.ImisConstants;
+import org.bahmni.insuranceConnect.Properties;
 import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
