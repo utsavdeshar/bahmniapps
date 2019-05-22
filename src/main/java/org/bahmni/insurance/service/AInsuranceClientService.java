@@ -2,8 +2,8 @@ package org.bahmni.insurance.service;
 
 import java.net.URISyntaxException;
 
+import org.bahmni.insurance.Properties;
 import org.bahmni.insurance.client.ClientHelperFactory;
-import org.bahmni.insuranceConnect.Properties;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;

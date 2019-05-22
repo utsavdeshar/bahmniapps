@@ -2,8 +2,8 @@ package org.bahmni.insurance.serviceImpl;
 
 import java.util.Arrays;
 
+import org.bahmni.insurance.Properties;
 import org.bahmni.insurance.service.AOpernmrsFhirConstructorService;
-import org.bahmni.insuranceConnect.Properties;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.springframework.beans.factory.annotation.Configurable;

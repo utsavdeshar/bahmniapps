@@ -1,8 +1,8 @@
 package org.bahmni.insurance.service;
 
+import org.bahmni.insurance.ImisConstants;
+import org.bahmni.insurance.Properties;
 import org.bahmni.insurance.serviceImpl.ImisRestClientServiceImpl;
-import org.bahmni.insuranceConnect.ImisConstants;
-import org.bahmni.insuranceConnect.Properties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

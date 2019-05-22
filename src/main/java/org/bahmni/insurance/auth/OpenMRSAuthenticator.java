@@ -1,7 +1,7 @@
 package org.bahmni.insurance.auth;
 
 import org.apache.log4j.Logger;
-import org.bahmni.insuranceConnect.Properties;
+import org.bahmni.insurance.Properties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
