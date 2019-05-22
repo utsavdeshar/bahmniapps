@@ -1,7 +1,3 @@
-
-# Insurance-Integration
-Application for integration with the insurance system (IMIS) 
-
 # Bahmni-Insurance-Connect 
 A java application/service for integration with OpenIMIS(Insurance Management System)
  - Gateway for communication between OpenIMIS system and Bahmni components like openmrs, odoo
