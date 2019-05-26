@@ -98,7 +98,7 @@ public class AuthenticationFilter extends HandlerInterceptorAdapter {
 		httpServletResponse.getWriter().write("Please login to continue");
 
 		StringBuffer redirectUrl = new StringBuffer();
-		redirectUrl.append(properties.openmrsUrl); // TODO: replace with bahmni url
+		redirectUrl.append(properties.openmrsFhirUrl); // TODO: replace with bahmni url
 		char paramChar = '?';
 		if (redirectUrl.toString().contains("?")) {
 			paramChar = '&';

@@ -2,6 +2,7 @@ package org.bahmni.insurance.serviceImpl;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.bahmni.insurance.ImisConstants;
@@ -20,6 +21,8 @@ import org.openmrs.module.fhir.api.client.ClientHttpRequestInterceptor;
 import org.openmrs.module.fhir.api.helper.ClientHelper;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.stereotype.Component;
@@ -48,6 +51,14 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		prepareRestTemplate(helper);
 		ClientHttpEntity<?> request = helper.createRequest(this.getProperties().imisUrl, object);
 		return exchange(helper, request, String.class);
+	}
+	
+	private ResponseEntity<String> sendGetRequest() {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+		HttpEntity<String> entity = new HttpEntity<String>(headers);
+		return restTemplate.exchange(getProperties().imisUrl, HttpMethod.POST, entity, String.class);
+
 	}
 
 	private ResponseEntity<String> exchange(ClientHelper helper, ClientHttpEntity<?> request, Class<String> clazz) {
@@ -93,6 +104,11 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	public ClaimResponse getClaimStatus(Task claimStatusRequest) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public ResponseEntity<String> loginCheck() {
+		return sendGetRequest();
 	}
 
 }

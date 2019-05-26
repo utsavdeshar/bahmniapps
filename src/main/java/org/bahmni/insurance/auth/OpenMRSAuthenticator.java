@@ -48,7 +48,7 @@ public class OpenMRSAuthenticator {
 		HttpHeaders requestHeaders = new HttpHeaders();
 		requestHeaders.add("Cookie", OPENMRS_SESSION_ID_COOKIE_NAME + "=" + sessionId);
 		try {
-			return new RestTemplate().exchange(properties.openmrsUrl + WHOAMI_URL, HttpMethod.GET,
+			return new RestTemplate().exchange(properties.openmrsFhirUrl + WHOAMI_URL, HttpMethod.GET,
 					new HttpEntity<>(null, requestHeaders), Privileges.class);
 		} catch (HttpClientErrorException exception) {
 			logger.warn("Could not authenticate with OpenMRS", exception);

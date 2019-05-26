@@ -27,7 +27,7 @@ public class OpenmrsFhirConstructorServiceImpl extends AOpernmrsFhirConstructorS
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 		HttpEntity<String> entity = new HttpEntity<String>(headers);
 		return this.getApiClient()
-				.exchange(this.getProperties().openmrsUrl + patientId, HttpMethod.GET, entity, String.class).getBody();
+				.exchange(this.getProperties().openmrsFhirUrl + patientId, HttpMethod.GET, entity, String.class).getBody();
 	}
 
 	@Override

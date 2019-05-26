@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Component
 public class RestTemplateFactory {
+	@SuppressWarnings("deprecation")
 	public RestTemplate getRestTemplate(int type, Properties properties) {
 
 		RestTemplate restTemplate = new RestTemplate();

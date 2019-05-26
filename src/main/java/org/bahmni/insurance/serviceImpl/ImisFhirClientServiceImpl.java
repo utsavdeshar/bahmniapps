@@ -7,6 +7,7 @@ import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.EligibilityResponse;
 import org.hl7.fhir.dstu3.model.Task;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -32,6 +33,11 @@ public class ImisFhirClientServiceImpl extends AInsuranceClientService {
 	@Override
 	public ClaimResponse getClaimStatus(Task claimStatusRequest) {
 		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ResponseEntity<String> loginCheck() {
 		return null;
 	}
 

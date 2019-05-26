@@ -20,6 +20,7 @@ import org.bahmni.insurance.serviceImpl.OpenmrsOdooServiceImpl;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -54,13 +55,19 @@ public class RequestProcessor {
 		logger.debug("requestEligibity");
 
 	}
+	
+	@RequestMapping(path = "/openIMIS/login")
+	@ResponseBody
+	public ResponseEntity<String> checkLogin(HttpServletResponse response) throws RestClientException, URISyntaxException {
+		logger.debug("requestEligibity");
+		return imisClient.loginCheck();
+	}
 
 	@RequestMapping(path = "/request/claimsubmit")
 	public void requestClaimSubmit(HttpServletResponse response) throws RestClientException, URISyntaxException {
 		logger.debug("requestClaimSubmit");
 		Claim claimRequest = fhirConstructorService.constructFhirClaimRequest("StringPatientId"); // TODO: get this
 																									// StringPatientId
-																									// from web param
 		ClaimResponse claimResponse = imisClient.getClaimResponse(claimRequest);
 	}
 	
