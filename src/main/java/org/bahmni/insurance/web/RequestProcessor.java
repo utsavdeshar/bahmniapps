@@ -2,6 +2,10 @@ package org.bahmni.insurance.web;
 
 import static org.apache.log4j.Logger.getLogger;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.util.List;
 
@@ -50,12 +54,21 @@ public class RequestProcessor {
 		this.fhirDaoService = fhirServiceImpl;
 	}
 
-	@RequestMapping(path = "/request/eligibity")
-	public void requestEligibity(HttpServletResponse response) {
+	@RequestMapping(method = RequestMethod.GET, value = "/request/eligibility/{patientId}", produces = "application/json")
+	@ResponseBody
+		public String requestEligibity(HttpServletResponse response, @PathVariable("patientId") String patientId) throws IOException {
 		logger.debug("requestEligibity");
+	
+		 InputStream is = RequestProcessor.class.getResourceAsStream("/FHIR-Resources/eligibility-response.json");
+	        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+	        String content;
+	        while ((content = reader.readLine()) != null) {
+	            System.out.println(content);
+	        }
+	        return content;
 
 	}
-	
+
 	@RequestMapping(path = "/openIMIS/login")
 	@ResponseBody
 	public ResponseEntity<String> checkLogin(HttpServletResponse response) throws RestClientException, URISyntaxException {
