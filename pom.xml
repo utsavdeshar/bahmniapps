@@ -136,8 +136,15 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>rpm-maven-plugin</artifactId>
-			<version>2.1.5</version>						
-				          <extensions>true</extensions>	    <!-- config according to my setup suruchi -->
+				<version>2.1.5</version>
+				<executions>
+					<execution>
+						<id>generate-rpm</id>
+						<goals>
+							<goal>rpm</goal>
+						</goals>
+					</execution>
+				</executions>
 				<configuration>
 					<name>insurance-integration</name>
 					<group>ict4h.atomfeed</group>

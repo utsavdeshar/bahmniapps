@@ -65,6 +65,8 @@ public class RequestProcessor {
 	        while ((content = reader.readLine()) != null) {
 	            System.out.println(content);
 	        }
+			logger.debug(content);
+
 	        return content;
 
 	}
