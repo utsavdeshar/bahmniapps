@@ -1,7 +1,7 @@
 package org.bahmni.insurance.auth;
 
 import org.apache.log4j.Logger;
-import org.bahmni.insurance.Properties;
+import org.bahmni.insurance.AppProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -22,11 +22,9 @@ public class OpenMRSAuthenticator {
 	public static final String OPENMRS_SESSION_ID_COOKIE_NAME = "JSESSIONID";
 
 	@Autowired
-	private Properties properties;
+	private AppProperties properties;
 
 	public AuthenticationResponse authenticate(String sessionId) {
-		System.out.println("preHandle3");
-
 		ResponseEntity<Privileges> response = callOpenMRS(sessionId);
 		HttpStatus status = response.getStatusCode();
 
@@ -39,7 +37,6 @@ public class OpenMRSAuthenticator {
 	}
 
 	public ResponseEntity<Privileges> callOpenMRS(String sessionId) {
-		System.out.println("preHandle4");
 		Privilege p = new Privilege();
 		p.setName("app:reports");
 		Privileges ps = new Privileges();

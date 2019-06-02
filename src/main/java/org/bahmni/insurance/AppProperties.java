@@ -4,20 +4,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class Properties {
+public class AppProperties {
 
 	@Value("${openmrs.db.url}")
 	public String openmrsDBUrl;
 
 	@Value("${openelis.db.url}")
 	public String openelisDBUrl;
-	
+
 	@Value("${imisconnect.user}")
 	public String imisConnectUser;
 
 	@Value("${imisconnect.password}")
 	public String imisConnectPassword;
-	
 
 	@Value("${openimis.api.url}")
 	public String imisUrl;
@@ -27,7 +26,6 @@ public class Properties {
 
 	@Value("${openimis.api.password}")
 	public String imisPassword;
-	
 
 	@Value("${openmrs.fhir.url}")
 	public String openmrsFhirUrl;

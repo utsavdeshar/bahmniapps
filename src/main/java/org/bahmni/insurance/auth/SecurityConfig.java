@@ -1,6 +1,6 @@
 package org.bahmni.insurance.auth;
 
-import org.bahmni.insurance.Properties;
+import org.bahmni.insurance.AppProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -8,7 +8,6 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 
 @Configuration
 @ComponentScan("org.possible.imisconnect")
@@ -19,10 +18,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private AuthenticationEntryPoint authEntryPoint;
 
-	private Properties properties;
+	private AppProperties properties;
 	
 	@Autowired
-	public SecurityConfig(Properties properties) {
+	public SecurityConfig(AppProperties properties) {
 		this.properties = properties;
 	}
 

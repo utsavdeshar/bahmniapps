@@ -1,7 +1,6 @@
 package org.bahmni.insurance.service;
 
 import org.bahmni.insurance.ImisConstants;
-import org.bahmni.insurance.Properties;
 import org.bahmni.insurance.client.RestTemplateFactory;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
@@ -12,20 +11,11 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public abstract class AOpernmrsFhirConstructorService {
 
-	private Properties properties;
-
 	@Autowired
-	public AOpernmrsFhirConstructorService(Properties properties) {
-		this.properties = properties;
-	}
-
-	public Properties getProperties() {
-		return properties;
-	}
-
+	RestTemplateFactory restFactory;
+	
 	public RestTemplate getApiClient() {
-		RestTemplateFactory restFactory = new RestTemplateFactory();
-		return restFactory.getRestTemplate(ImisConstants.OPENMRS_FHIR, properties);
+		return restFactory.getRestTemplate(ImisConstants.OPENMRS_FHIR);
 	}
 
 	public abstract Claim constructFhirClaimRequest(String patientId);

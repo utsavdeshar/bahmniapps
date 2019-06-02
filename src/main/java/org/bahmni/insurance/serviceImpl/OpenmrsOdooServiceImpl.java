@@ -3,7 +3,7 @@ package org.bahmni.insurance.serviceImpl;
 import java.util.Arrays;
 
 import org.bahmni.insurance.ImisConstants;
-import org.bahmni.insurance.Properties;
+import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.client.RestTemplateFactory;
 import org.bahmni.insurance.service.IOpenmrsOdooService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,20 +19,20 @@ import org.springframework.web.client.RestTemplate;
 @Configurable
 public class OpenmrsOdooServiceImpl implements IOpenmrsOdooService {
 
-	private Properties properties;
+	private AppProperties properties;
 
 	@Autowired
-	public OpenmrsOdooServiceImpl(Properties properties) {
+	public OpenmrsOdooServiceImpl(AppProperties properties) {
 		this.properties = properties;
 	}
 
-	public Properties getProperties() {
+	public AppProperties getProperties() {
 		return properties;
 	}
 
 	public RestTemplate getApiClient() {
-		RestTemplateFactory restFactory = new RestTemplateFactory();
-		return restFactory.getRestTemplate(ImisConstants.OPENMRS_ODOO, properties);
+		RestTemplateFactory restFactory = new RestTemplateFactory(properties);
+		return restFactory.getRestTemplate(ImisConstants.OPENMRS_ODOO);
 	}
 
 	@Override

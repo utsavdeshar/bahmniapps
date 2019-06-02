@@ -96,9 +96,7 @@ public class TestOmrsFhirConsumer {
 
 		mockRequest.setRequestURI("/auth");
 		mockRequest.setMethod("GET");
-
 		setupInterceptor();
-
 		assertEquals(200, mockResponse.getStatus());
 
 		// mvc.perform(get("/patient").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());

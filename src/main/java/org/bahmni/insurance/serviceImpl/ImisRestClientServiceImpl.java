@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.ImisConstants;
-import org.bahmni.insurance.Properties;
 import org.bahmni.insurance.client.RequestWrapperConverter;
 import org.bahmni.insurance.client.RestTemplateFactory;
 import org.bahmni.insurance.service.AInsuranceClientService;
@@ -36,28 +36,31 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	private RestTemplate restTemplate;
 	private final Gson defaultJsonParser = InsuranceUtils.createDefaultGson();
 
-	public ImisRestClientServiceImpl(Properties properties) {
-		super(properties);
+	
+	private AppProperties properties;
+	
+	public ImisRestClientServiceImpl(AppProperties prop) {
+		properties = prop;
 		restTemplate = getRestClient();
 	}
 
 	public RestTemplate getRestClient() {
-		RestTemplateFactory restFactory = new RestTemplateFactory();
-		return restFactory.getRestTemplate(ImisConstants.OPENIMIS_FHIR, this.getProperties());
+		RestTemplateFactory restFactory = new RestTemplateFactory(properties);
+		return restFactory.getRestTemplate(ImisConstants.OPENIMIS_FHIR);
 	}
 
 	private ResponseEntity<String> sendPostRequest(Object object) throws RestClientException, URISyntaxException {
 		ClientHelper helper = getClientHelper(ImisConstants.REST_CLIENT);
 		prepareRestTemplate(helper);
-		ClientHttpEntity<?> request = helper.createRequest(this.getProperties().imisUrl, object);
+		ClientHttpEntity<?> request = helper.createRequest(properties.imisUrl, object);
 		return exchange(helper, request, String.class);
 	}
-	
+
 	private ResponseEntity<String> sendGetRequest() {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 		HttpEntity<String> entity = new HttpEntity<String>(headers);
-		return restTemplate.exchange(getProperties().imisUrl, HttpMethod.POST, entity, String.class);
+		return restTemplate.exchange(properties.imisUrl, HttpMethod.GET, entity, String.class);
 
 	}
 
@@ -76,7 +79,7 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 
 	private HttpHeaders setRequestHeaders(ClientHelper clientHelper, HttpHeaders headers) {
 		for (ClientHttpRequestInterceptor interceptor : clientHelper
-				.getCustomInterceptors(this.getProperties().imisUser, this.getProperties().imisPassword)) {
+				.getCustomInterceptors(properties.imisUser, properties.imisPassword)) {
 			interceptor.addToHeaders(headers);
 		}
 		return headers;

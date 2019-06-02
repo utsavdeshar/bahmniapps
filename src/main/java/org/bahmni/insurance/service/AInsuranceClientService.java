@@ -2,7 +2,7 @@ package org.bahmni.insurance.service;
 
 import java.net.URISyntaxException;
 
-import org.bahmni.insurance.Properties;
+import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.client.ClientHelperFactory;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
@@ -17,19 +17,7 @@ import org.springframework.web.client.RestClientException;
 
 @Component
 public abstract class AInsuranceClientService {
-
-	private Properties properties;
-
 	private ClientHelper clientHelper;
-
-	@Autowired
-	public AInsuranceClientService(Properties properties) {
-		this.properties = properties;
-	}
-
-	public Properties getProperties() {
-		return properties;
-	}
 
 	public ClientHelper getClientHelper(String clientType) {
 		clientHelper = ClientHelperFactory.createClient(clientType);

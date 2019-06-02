@@ -1,6 +1,6 @@
 package org.bahmni.insurance.auth;
 
-import org.bahmni.insurance.Properties;
+import org.bahmni.insurance.AppProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
@@ -16,10 +16,10 @@ public class AuthenticationFilter extends HandlerInterceptorAdapter {
 
 	public static final String REPORTING_COOKIE_NAME = "reporting_session";
 	private OpenMRSAuthenticator authenticator;
-	private Properties properties;
+	private AppProperties properties;
 
 	@Autowired
-	public AuthenticationFilter(OpenMRSAuthenticator authenticator, Properties properties) {
+	public AuthenticationFilter(OpenMRSAuthenticator authenticator, AppProperties properties) {
 		this.authenticator = authenticator;
 		this.properties = properties;
 	}
