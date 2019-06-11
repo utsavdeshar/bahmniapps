@@ -8,4 +8,8 @@ public class ImisConstants {
 
 	public final static String FHIR_CLIENT = "fhir";
 	public final static String REST_CLIENT = "rest";
+	public final static String ADJUDICATION_ELIGIBLE = "eligible";
+	public final static String ADJUDICATION_BENEFIT = "benefit";
+
+
 }

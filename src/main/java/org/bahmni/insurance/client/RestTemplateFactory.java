@@ -18,6 +18,8 @@ import org.apache.http.message.BasicHeader;
 import org.apache.log4j.Logger;
 import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.ImisConstants;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -76,6 +78,12 @@ public class RestTemplateFactory {
 				defaultHeaders.add(header);
 				credentialsProvider.setCredentials(AuthScope.ANY,
 						new UsernamePasswordCredentials(properties.imisUser, properties.imisPassword));
+
+			} else if (clientType == 100) {
+				Header headers = new BasicHeader("Accept",
+						"application/fhir+xml;q=1.0, application/fhir+json;q=1.0, application/xml+fhir;q=0.9, application/json+fhir;q=0.9");
+				defaultHeaders.add(headers);
+				String url = "http://www.mocky.io/v2/5cfe511b3200004e0045effe";
 
 			}
 

@@ -1,9 +1,8 @@
 package org.bahmni.insurance.service;
 
-import org.bahmni.insurance.ImisConstants;
 import org.bahmni.insurance.AppProperties;
+import org.bahmni.insurance.ImisConstants;
 import org.bahmni.insurance.serviceImpl.ImisRestClientServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,6 +14,7 @@ public class FInsuranceServiceFactory {
 		} else {
 			return new ImisRestClientServiceImpl(properties); // TODO: if further any other insurance is to be integrated
 		}
+		// new ImisRestClientServiceImpl(properties);
 	}
 
 }

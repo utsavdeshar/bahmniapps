@@ -9,10 +9,14 @@ import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.ImisConstants;
 import org.bahmni.insurance.client.RequestWrapperConverter;
 import org.bahmni.insurance.client.RestTemplateFactory;
+import org.bahmni.insurance.model.ClaimLineItem;
+import org.bahmni.insurance.model.ClaimResponseModel;
 import org.bahmni.insurance.service.AInsuranceClientService;
 import org.bahmni.insurance.utils.InsuranceUtils;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
+import org.hl7.fhir.dstu3.model.ClaimResponse.AdjudicationComponent;
+import org.hl7.fhir.dstu3.model.ClaimResponse.ItemComponent;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.EligibilityResponse;
 import org.hl7.fhir.dstu3.model.Task;
@@ -31,14 +35,17 @@ import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.Gson;
 
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.parser.IParser;
+
 @Component
 public class ImisRestClientServiceImpl extends AInsuranceClientService {
-	private RestTemplate restTemplate;
+	private final RestTemplate restTemplate;
 	private final Gson defaultJsonParser = InsuranceUtils.createDefaultGson();
+	private final IParser parsear = FhirContext.forDstu3().newJsonParser();
 
-	
 	private AppProperties properties;
-	
+
 	public ImisRestClientServiceImpl(AppProperties prop) {
 		properties = prop;
 		restTemplate = getRestClient();
@@ -46,7 +53,7 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 
 	public RestTemplate getRestClient() {
 		RestTemplateFactory restFactory = new RestTemplateFactory(properties);
-		return restFactory.getRestTemplate(ImisConstants.OPENIMIS_FHIR);
+		return restFactory.getRestTemplate(100); // TODO: remove hardcoded
 	}
 
 	private ResponseEntity<String> sendPostRequest(Object object) throws RestClientException, URISyntaxException {
@@ -56,30 +63,23 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		return exchange(helper, request, String.class);
 	}
 
-	private ResponseEntity<String> sendGetRequest() {
+	private ResponseEntity<String> sendGetRequest(String url) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 		HttpEntity<String> entity = new HttpEntity<String>(headers);
-		return restTemplate.exchange(properties.imisUrl, HttpMethod.GET, entity, String.class);
+		return restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
 
 	}
 
 	private ResponseEntity<String> exchange(ClientHelper helper, ClientHttpEntity<?> request, Class<String> clazz) {
-		/*
-		 * HttpHeaders headers = new HttpHeaders();
-		 * headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON)); HttpEntity
-		 * <String> entity = new HttpEntity<String>(headers);
-		 */
-
 		HttpHeaders headers = new HttpHeaders();
-		// setRequestHeaders(helper, headers);
 		HttpEntity<?> entity = new HttpEntity<Object>(request.getBody(), headers);
 		return restTemplate.exchange(request.getUrl(), request.getMethod(), entity, clazz);
 	}
 
 	private HttpHeaders setRequestHeaders(ClientHelper clientHelper, HttpHeaders headers) {
-		for (ClientHttpRequestInterceptor interceptor : clientHelper
-				.getCustomInterceptors(properties.imisUser, properties.imisPassword)) {
+		for (ClientHttpRequestInterceptor interceptor : clientHelper.getCustomInterceptors(properties.imisUser,
+				properties.imisPassword)) {
 			interceptor.addToHeaders(headers);
 		}
 		return headers;
@@ -110,8 +110,60 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	}
 
 	@Override
+	public ClaimResponseModel getDummyClaimResponse() {
+		ResponseEntity<String> claimResponseSample = sendGetRequest(properties.dummyClaimResponseUrl);
+		String claimResponseBody = claimResponseSample.getBody();
+		ClaimResponse dummyClaimResponse = (ClaimResponse) parsear.parseResource(claimResponseBody);
+		return populateClaimRespModel(dummyClaimResponse);
+
+	}
+
+	private ClaimResponseModel populateClaimRespModel(ClaimResponse claimResponse) {
+		ClaimResponseModel clmRespModel = new ClaimResponseModel();
+		clmRespModel.setClaimId(claimResponse.getId());
+		clmRespModel.setApprovedTotal(claimResponse.getTotalBenefit().getValue());
+		clmRespModel.setClaimedTotal(claimResponse.getTotalCost().getValue());
+		clmRespModel.setClaimStatus(claimResponse.getStatus().toString());
+		clmRespModel.setPaymentType(claimResponse.getPayment().getType().getCoding().get(0).getCode());
+		clmRespModel.setOutCome(claimResponse.getOutcome().getCoding().get(0).getCode());
+		clmRespModel.setDateProcessed(claimResponse.getPayment().getDate());
+
+		// nhisId;
+		// patientId;
+		// policyStatus;
+		// dateCreated;
+		// rejectionReason;
+
+		List<ClaimLineItem> claimLineItems = new ArrayList<>();
+		for (ItemComponent responseItem : claimResponse.getItem()) {
+			ClaimLineItem claimItem = new ClaimLineItem();
+			claimItem.setSequenceLinkId(responseItem.getSequenceLinkIdElement().getValue());
+
+			for (AdjudicationComponent adj : responseItem.getAdjudication()) {
+				if (ImisConstants.ADJUDICATION_ELIGIBLE
+						.equalsIgnoreCase(adj.getCategory().getCoding().get(0).getCode())) {
+					claimItem.setTotalCost(adj.getAmount().getValue());
+				}
+				if (ImisConstants.ADJUDICATION_BENEFIT
+						.equalsIgnoreCase(adj.getCategory().getCoding().get(0).getCode())) {
+					claimItem.setTotalBenefit(adj.getAmount().getValue());
+				}
+			}
+			// quantityProvided;
+			// int quantityApproved;
+			// explanation;
+			// rejectionReason;
+
+			claimLineItems.add(claimItem);
+		}
+		clmRespModel.setClaimLineItems(claimLineItems);
+		return clmRespModel;
+
+	}
+
+	@Override
 	public ResponseEntity<String> loginCheck() {
-		return sendGetRequest();
+		return sendGetRequest(properties.imisUrl);
 	}
 
 }

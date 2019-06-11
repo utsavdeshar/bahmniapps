@@ -42,4 +42,9 @@ public class AppProperties {
 	@Value("${openmrs.odoo.api}")
 	public String openmrsOdooApi;
 
+	
+	@Value("${dummy.claimResponse.url}")
+	public String dummyClaimResponseUrl;
+
+	
 }

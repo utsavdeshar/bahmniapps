@@ -1,6 +1,7 @@
 package org.bahmni.insurance.serviceImpl;
 
 import org.bahmni.insurance.AppProperties;
+import org.bahmni.insurance.model.ClaimResponseModel;
 import org.bahmni.insurance.service.AInsuranceClientService;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
@@ -33,6 +34,12 @@ public class ImisFhirClientServiceImpl extends AInsuranceClientService {
 
 	@Override
 	public ResponseEntity<String> loginCheck() {
+		return null;
+	}
+
+	@Override
+	public ClaimResponseModel getDummyClaimResponse() {
+		// TODO Auto-generated method stub
 		return null;
 	}
 

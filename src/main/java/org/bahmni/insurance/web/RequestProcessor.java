@@ -13,16 +13,16 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.bahmni.insurance.AppProperties;
+import org.bahmni.insurance.client.RestTemplateFactory;
 import org.bahmni.insurance.dao.FhirResourceDaoServiceImpl;
 import org.bahmni.insurance.dao.IFhirResourceDaoService;
+import org.bahmni.insurance.model.ClaimResponseModel;
 import org.bahmni.insurance.model.FhirResourceModel;
 import org.bahmni.insurance.service.AOpernmrsFhirConstructorService;
 import org.bahmni.insurance.service.FInsuranceServiceFactory;
 import org.bahmni.insurance.service.IOpenmrsOdooService;
 import org.bahmni.insurance.serviceImpl.OpenmrsFhirConstructorServiceImpl;
 import org.bahmni.insurance.serviceImpl.OpenmrsOdooServiceImpl;
-import org.hl7.fhir.dstu3.model.Claim;
-import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,6 +31,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 @RestController
 public class RequestProcessor {
@@ -41,17 +44,20 @@ public class RequestProcessor {
 	private final IOpenmrsOdooService odooService;
 	private final IFhirResourceDaoService fhirDaoService;
 	private final FInsuranceServiceFactory insuranceImplFactory;
+	// private final RestTemplateFactory restFactory;
+
 	private final AppProperties properties;
 
 	@Autowired
 	public RequestProcessor(OpenmrsFhirConstructorServiceImpl fhirConstructorServiceImpl,
-			OpenmrsOdooServiceImpl openmrsOdooServiceImpl,
-			FhirResourceDaoServiceImpl fhirServiceImpl, FInsuranceServiceFactory insuranceImplFactory, AppProperties props) {
+			OpenmrsOdooServiceImpl openmrsOdooServiceImpl, FhirResourceDaoServiceImpl fhirServiceImpl,
+			FInsuranceServiceFactory insuranceImplFactory, RestTemplateFactory restFactory, AppProperties props) {
 		this.fhirConstructorService = fhirConstructorServiceImpl;
 		this.odooService = openmrsOdooServiceImpl;
 		this.fhirDaoService = fhirServiceImpl;
 		this.insuranceImplFactory = insuranceImplFactory;
 		this.properties = props;
+		// this.restFactory = restFactory;
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/request/eligibility/{patientId}", produces = "application/json")
@@ -72,21 +78,38 @@ public class RequestProcessor {
 
 	}
 
+	@RequestMapping(method = RequestMethod.GET, value = "/get/claimResponse/{claimId}", produces = "application/json")
+	@ResponseBody
+	public String getClaimResponse(HttpServletResponse response, @PathVariable("claimId") String patientId)
+			throws IOException {
+		logger.debug("claimResponse");
+		ClaimResponseModel claimResponse = insuranceImplFactory.getInsuranceServiceImpl(100, properties)
+				.getDummyClaimResponse();
+		GsonBuilder builder = new GsonBuilder();
+		Gson gson = builder.setPrettyPrinting().create();
+		logger.debug("ClaimResponse model == " + gson.toJson(claimResponse));
+		return gson.toJson(claimResponse);
+
+	}
+
 	@RequestMapping(path = "/openIMIS/login")
 	@ResponseBody
 	public ResponseEntity<String> checkLogin(HttpServletResponse response)
 			throws RestClientException, URISyntaxException {
 		logger.debug("requestEligibity");
-		return insuranceImplFactory.getInsuranceServiceImpl(0, properties).loginCheck();//TODO: remove hardcoded
+		return insuranceImplFactory.getInsuranceServiceImpl(0, properties).loginCheck();// TODO: remove hardcoded
 	}
 
 	@RequestMapping(path = "/request/claimsubmit")
 	public void requestClaimSubmit(HttpServletResponse response) throws RestClientException, URISyntaxException {
 		logger.debug("requestClaimSubmit");
-		Claim claimRequest = fhirConstructorService.constructFhirClaimRequest("StringPatientId"); // TODO: get this
-																									// StringPatientId
-		ClaimResponse claimResponse = insuranceImplFactory.getInsuranceServiceImpl(0, properties).getClaimResponse(claimRequest); //TODO: remove hardcoded
-	}
+		/*
+		 * Claim claimRequest =
+		 * fhirConstructorService.constructFhirClaimRequest("StringPatientId"); // TODO:
+		 * get this // StringPatientId ClaimResponse claimResponse =
+		 * insuranceImplFactory.getInsuranceServiceImpl(0, properties)
+		 * .getClaimResponse(claimRequest); // TODO: remove hardcoded
+		 */ }
 
 	@RequestMapping(path = "/get/fhir/claims")
 	@ResponseBody
