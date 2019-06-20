@@ -12,7 +12,6 @@ import org.bahmni.insurance.client.RestTemplateFactory;
 import org.bahmni.insurance.model.ClaimLineItem;
 import org.bahmni.insurance.model.ClaimResponseModel;
 import org.bahmni.insurance.service.AInsuranceClientService;
-import org.bahmni.insurance.utils.InsuranceUtils;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.hl7.fhir.dstu3.model.ClaimResponse.AdjudicationComponent;
@@ -21,7 +20,6 @@ import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.EligibilityResponse;
 import org.hl7.fhir.dstu3.model.Task;
 import org.openmrs.module.fhir.api.client.ClientHttpEntity;
-import org.openmrs.module.fhir.api.client.ClientHttpRequestInterceptor;
 import org.openmrs.module.fhir.api.helper.ClientHelper;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -33,15 +31,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import com.google.gson.Gson;
-
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 
 @Component
 public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	private final RestTemplate restTemplate;
-	private final Gson defaultJsonParser = InsuranceUtils.createDefaultGson();
 	private final IParser parsear = FhirContext.forDstu3().newJsonParser();
 
 	private AppProperties properties;
@@ -56,10 +51,11 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		return restFactory.getRestTemplate(100); // TODO: remove hardcoded
 	}
 
-	private ResponseEntity<String> sendPostRequest(Object object) throws RestClientException, URISyntaxException {
+	private ResponseEntity<String> sendPostRequest(Object object, String url)
+			throws RestClientException, URISyntaxException {
 		ClientHelper helper = getClientHelper(ImisConstants.REST_CLIENT);
 		prepareRestTemplate(helper);
-		ClientHttpEntity<?> request = helper.createRequest(properties.imisUrl, object);
+		ClientHttpEntity<?> request = helper.createRequest(properties.imisUrl + url, object);
 		return exchange(helper, request, String.class);
 	}
 
@@ -77,13 +73,13 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		return restTemplate.exchange(request.getUrl(), request.getMethod(), entity, clazz);
 	}
 
-	private HttpHeaders setRequestHeaders(ClientHelper clientHelper, HttpHeaders headers) {
-		for (ClientHttpRequestInterceptor interceptor : clientHelper.getCustomInterceptors(properties.imisUser,
-				properties.imisPassword)) {
-			interceptor.addToHeaders(headers);
-		}
-		return headers;
-	}
+	/*
+	 * private HttpHeaders setRequestHeaders(ClientHelper clientHelper, HttpHeaders
+	 * headers) { for (ClientHttpRequestInterceptor interceptor :
+	 * clientHelper.getCustomInterceptors(properties.imisUser,
+	 * properties.imisPassword)) { interceptor.addToHeaders(headers); } return
+	 * headers; }
+	 */
 
 	private void prepareRestTemplate(ClientHelper clientHelper) {
 		List<HttpMessageConverter<?>> converters = new ArrayList<>(clientHelper.getCustomMessageConverter());
@@ -93,14 +89,17 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 
 	@Override
 	public ClaimResponse getClaimResponse(Claim claimRequest) throws RestClientException, URISyntaxException {
-		ResponseEntity<String> responseObject = sendPostRequest(claimRequest);
-		return defaultJsonParser.fromJson(responseObject.toString(), ClaimResponse.class);
+		ResponseEntity<String> responseObject = sendPostRequest(claimRequest, "/claimURL"); // TODO:
+		ClaimResponse claimResponse = (ClaimResponse) parsear.parseResource(responseObject.getBody());
+		return claimResponse;
 	}
 
 	@Override
-	public EligibilityResponse getElibilityResponse(EligibilityRequest eligbilityRequest) {
-		// TODO Auto-generated method stub
-		return null;
+	public EligibilityResponse getElibilityResponse(EligibilityRequest eligbilityRequest)
+			throws RestClientException, URISyntaxException {
+		ResponseEntity<String> responseObject = sendPostRequest(eligbilityRequest, "/eligURL");// TODO:
+		EligibilityResponse eligibilityResponse = (EligibilityResponse) parsear.parseResource(responseObject.getBody());
+		return eligibilityResponse;
 	}
 
 	@Override

@@ -2,10 +2,7 @@ package org.bahmni.insurance.web;
 
 import static org.apache.log4j.Logger.getLogger;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.util.List;
 
@@ -23,6 +20,10 @@ import org.bahmni.insurance.service.FInsuranceServiceFactory;
 import org.bahmni.insurance.service.IOpenmrsOdooService;
 import org.bahmni.insurance.serviceImpl.OpenmrsFhirConstructorServiceImpl;
 import org.bahmni.insurance.serviceImpl.OpenmrsOdooServiceImpl;
+import org.hl7.fhir.dstu3.model.Claim;
+import org.hl7.fhir.dstu3.model.ClaimResponse;
+import org.hl7.fhir.dstu3.model.EligibilityRequest;
+import org.hl7.fhir.dstu3.model.EligibilityResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,6 +36,8 @@ import org.springframework.web.client.RestClientException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import ca.uhn.fhir.context.FhirContext;
+
 @RestController
 public class RequestProcessor {
 
@@ -44,7 +47,6 @@ public class RequestProcessor {
 	private final IOpenmrsOdooService odooService;
 	private final IFhirResourceDaoService fhirDaoService;
 	private final FInsuranceServiceFactory insuranceImplFactory;
-	// private final RestTemplateFactory restFactory;
 
 	private final AppProperties properties;
 
@@ -57,24 +59,19 @@ public class RequestProcessor {
 		this.fhirDaoService = fhirServiceImpl;
 		this.insuranceImplFactory = insuranceImplFactory;
 		this.properties = props;
-		// this.restFactory = restFactory;
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/request/eligibility/{patientId}", produces = "application/json")
+	@RequestMapping(method = RequestMethod.GET, value = "/request/eligibility/{insuranceId}", produces = "application/json")
 	@ResponseBody
-	public String requestEligibity(HttpServletResponse response, @PathVariable("patientId") String patientId)
-			throws IOException {
+	public String getEligibilityResponse(HttpServletResponse response, @PathVariable("insuranceId") String insuranceID)
+			throws IOException, RestClientException, URISyntaxException {
 		logger.debug("requestEligibity");
+		EligibilityRequest eligbilityRequest =  fhirConstructorService.constructFhirEligibilityRequest(insuranceID);
+		//EligibilityResponse eligResponse =  insuranceImplFactory.getInsuranceServiceImpl(0, properties).getElibilityResponse(eligbilityRequest);
 
-		InputStream is = RequestProcessor.class.getResourceAsStream("/FHIR-Resources/eligibility-response.json");
-		BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-		String content;
-		while ((content = reader.readLine()) != null) {
-			System.out.println(content);
-		}
-		logger.debug(content);
+		logger.debug("Eligibility Request == " + FhirContext.forDstu3().newJsonParser().encodeResourceToString(eligbilityRequest));
+		return FhirContext.forDstu3().newJsonParser().encodeResourceToString(eligbilityRequest);
 
-		return content;
 
 	}
 
@@ -103,13 +100,11 @@ public class RequestProcessor {
 	@RequestMapping(path = "/request/claimsubmit")
 	public void requestClaimSubmit(HttpServletResponse response) throws RestClientException, URISyntaxException {
 		logger.debug("requestClaimSubmit");
-		/*
-		 * Claim claimRequest =
-		 * fhirConstructorService.constructFhirClaimRequest("StringPatientId"); // TODO:
-		 * get this // StringPatientId ClaimResponse claimResponse =
-		 * insuranceImplFactory.getInsuranceServiceImpl(0, properties)
-		 * .getClaimResponse(claimRequest); // TODO: remove hardcoded
-		 */ }
+		
+		 Claim claimRequest = fhirConstructorService.constructFhirClaimRequest("StringPatientId"); 
+		 
+		 ClaimResponse claimResponse = insuranceImplFactory.getInsuranceServiceImpl(0, properties).getClaimResponse(claimRequest); // TODO: remove hardcoded
+	}
 
 	@RequestMapping(path = "/get/fhir/claims")
 	@ResponseBody
@@ -151,11 +146,11 @@ public class RequestProcessor {
 
 	}
 
-	@RequestMapping(path = "/odercost")
+	/*@RequestMapping(path = "/odercost")
 	public void getOrderCost(HttpServletResponse response) {
 		logger.debug("getOrderCost");
 		System.out.println(odooService.getOrderCost("9065024b-9499-4c9b-9a2f-a53f703be2aa"));
 
-	}
+	}*/
 
 }

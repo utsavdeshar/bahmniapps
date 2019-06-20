@@ -27,7 +27,7 @@ public abstract class AInsuranceClientService {
 
 	public abstract ClaimResponse getClaimResponse(Claim claimRequest) throws RestClientException, URISyntaxException;
 
-	public abstract EligibilityResponse getElibilityResponse(EligibilityRequest eligbilityRequest);
+	public abstract EligibilityResponse getElibilityResponse(EligibilityRequest eligbilityRequest) throws RestClientException, URISyntaxException;
 
 	public abstract ClaimResponse getClaimStatus(Task claimStatusRequest);
 
