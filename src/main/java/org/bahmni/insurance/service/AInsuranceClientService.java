@@ -2,16 +2,15 @@ package org.bahmni.insurance.service;
 
 import java.net.URISyntaxException;
 
-import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.client.ClientHelperFactory;
 import org.bahmni.insurance.model.ClaimResponseModel;
+import org.bahmni.insurance.model.EligibilityResponseModel;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.EligibilityResponse;
 import org.hl7.fhir.dstu3.model.Task;
 import org.openmrs.module.fhir.api.helper.ClientHelper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
@@ -34,4 +33,7 @@ public abstract class AInsuranceClientService {
 	public abstract ResponseEntity<String> loginCheck();
 
 	public abstract ClaimResponseModel getDummyClaimResponse();
+	
+	public abstract EligibilityResponseModel getDummyEligibilityResponse();
+
 }

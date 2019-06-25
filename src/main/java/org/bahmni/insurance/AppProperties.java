@@ -45,6 +45,10 @@ public class AppProperties {
 	
 	@Value("${dummy.claimResponse.url}")
 	public String dummyClaimResponseUrl;
+	
+
+	@Value("${dummy.eligibilityResponse.url}")
+	public String dummyEligibiltyResponseUrl;
 
 	
 }

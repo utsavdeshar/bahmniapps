@@ -14,16 +14,17 @@ import org.bahmni.insurance.client.RestTemplateFactory;
 import org.bahmni.insurance.dao.FhirResourceDaoServiceImpl;
 import org.bahmni.insurance.dao.IFhirResourceDaoService;
 import org.bahmni.insurance.model.ClaimResponseModel;
+import org.bahmni.insurance.model.EligibilityResponseModel;
 import org.bahmni.insurance.model.FhirResourceModel;
 import org.bahmni.insurance.service.AOpernmrsFhirConstructorService;
 import org.bahmni.insurance.service.FInsuranceServiceFactory;
 import org.bahmni.insurance.service.IOpenmrsOdooService;
 import org.bahmni.insurance.serviceImpl.OpenmrsFhirConstructorServiceImpl;
 import org.bahmni.insurance.serviceImpl.OpenmrsOdooServiceImpl;
+import org.bahmni.insurance.validation.FhirInstanceValidator;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
-import org.hl7.fhir.dstu3.model.EligibilityResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,6 +38,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.validation.FhirValidator;
+import ca.uhn.fhir.validation.SingleValidationMessage;
+import ca.uhn.fhir.validation.ValidationResult;
 
 @RestController
 public class RequestProcessor {
@@ -60,6 +64,18 @@ public class RequestProcessor {
 		this.insuranceImplFactory = insuranceImplFactory;
 		this.properties = props;
 	}
+	@RequestMapping(method = RequestMethod.GET, value = "/get/eligibilityResponse/{claimId}", produces = "application/json")
+	@ResponseBody
+	public String getEligibityResponse(HttpServletResponse response, @PathVariable("claimId") String patientId)
+			throws IOException {
+		logger.debug("eligibityResponse");
+		EligibilityResponseModel eligibilityResponse = insuranceImplFactory.getInsuranceServiceImpl(100, properties)
+				.getDummyEligibilityResponse();
+		GsonBuilder builder = new GsonBuilder();
+		Gson gson = builder.setPrettyPrinting().create();
+		logger.debug("eligibilityResponse model == " + gson.toJson(eligibilityResponse));
+		return gson.toJson(eligibilityResponse);	
+	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/request/eligibility/{insuranceId}", produces = "application/json")
 	@ResponseBody
@@ -70,7 +86,8 @@ public class RequestProcessor {
 		//EligibilityResponse eligResponse =  insuranceImplFactory.getInsuranceServiceImpl(0, properties).getElibilityResponse(eligbilityRequest);
 
 		logger.debug("Eligibility Request == " + FhirContext.forDstu3().newJsonParser().encodeResourceToString(eligbilityRequest));
-		return FhirContext.forDstu3().newJsonParser().encodeResourceToString(eligbilityRequest);
+		String eligibilityRequestValidation = FhirContext.forDstu3().newJsonParser().encodeResourceToString(eligbilityRequest);
+		return validateRequest(eligibilityRequestValidation);
 
 
 	}
@@ -152,5 +169,32 @@ public class RequestProcessor {
 		System.out.println(odooService.getOrderCost("9065024b-9499-4c9b-9a2f-a53f703be2aa"));
 
 	}*/
+	private String validateRequest(String eligibilityRequestValidation) throws IOException {
+		FhirContext ctx = FhirContext.forDstu3();
+		 
+		// Create a FhirInstanceValidator and register it to a validator
+		FhirValidator validator = ctx.newValidator();
+		FhirInstanceValidator instanceValidator = new FhirInstanceValidator();
+		validator.registerValidatorModule(instanceValidator);
+		instanceValidator.setAnyExtensionsAllowed(true);
+		
+       //validate
+		ValidationResult result = validator.validateWithResult(eligibilityRequestValidation);
+    
+ 
+		//error checking
+		 if (result.isSuccessful() == false) {
+			 for (SingleValidationMessage next : result.getMessages()) {
+					logger.debug("I am inside single validation");
+					System.out.println(" Next issue " + next.getSeverity() + " - " + next.getLocationString() + " - " + next.getMessage());
+				}
+			 logger.debug("validation error");
+		   }else {
+			   logger.debug("validation sucessful");
+		   }		 
+		
+		
+		return(eligibilityRequestValidation);
+	}
 
 }
