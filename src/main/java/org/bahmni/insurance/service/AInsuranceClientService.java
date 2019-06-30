@@ -4,6 +4,7 @@ import java.net.URISyntaxException;
 
 import org.bahmni.insurance.client.ClientHelperFactory;
 import org.bahmni.insurance.model.ClaimResponseModel;
+import org.bahmni.insurance.model.ClaimTrackingModel;
 import org.bahmni.insurance.model.EligibilityResponseModel;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
@@ -35,5 +36,8 @@ public abstract class AInsuranceClientService {
 	public abstract ClaimResponseModel getDummyClaimResponse();
 	
 	public abstract EligibilityResponseModel getDummyEligibilityResponse();
+	
+	public abstract ClaimTrackingModel getDummyClaimTrack();
+
 
 }

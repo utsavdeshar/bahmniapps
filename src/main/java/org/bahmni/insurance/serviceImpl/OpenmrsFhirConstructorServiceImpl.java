@@ -7,10 +7,13 @@ import java.util.List;
 import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.service.AOpernmrsFhirConstructorService;
 import org.hl7.fhir.dstu3.model.Claim;
+import org.hl7.fhir.dstu3.model.Claim.ClaimStatus;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.dstu3.model.Task;
+import org.hl7.fhir.dstu3.model.Task.TaskStatus;
 import org.hl7.fhir.dstu3.model.EligibilityRequest.EligibilityRequestStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -36,12 +39,7 @@ public class OpenmrsFhirConstructorServiceImpl extends AOpernmrsFhirConstructorS
 				.exchange(properties.openmrsFhirUrl + patientId, HttpMethod.GET, entity, String.class).getBody();
 	}
 
-	@Override
-	public Claim constructFhirClaimRequest(String patientId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+	
 	@Override
 	public EligibilityRequest constructFhirEligibilityRequest(String insuranceID) {
 		
@@ -71,5 +69,56 @@ public class OpenmrsFhirConstructorServiceImpl extends AOpernmrsFhirConstructorS
 		
 		return eligibilityRequest;
 	}
+	
+	@Override
+	public Claim constructFhirClaimRequest(String insuranceID) {
+		Claim claimRequest = new Claim();
+		
+		List<Identifier> identifierList = new ArrayList<>();
+		Identifier identifier = new Identifier();
+		identifier.setSystem("SenderID");
+		identifier.setValue(insuranceID);
+		identifierList.add(identifier); 
+		claimRequest.setIdentifier(identifierList);
+		
+		claimRequest.setStatus(ClaimStatus.ACTIVE);
+
+		Reference patientReference = new Reference();
+		patientReference.setReference("Patient/"+insuranceID);
+		claimRequest.setPatient(patientReference);
+		
+		Reference referenceOrg = new Reference();
+		referenceOrg.setReference("Organization/1");
+		claimRequest.setOrganization(referenceOrg);
+		
+		
+		Reference referenceInsurer = new Reference();
+		referenceInsurer.setReference("Organization/2");
+		claimRequest.setInsurer(referenceInsurer);
+		
+		return claimRequest;
+	}
+	
+	@Override
+	public Task constructFhirClaimTrackRequest(String insuranceID) {
+		Task claimTracking = new Task();
+		
+		List<Identifier> identifierList = new ArrayList<>();
+		Identifier identifier = new Identifier();
+		identifier.setSystem("SenderID");
+		identifier.setValue(insuranceID);
+		identifierList.add(identifier); 
+		claimTracking.setIdentifier(identifierList);
+		
+		claimTracking.setStatus(TaskStatus.READY);
+		
+		Reference referenceOrg = new Reference();
+		referenceOrg.setReference("Organization/1");
+		claimTracking.setOwner(referenceOrg);
+	
+		
+		return claimTracking;
+	}
+
 
 }

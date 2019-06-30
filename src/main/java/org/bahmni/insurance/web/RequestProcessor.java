@@ -14,6 +14,7 @@ import org.bahmni.insurance.client.RestTemplateFactory;
 import org.bahmni.insurance.dao.FhirResourceDaoServiceImpl;
 import org.bahmni.insurance.dao.IFhirResourceDaoService;
 import org.bahmni.insurance.model.ClaimResponseModel;
+import org.bahmni.insurance.model.ClaimTrackingModel;
 import org.bahmni.insurance.model.EligibilityResponseModel;
 import org.bahmni.insurance.model.FhirResourceModel;
 import org.bahmni.insurance.service.AOpernmrsFhirConstructorService;
@@ -25,6 +26,7 @@ import org.bahmni.insurance.validation.FhirInstanceValidator;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
+import org.hl7.fhir.dstu3.model.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -64,19 +66,7 @@ public class RequestProcessor {
 		this.insuranceImplFactory = insuranceImplFactory;
 		this.properties = props;
 	}
-	@RequestMapping(method = RequestMethod.GET, value = "/get/eligibilityResponse/{claimId}", produces = "application/json")
-	@ResponseBody
-	public String getEligibityResponse(HttpServletResponse response, @PathVariable("claimId") String patientId)
-			throws IOException {
-		logger.debug("eligibityResponse");
-		EligibilityResponseModel eligibilityResponse = insuranceImplFactory.getInsuranceServiceImpl(100, properties)
-				.getDummyEligibilityResponse();
-		GsonBuilder builder = new GsonBuilder();
-		Gson gson = builder.setPrettyPrinting().create();
-		logger.debug("eligibilityResponse model == " + gson.toJson(eligibilityResponse));
-		return gson.toJson(eligibilityResponse);	
-	}
-
+	
 	@RequestMapping(method = RequestMethod.GET, value = "/request/eligibility/{insuranceId}", produces = "application/json")
 	@ResponseBody
 	public String getEligibilityResponse(HttpServletResponse response, @PathVariable("insuranceId") String insuranceID)
@@ -88,13 +78,36 @@ public class RequestProcessor {
 		logger.debug("Eligibility Request == " + FhirContext.forDstu3().newJsonParser().encodeResourceToString(eligbilityRequest));
 		String eligibilityRequestValidation = FhirContext.forDstu3().newJsonParser().encodeResourceToString(eligbilityRequest);
 		return validateRequest(eligibilityRequestValidation);
-
-
+	}
+	
+	@RequestMapping(method = RequestMethod.GET, value = "/get/eligibilityResponse/{claimId}", produces = "application/json")
+	@ResponseBody
+	public String setEligibilityResponse(HttpServletResponse response, @PathVariable("claimId") String patientId)
+			throws IOException {
+		logger.debug("eligibityResponse");
+		EligibilityResponseModel eligibilityResponse = insuranceImplFactory.getInsuranceServiceImpl(100, properties)
+				.getDummyEligibilityResponse();
+		GsonBuilder builder = new GsonBuilder();
+		Gson gson = builder.setPrettyPrinting().create();
+		logger.debug("eligibilityResponse model == " + gson.toJson(eligibilityResponse));
+		return gson.toJson(eligibilityResponse);	
 	}
 
+	@RequestMapping(method = RequestMethod.GET, value = "/request/claim/{insuranceId}", produces = "application/json")
+	@ResponseBody
+	public String getClaimResponse(HttpServletResponse response, @PathVariable("insuranceId") String insuranceID)
+			throws IOException, RestClientException, URISyntaxException {
+		logger.debug("requestClaim");
+		Claim claimRequest =  fhirConstructorService.constructFhirClaimRequest(insuranceID);
+		logger.debug("claim request prodessed" + claimRequest);
+		logger.debug("Claim Request == " + FhirContext.forDstu3().newJsonParser().encodeResourceToString(claimRequest));
+		String claimRequestValidation = FhirContext.forDstu3().newJsonParser().encodeResourceToString(claimRequest);
+		return validateRequest(claimRequestValidation);
+	}
+	
 	@RequestMapping(method = RequestMethod.GET, value = "/get/claimResponse/{claimId}", produces = "application/json")
 	@ResponseBody
-	public String getClaimResponse(HttpServletResponse response, @PathVariable("claimId") String patientId)
+	public String setClaimResponse(HttpServletResponse response, @PathVariable("claimId") String patientId)
 			throws IOException {
 		logger.debug("claimResponse");
 		ClaimResponseModel claimResponse = insuranceImplFactory.getInsuranceServiceImpl(100, properties)
@@ -103,6 +116,30 @@ public class RequestProcessor {
 		Gson gson = builder.setPrettyPrinting().create();
 		logger.debug("ClaimResponse model == " + gson.toJson(claimResponse));
 		return gson.toJson(claimResponse);
+
+	}
+	
+	@RequestMapping(method = RequestMethod.GET, value = "/request/claimTracking/{insuranceId}", produces = "application/json")
+	@ResponseBody
+	public String getClaimTracking(HttpServletResponse response, @PathVariable("insuranceId") String insuranceID)
+			throws IOException, RestClientException, URISyntaxException {
+		logger.debug("requestClaimTracking");
+		Task claimTrackingRequest =  fhirConstructorService.constructFhirClaimTrackRequest(insuranceID);
+		logger.debug("Claim Request Track == " + FhirContext.forDstu3().newJsonParser().encodeResourceToString(claimTrackingRequest));
+		String claimRequestTrackingValidation = FhirContext.forDstu3().newJsonParser().encodeResourceToString(claimTrackingRequest);
+		return validateRequest(claimRequestTrackingValidation);
+	}
+	
+	@RequestMapping(method = RequestMethod.GET, value = "/get/claimTracking/{claimId}", produces = "application/json")
+	@ResponseBody
+	public String setClaimTracking(HttpServletResponse response, @PathVariable("claimId") String patientId)
+			throws IOException {
+		ClaimTrackingModel claimTracking = insuranceImplFactory.getInsuranceServiceImpl(100, properties)
+				.getDummyClaimTrack();
+		GsonBuilder builder = new GsonBuilder();
+		Gson gson = builder.setPrettyPrinting().create();
+		logger.debug("ClaimTracking model == " + gson.toJson(claimTracking));
+		return gson.toJson(claimTracking);
 
 	}
 
@@ -169,6 +206,8 @@ public class RequestProcessor {
 		System.out.println(odooService.getOrderCost("9065024b-9499-4c9b-9a2f-a53f703be2aa"));
 
 	}*/
+	
+	
 	private String validateRequest(String eligibilityRequestValidation) throws IOException {
 		FhirContext ctx = FhirContext.forDstu3();
 		 

@@ -3,6 +3,7 @@ package org.bahmni.insurance.serviceImpl;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import org.bahmni.insurance.AppProperties;
@@ -11,6 +12,7 @@ import org.bahmni.insurance.client.RequestWrapperConverter;
 import org.bahmni.insurance.client.RestTemplateFactory;
 import org.bahmni.insurance.model.ClaimLineItem;
 import org.bahmni.insurance.model.ClaimResponseModel;
+import org.bahmni.insurance.model.ClaimTrackingModel;
 import org.bahmni.insurance.model.EligibilityBalance;
 import org.bahmni.insurance.model.EligibilityResponseModel;
 import org.bahmni.insurance.service.AInsuranceClientService;
@@ -192,8 +194,29 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		eligRespModel.setEligibilityBalance(eligibilityBalance);
 
 		return eligRespModel;
-
 		}
+	
+	@Override
+	public ClaimTrackingModel getDummyClaimTrack() {
+		ResponseEntity<String> claimTrackingSample = sendGetRequest(properties.dummyClaimTrackUrl);
+		String claimTrackingBody = claimTrackingSample.getBody();
+		Task dummyClaimTrack = (Task) parsear.parseResource(claimTrackingBody);
+		return populateClaimTrackModel(dummyClaimTrack);
+
+	}
+
+	private ClaimTrackingModel populateClaimTrackModel(Task task) {
+		ClaimTrackingModel clmTrackModel = new ClaimTrackingModel();
+		clmTrackModel.setClaimId(task.getId());
+		clmTrackModel.setClaimOwner(task.getOwner().getDisplay());
+		clmTrackModel.setClaimStatus(task.getStatus().toString());
+		clmTrackModel.setClaimDesc(task.getDescription());
+		clmTrackModel.setClaimSignature(task.getRelevantHistory().get(0).getDisplay());
+		clmTrackModel.setDateProcessed(task.getExecutionPeriod().getStart());
+		clmTrackModel.setDateAuthorized(task.getAuthoredOn());
+		clmTrackModel.setDateLastModified(task.getLastModified());
+		return clmTrackModel;
+	}
 
 	@Override
 	public ResponseEntity<String> loginCheck() {

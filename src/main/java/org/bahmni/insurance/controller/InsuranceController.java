@@ -74,7 +74,7 @@ public class InsuranceController {
 			@RequestParam Boolean isMember) throws IOException {
 		 if (bindingResult.hasErrors()) {
 	            System.out.println("BINDING RESULT ERROR");
-	            return "index";
+	            return "add-info";
 	        } else {
 		EligibilityResponseModel eligibilityResponse = insuranceImplFactory.getInsuranceServiceImpl(100, properties)
 				.getDummyEligibilityResponse();
