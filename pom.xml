@@ -77,14 +77,6 @@
 						hapi-fhir-validation-resources-dstu3
 					</artifactId>
 				</exclusion>
-				<exclusion>
-					<groupId>ca.uhn.hapi.fhir</groupId>
-					<artifactId>hapi-fhir-structures-dstu3</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>ca.uhn.hapi.fhir</groupId>
-					<artifactId>hapi-fhir-base</artifactId>
-				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>

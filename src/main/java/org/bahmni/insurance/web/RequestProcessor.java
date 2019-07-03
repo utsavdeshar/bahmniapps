@@ -77,8 +77,11 @@ public class RequestProcessor {
 
 	@RequestMapping(method = RequestMethod.GET, value = "/get/claimResponse/{claimId}", produces = "application/json")
 	@ResponseBody
-	public String getClaimResponse(HttpServletResponse response, @PathVariable("claimId") String patientId)
+	public String getClaimResponse(HttpServletResponse response, @PathVariable("claimId") String claimId)
 			throws IOException {
+		
+		Claim claimRequest =  fhirConstructorService.constructFhirClaimRequest(claimId);
+
 		logger.debug("claimResponse");
 		ClaimResponseModel claimResponse = insuranceImplFactory.getInsuranceServiceImpl(100, properties)
 				.getDummyClaimResponse();
