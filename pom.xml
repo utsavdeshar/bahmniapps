@@ -70,7 +70,7 @@
 			<artifactId>fhir-api</artifactId>
 			<scope>provided</scope>
 			<version>${fhirVersion}</version>
-			<exclusions>
+			<!-- <exclusions>
 				<exclusion>
 					<groupId>ca.uhn.hapi.fhir</groupId>
 					<artifactId>
@@ -85,7 +85,7 @@
 					<groupId>ca.uhn.hapi.fhir</groupId>
 					<artifactId>hapi-fhir-base</artifactId>
 				</exclusion>
-			</exclusions>
+			</exclusions> -->
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
