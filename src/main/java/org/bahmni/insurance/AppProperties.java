@@ -41,10 +41,16 @@ public class AppProperties {
 
 	@Value("${openmrs.odoo.api}")
 	public String openmrsOdooApi;
-
 	
 	@Value("${dummy.claimResponse.url}")
 	public String dummyClaimResponseUrl;
+	
+	@Value("${openimis.enterer.id}")
+	public String openImisEntererId;
+	
+
+	@Value("${openimis.healthFacility.id}")
+	public String openImisHFCode;
 
 	
 }

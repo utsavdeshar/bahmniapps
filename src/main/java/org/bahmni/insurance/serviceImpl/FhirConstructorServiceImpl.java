@@ -2,9 +2,12 @@ package org.bahmni.insurance.serviceImpl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.bahmni.insurance.AppProperties;
+import org.bahmni.insurance.ImisConstants;
 import org.bahmni.insurance.service.AOpernmrsFhirConstructorService;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
@@ -15,6 +18,7 @@ import org.hl7.fhir.dstu3.model.Identifier.IdentifierUse;
 import org.hl7.fhir.dstu3.model.Period;
 import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.dstu3.model.Claim.DiagnosisComponent;
+import org.hl7.fhir.dstu3.model.Claim.ItemComponent;
 import org.hl7.fhir.dstu3.model.EligibilityRequest.EligibilityRequestStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -26,7 +30,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Configurable
-public class OpenmrsFhirConstructorServiceImpl extends AOpernmrsFhirConstructorService {
+public class FhirConstructorServiceImpl extends AOpernmrsFhirConstructorService {
 	
 	@Autowired
 	private AppProperties properties;
@@ -41,52 +45,35 @@ public class OpenmrsFhirConstructorServiceImpl extends AOpernmrsFhirConstructorS
 	}
 
 	@Override
-	public Claim constructFhirClaimRequest(String claimId) {
+	public Claim constructFhirClaimRequest(Map<String, Object> claimParams) {
 		
 		Claim claimReq = new Claim();
 		
 		//claim  number
 		List<Identifier> identifierList = new ArrayList<>();
-		
-		Identifier identifier1 = new Identifier();
-		CodeableConcept codeableConcept1 = new CodeableConcept();
-		Coding code1 = new Coding();
-		code1.setSystem("https://hl7.org/fhir/valueset-identifier-type.html"); //TODO:
-		code1.setCode("ACSN"); //TODO:
-		codeableConcept1.addCoding(code1);
-		identifier1.setType(codeableConcept1);
-		identifier1.setUse(IdentifierUse.USUAL);
-		identifier1.setValue("8");
-		identifierList.add(identifier1); 
-		
 		Identifier identifier2 = new Identifier();
 		CodeableConcept codeableConcept2 = new CodeableConcept();
 		Coding code2 = new Coding();
-		code2.setSystem("https://hl7.org/fhir/valueset-identifier-type.html"); //TODO:
-		code2.setCode("MR"); //TODO:
+		code2.setSystem(ImisConstants.FHIR_VALUESET_SYSTEM);
+		code2.setCode(ImisConstants.FHIR_CODE_FOR_IMIS_CLAIM_CODE_TYPE);
 		codeableConcept2.addCoding(code2);
 		identifier2.setType(codeableConcept2);
 		identifier2.setUse(IdentifierUse.USUAL);
-		identifier2.setValue("clCode");
+		identifier2.setValue((String) claimParams.get(ImisConstants.CLAIM_ID)); 
 		identifierList.add(identifier2); 
-		
-		
-		/*identifier.setType(value)
-		identifier.setSystem("ClaimID");
-		identifier.setValue(claimId);*/
-		
 		claimReq.setIdentifier(identifierList);
 		
-		//Insuree/patient
+		//Insuree patient
 		Reference patientReference = new Reference();
-		patientReference.setReference("Patient/"+insuranceID);
+		patientReference.setReference("Patient/"+(String) claimParams.get(ImisConstants.INSUREE_ID));
 		claimReq.setPatient(patientReference);
 		
 		//BillablePeriod 
 		Period period = new Period();
-		period.setStart(startDate);
-		period.setEnd(endDate);
+		period.setStart(new Date());
+		period.setEnd(new Date());
 		claimReq.setBillablePeriod(period);
+		claimReq.setCreated(new Date());
 		
 		//Diagnosis : //TODO: retrieve diagnosis from openmrs 
 		List<DiagnosisComponent> listDiagnosis = new ArrayList<>();
@@ -102,17 +89,34 @@ public class OpenmrsFhirConstructorServiceImpl extends AOpernmrsFhirConstructorS
 		listDiagnosis.add(diagnosis);
 		claimReq.setDiagnosis(listDiagnosis);
 		
+		//Items/services for claims
+		
+		List<ItemComponent> listItem = (List<ItemComponent>) claimParams.get(ImisConstants.CLAIM_ITEMS);
+		//System.out.println("listItem : "+listItem);
+		//System.out.println("listItem : "+listItem.get(0).getCategory().getText());
+
+		
+			
+		
+		claimReq.setItem(listItem);
+		
+		
+		
 		//"enterer"
 		Reference entererReference = new Reference();
-		entererReference.setReference("Practitioner/"+practionerId);
+		entererReference.setReference("Practitioner/"+properties.openImisEntererId);
 		claimReq.setEnterer(entererReference);
 		
 		//"Facility"
 		Reference facilityReference = new Reference();
-		facilityReference.setReference("Location/"+hfCode); //TODO: healthFacility code required. may be from properties
-		claimReq.setEnterer(entererReference);
+		facilityReference.setReference("Location/"+properties.openImisHFCode); 
+		claimReq.setEnterer(facilityReference);
 		
 		return claimReq;
+	}
+	
+	private void populateClaimableItems() {
+		
 	}
 
 	@Override

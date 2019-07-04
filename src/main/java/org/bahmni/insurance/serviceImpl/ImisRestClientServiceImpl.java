@@ -109,10 +109,13 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	}
 
 	@Override
-	public ClaimResponseModel getDummyClaimResponse() {
+	public ClaimResponseModel getDummyClaimResponse(Claim claimRequest) {
 		ResponseEntity<String> claimResponseSample = sendGetRequest(properties.dummyClaimResponseUrl);
 		String claimResponseBody = claimResponseSample.getBody();
 		ClaimResponse dummyClaimResponse = (ClaimResponse) parsear.parseResource(claimResponseBody);
+		
+		System.out.println("ClaimRequest :"+parsear.encodeResourceToString(claimRequest));
+		
 		return populateClaimRespModel(dummyClaimResponse);
 
 	}

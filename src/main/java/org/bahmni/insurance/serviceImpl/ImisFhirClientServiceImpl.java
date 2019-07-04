@@ -37,8 +37,10 @@ public class ImisFhirClientServiceImpl extends AInsuranceClientService {
 		return null;
 	}
 
+	
+
 	@Override
-	public ClaimResponseModel getDummyClaimResponse() {
+	public ClaimResponseModel getDummyClaimResponse(Claim claimRequest) {
 		// TODO Auto-generated method stub
 		return null;
 	}

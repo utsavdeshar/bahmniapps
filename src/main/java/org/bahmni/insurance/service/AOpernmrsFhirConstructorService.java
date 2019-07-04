@@ -1,5 +1,7 @@
 package org.bahmni.insurance.service;
 
+import java.util.Map;
+
 import org.bahmni.insurance.ImisConstants;
 import org.bahmni.insurance.client.RestTemplateFactory;
 import org.hl7.fhir.dstu3.model.Claim;
@@ -18,7 +20,7 @@ public abstract class AOpernmrsFhirConstructorService {
 		return restFactory.getRestTemplate(ImisConstants.OPENMRS_FHIR);
 	}
 
-	public abstract Claim constructFhirClaimRequest(String patientId);
+	public abstract Claim constructFhirClaimRequest(Map<String, Object> claimParams);
 
 	public abstract EligibilityRequest constructFhirEligibilityRequest(String insuranceID);
 

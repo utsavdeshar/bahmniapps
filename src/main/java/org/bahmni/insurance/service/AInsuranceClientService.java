@@ -33,5 +33,6 @@ public abstract class AInsuranceClientService {
 
 	public abstract ResponseEntity<String> loginCheck();
 
-	public abstract ClaimResponseModel getDummyClaimResponse();
+	public abstract ClaimResponseModel getDummyClaimResponse(Claim claimRequest);
+
 }
