@@ -31,6 +31,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 
@@ -113,9 +116,10 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		ResponseEntity<String> claimResponseSample = sendGetRequest(properties.dummyClaimResponseUrl);
 		String claimResponseBody = claimResponseSample.getBody();
 		ClaimResponse dummyClaimResponse = (ClaimResponse) parsear.parseResource(claimResponseBody);
+		String jsonClaimRequest =parsear.encodeResourceToString(claimRequest);
 		
-		System.out.println("ClaimRequest :"+parsear.encodeResourceToString(claimRequest));
-		
+		System.out.println("ClaimRequest ==> "+jsonClaimRequest);
+
 		return populateClaimRespModel(dummyClaimResponse);
 
 	}
@@ -139,16 +143,16 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		List<ClaimLineItem> claimLineItems = new ArrayList<>();
 		for (ItemComponent responseItem : claimResponse.getItem()) {
 			ClaimLineItem claimItem = new ClaimLineItem();
-			claimItem.setSequenceLinkId(responseItem.getSequenceLinkIdElement().getValue());
+			claimItem.setSequence(responseItem.getSequenceLinkIdElement().getValue());
 
 			for (AdjudicationComponent adj : responseItem.getAdjudication()) {
 				if (ImisConstants.ADJUDICATION_ELIGIBLE
 						.equalsIgnoreCase(adj.getCategory().getCoding().get(0).getCode())) {
-					claimItem.setTotalCost(adj.getAmount().getValue());
+					claimItem.setTotalClaimed(adj.getAmount().getValue());
 				}
 				if (ImisConstants.ADJUDICATION_BENEFIT
 						.equalsIgnoreCase(adj.getCategory().getCoding().get(0).getCode())) {
-					claimItem.setTotalBenefit(adj.getAmount().getValue());
+					claimItem.setTotalApproved(adj.getAmount().getValue());
 				}
 			}
 			// quantityProvided;
