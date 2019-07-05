@@ -15,7 +15,6 @@ public class Insurance {
 	public Insurance() {}
 	
 	public Insurance(String nhisNumber, Boolean isMember) {
-	super();
 	this.nhisNumber=nhisNumber;
 	this.isMember=isMember;
 	}

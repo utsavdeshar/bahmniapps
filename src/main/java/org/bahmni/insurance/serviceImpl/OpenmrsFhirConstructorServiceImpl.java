@@ -1,11 +1,13 @@
 package org.bahmni.insurance.serviceImpl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.service.AOpernmrsFhirConstructorService;
+import org.bahmni.insurance.validation.FhirInstanceValidator;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.Claim.ClaimStatus;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
@@ -22,6 +24,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.validation.FhirValidator;
+import ca.uhn.fhir.validation.SingleValidationMessage;
+import ca.uhn.fhir.validation.ValidationResult;
 
 @Component
 @Configurable
@@ -41,7 +48,7 @@ public class OpenmrsFhirConstructorServiceImpl extends AOpernmrsFhirConstructorS
 
 	
 	@Override
-	public EligibilityRequest constructFhirEligibilityRequest(String insuranceID) {
+	public String constructFhirEligibilityRequest(String insuranceID) throws IOException {
 		
 		EligibilityRequest eligibilityRequest = new EligibilityRequest();
 		
@@ -66,12 +73,14 @@ public class OpenmrsFhirConstructorServiceImpl extends AOpernmrsFhirConstructorS
 		Reference referenceInsurer = new Reference();
 		referenceInsurer.setReference("Organization/2");
 		eligibilityRequest.setInsurer(referenceInsurer);
-		
-		return eligibilityRequest;
+		String eligibilityRequestValidation = FhirContext.forDstu3().newJsonParser().encodeResourceToString(eligibilityRequest);
+		 
+		 return validateRequest(eligibilityRequestValidation);
+
 	}
 	
 	@Override
-	public Claim constructFhirClaimRequest(String insuranceID) {
+	public String constructFhirClaimRequest(String insuranceID) throws IOException {
 		Claim claimRequest = new Claim();
 		
 		List<Identifier> identifierList = new ArrayList<>();
@@ -96,11 +105,13 @@ public class OpenmrsFhirConstructorServiceImpl extends AOpernmrsFhirConstructorS
 		referenceInsurer.setReference("Organization/2");
 		claimRequest.setInsurer(referenceInsurer);
 		
-		return claimRequest;
+		String claimRequestValidation = FhirContext.forDstu3().newJsonParser().encodeResourceToString(claimRequest);
+		 
+		 return validateRequest(claimRequestValidation);
 	}
 	
 	@Override
-	public Task constructFhirClaimTrackRequest(String insuranceID) {
+	public String constructFhirClaimTrackRequest(String insuranceID) throws IOException {
 		Task claimTracking = new Task();
 		
 		List<Identifier> identifierList = new ArrayList<>();
@@ -115,9 +126,35 @@ public class OpenmrsFhirConstructorServiceImpl extends AOpernmrsFhirConstructorS
 		Reference referenceOrg = new Reference();
 		referenceOrg.setReference("Organization/1");
 		claimTracking.setOwner(referenceOrg);
-	
 		
-		return claimTracking;
+		String trackingRequestValidation = FhirContext.forDstu3().newJsonParser().encodeResourceToString(claimTracking);
+		 
+		 return validateRequest(trackingRequestValidation);
+		
+	}
+	
+	private String validateRequest(String eligibilityRequestValidation) throws IOException {
+		FhirContext ctx = FhirContext.forDstu3();
+		 
+		// Create a FhirInstanceValidator and register it to a validator
+		FhirValidator validator = ctx.newValidator();
+		FhirInstanceValidator instanceValidator = new FhirInstanceValidator();
+		validator.registerValidatorModule(instanceValidator);
+		instanceValidator.setAnyExtensionsAllowed(true);
+		
+       //validate
+		ValidationResult result = validator.validateWithResult(eligibilityRequestValidation);
+    
+ 
+		//error checking
+		 if (result.isSuccessful() == false) {
+			 for (SingleValidationMessage next : result.getMessages()) {
+					System.out.println(" Next issue " + next.getSeverity() + " - " + next.getLocationString() + " - " + next.getMessage());
+				}
+		   }else {
+			   System.out.println("validation sucessful");
+		   }		 
+		return(eligibilityRequestValidation);
 	}
 
 

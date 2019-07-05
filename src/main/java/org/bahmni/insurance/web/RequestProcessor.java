@@ -22,11 +22,6 @@ import org.bahmni.insurance.service.FInsuranceServiceFactory;
 import org.bahmni.insurance.service.IOpenmrsOdooService;
 import org.bahmni.insurance.serviceImpl.OpenmrsFhirConstructorServiceImpl;
 import org.bahmni.insurance.serviceImpl.OpenmrsOdooServiceImpl;
-import org.bahmni.insurance.validation.FhirInstanceValidator;
-import org.hl7.fhir.dstu3.model.Claim;
-import org.hl7.fhir.dstu3.model.ClaimResponse;
-import org.hl7.fhir.dstu3.model.EligibilityRequest;
-import org.hl7.fhir.dstu3.model.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,11 +33,6 @@ import org.springframework.web.client.RestClientException;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
-import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.validation.FhirValidator;
-import ca.uhn.fhir.validation.SingleValidationMessage;
-import ca.uhn.fhir.validation.ValidationResult;
 
 @RestController
 public class RequestProcessor {
@@ -72,12 +62,8 @@ public class RequestProcessor {
 	public String getEligibilityResponse(HttpServletResponse response, @PathVariable("insuranceId") String insuranceID)
 			throws IOException, RestClientException, URISyntaxException {
 		logger.debug("requestEligibity");
-		EligibilityRequest eligbilityRequest =  fhirConstructorService.constructFhirEligibilityRequest(insuranceID);
-		//EligibilityResponse eligResponse =  insuranceImplFactory.getInsuranceServiceImpl(0, properties).getElibilityResponse(eligbilityRequest);
-
-		logger.debug("Eligibility Request == " + FhirContext.forDstu3().newJsonParser().encodeResourceToString(eligbilityRequest));
-		String eligibilityRequestValidation = FhirContext.forDstu3().newJsonParser().encodeResourceToString(eligbilityRequest);
-		return validateRequest(eligibilityRequestValidation);
+		
+		return fhirConstructorService.constructFhirEligibilityRequest(insuranceID);
 	}
 	
 	@RequestMapping(method = RequestMethod.GET, value = "/get/eligibilityResponse/{claimId}", produces = "application/json")
@@ -98,11 +84,7 @@ public class RequestProcessor {
 	public String getClaimResponse(HttpServletResponse response, @PathVariable("insuranceId") String insuranceID)
 			throws IOException, RestClientException, URISyntaxException {
 		logger.debug("requestClaim");
-		Claim claimRequest =  fhirConstructorService.constructFhirClaimRequest(insuranceID);
-		logger.debug("claim request prodessed" + claimRequest);
-		logger.debug("Claim Request == " + FhirContext.forDstu3().newJsonParser().encodeResourceToString(claimRequest));
-		String claimRequestValidation = FhirContext.forDstu3().newJsonParser().encodeResourceToString(claimRequest);
-		return validateRequest(claimRequestValidation);
+		return fhirConstructorService.constructFhirClaimRequest(insuranceID);
 	}
 	
 	@RequestMapping(method = RequestMethod.GET, value = "/get/claimResponse/{claimId}", produces = "application/json")
@@ -124,10 +106,7 @@ public class RequestProcessor {
 	public String getClaimTracking(HttpServletResponse response, @PathVariable("insuranceId") String insuranceID)
 			throws IOException, RestClientException, URISyntaxException {
 		logger.debug("requestClaimTracking");
-		Task claimTrackingRequest =  fhirConstructorService.constructFhirClaimTrackRequest(insuranceID);
-		logger.debug("Claim Request Track == " + FhirContext.forDstu3().newJsonParser().encodeResourceToString(claimTrackingRequest));
-		String claimRequestTrackingValidation = FhirContext.forDstu3().newJsonParser().encodeResourceToString(claimTrackingRequest);
-		return validateRequest(claimRequestTrackingValidation);
+		return fhirConstructorService.constructFhirClaimTrackRequest(insuranceID);
 	}
 	
 	@RequestMapping(method = RequestMethod.GET, value = "/get/claimTracking/{claimId}", produces = "application/json")
@@ -151,14 +130,14 @@ public class RequestProcessor {
 		return insuranceImplFactory.getInsuranceServiceImpl(0, properties).loginCheck();// TODO: remove hardcoded
 	}
 
-	@RequestMapping(path = "/request/claimsubmit")
-	public void requestClaimSubmit(HttpServletResponse response) throws RestClientException, URISyntaxException {
-		logger.debug("requestClaimSubmit");
-		
-		 Claim claimRequest = fhirConstructorService.constructFhirClaimRequest("StringPatientId"); 
-		 
-		 ClaimResponse claimResponse = insuranceImplFactory.getInsuranceServiceImpl(0, properties).getClaimResponse(claimRequest); // TODO: remove hardcoded
-	}
+//	@RequestMapping(path = "/request/claimsubmit")
+//	public void requestClaimSubmit(HttpServletResponse response) throws RestClientException, URISyntaxException {
+//		logger.debug("requestClaimSubmit");
+//		
+//		 Claim claimRequest = fhirConstructorService.constructFhirClaimRequest("StringPatientId"); 
+//		 
+//		 ClaimResponse claimResponse = insuranceImplFactory.getInsuranceServiceImpl(0, properties).getClaimResponse(claimRequest); // TODO: remove hardcoded
+//	}
 
 	@RequestMapping(path = "/get/fhir/claims")
 	@ResponseBody
@@ -206,34 +185,5 @@ public class RequestProcessor {
 		System.out.println(odooService.getOrderCost("9065024b-9499-4c9b-9a2f-a53f703be2aa"));
 
 	}*/
-	
-	
-	private String validateRequest(String eligibilityRequestValidation) throws IOException {
-		FhirContext ctx = FhirContext.forDstu3();
-		 
-		// Create a FhirInstanceValidator and register it to a validator
-		FhirValidator validator = ctx.newValidator();
-		FhirInstanceValidator instanceValidator = new FhirInstanceValidator();
-		validator.registerValidatorModule(instanceValidator);
-		instanceValidator.setAnyExtensionsAllowed(true);
-		
-       //validate
-		ValidationResult result = validator.validateWithResult(eligibilityRequestValidation);
-    
- 
-		//error checking
-		 if (result.isSuccessful() == false) {
-			 for (SingleValidationMessage next : result.getMessages()) {
-					logger.debug("I am inside single validation");
-					System.out.println(" Next issue " + next.getSeverity() + " - " + next.getLocationString() + " - " + next.getMessage());
-				}
-			 logger.debug("validation error");
-		   }else {
-			   logger.debug("validation sucessful");
-		   }		 
-		
-		
-		return(eligibilityRequestValidation);
-	}
 
 }
