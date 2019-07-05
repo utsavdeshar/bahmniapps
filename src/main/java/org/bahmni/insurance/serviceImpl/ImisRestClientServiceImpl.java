@@ -3,6 +3,7 @@ package org.bahmni.insurance.serviceImpl;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import org.bahmni.insurance.AppProperties;
@@ -11,6 +12,9 @@ import org.bahmni.insurance.client.RequestWrapperConverter;
 import org.bahmni.insurance.client.RestTemplateFactory;
 import org.bahmni.insurance.model.ClaimLineItem;
 import org.bahmni.insurance.model.ClaimResponseModel;
+import org.bahmni.insurance.model.ClaimTrackingModel;
+import org.bahmni.insurance.model.EligibilityBalance;
+import org.bahmni.insurance.model.EligibilityResponseModel;
 import org.bahmni.insurance.service.AInsuranceClientService;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
@@ -18,6 +22,7 @@ import org.hl7.fhir.dstu3.model.ClaimResponse.AdjudicationComponent;
 import org.hl7.fhir.dstu3.model.ClaimResponse.ItemComponent;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.EligibilityResponse;
+import org.hl7.fhir.dstu3.model.EligibilityResponse.InsuranceComponent;
 import org.hl7.fhir.dstu3.model.Task;
 import org.openmrs.module.fhir.api.client.ClientHttpEntity;
 import org.openmrs.module.fhir.api.helper.ClientHelper;
@@ -158,6 +163,59 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		clmRespModel.setClaimLineItems(claimLineItems);
 		return clmRespModel;
 
+	}
+	@Override
+	public EligibilityResponseModel getDummyEligibilityResponse() {
+		ResponseEntity<String> eligibiltyResponseSample = sendGetRequest(properties.dummyEligibiltyResponseUrl);
+		String eligibilityResponseBody = eligibiltyResponseSample.getBody();
+		EligibilityResponse dummyEligibiltyResponse = (EligibilityResponse) parsear.parseResource(eligibilityResponseBody);
+		return populateEligibilityRespModel(dummyEligibiltyResponse);
+	}
+	
+	private EligibilityResponseModel populateEligibilityRespModel(EligibilityResponse eligibilityResponse) {
+		EligibilityResponseModel eligRespModel = new EligibilityResponseModel();
+		eligRespModel.setNhisId(eligibilityResponse.getId());
+		eligRespModel.setPatientId(eligibilityResponse.getId());
+		eligRespModel.setStatus(eligibilityResponse.getStatus().toString());
+			
+		List<EligibilityBalance> eligibilityBalance = new ArrayList<>();
+		for (InsuranceComponent responseItem : eligibilityResponse.getInsurance()) {
+			EligibilityBalance eligBalance = new EligibilityBalance();
+			eligBalance.setCode(responseItem.getBenefitBalance().get(0).getTerm().getCoding().get(0).getCode());
+			eligBalance.setTerm(responseItem.getBenefitBalance().get(0).getFinancial().get(0).getType().getCoding().get(0).getCode());
+			eligBalance.setBenefitBalance(responseItem.getBenefitBalance().get(0).getFinancial().get(0).getAllowedMoney().getValue());
+			eligibilityBalance.add(eligBalance);
+			//nhisId
+			//patientId
+			//status
+			//Balance
+		}
+	
+		eligRespModel.setEligibilityBalance(eligibilityBalance);
+
+		return eligRespModel;
+		}
+	
+	@Override
+	public ClaimTrackingModel getDummyClaimTrack() {
+		ResponseEntity<String> claimTrackingSample = sendGetRequest(properties.dummyClaimTrackUrl);
+		String claimTrackingBody = claimTrackingSample.getBody();
+		Task dummyClaimTrack = (Task) parsear.parseResource(claimTrackingBody);
+		return populateClaimTrackModel(dummyClaimTrack);
+
+	}
+
+	private ClaimTrackingModel populateClaimTrackModel(Task task) {
+		ClaimTrackingModel clmTrackModel = new ClaimTrackingModel();
+		clmTrackModel.setClaimId(task.getId());
+		clmTrackModel.setClaimOwner(task.getOwner().getDisplay());
+		clmTrackModel.setClaimStatus(task.getStatus().toString());
+		clmTrackModel.setClaimDesc(task.getDescription());
+		clmTrackModel.setClaimSignature(task.getRelevantHistory().get(0).getDisplay());
+		clmTrackModel.setDateProcessed(task.getExecutionPeriod().getStart());
+		clmTrackModel.setDateAuthorized(task.getAuthoredOn());
+		clmTrackModel.setDateLastModified(task.getLastModified());
+		return clmTrackModel;
 	}
 
 	@Override
