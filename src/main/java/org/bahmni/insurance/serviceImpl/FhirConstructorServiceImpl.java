@@ -35,17 +35,12 @@ import org.springframework.stereotype.Component;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.parser.IParser;
-
 @Component
 @Configurable
 public class FhirConstructorServiceImpl extends AOpernmrsFhirConstructorService {
 
 	@Autowired
 	private AppProperties properties;
-
-	private final IParser parsear = FhirContext.forDstu3().newJsonParser();
 
 	@Override
 	public String getFhirPatient(String patientId) {
@@ -103,9 +98,26 @@ public class FhirConstructorServiceImpl extends AOpernmrsFhirConstructorService 
 
 		// Items/services for claims
 
+		List<ItemComponent> listItemComponent = populateClaimableItems(claimParams.get(ImisConstants.CLAIM_ITEMS));
+		claimReq.setItem(listItemComponent);
+
+		// "enterer"
+		Reference entererReference = new Reference();
+		entererReference.setReference("Practitioner/" + properties.openImisEntererId);
+		claimReq.setEnterer(entererReference);
+
+		// "Facility"
+		Reference facilityReference = new Reference();
+		facilityReference.setReference("Location/" + properties.openImisHFCode);
+		claimReq.setEnterer(facilityReference);
+
+		return claimReq;
+	}
+
+	private List<ItemComponent> populateClaimableItems(Object claimsParamItem) {
 		GsonBuilder builder = new GsonBuilder();
 		Gson gson = builder.create();
-		String jsonStrItems = "{ \"item\": " + gson.toJson(claimParams.get(ImisConstants.CLAIM_ITEMS)) + " } ";
+		String jsonStrItems = "{ \"item\": " + gson.toJson(claimsParamItem)+ " } ";
 		ListClaimItem listItem = gson.fromJson(jsonStrItems, ListClaimItem.class);
 		List<ItemComponent> listItemComponent = new ArrayList<>();
 		for (ClaimLineItem claimItem : listItem.getItem()) {
@@ -129,23 +141,7 @@ public class FhirConstructorServiceImpl extends AOpernmrsFhirConstructorService 
 			itemComponent.setUnitPrice(value);
 			listItemComponent.add(itemComponent);
 		}
-		claimReq.setItem(listItemComponent);
-
-		// "enterer"
-		Reference entererReference = new Reference();
-		entererReference.setReference("Practitioner/" + properties.openImisEntererId);
-		claimReq.setEnterer(entererReference);
-
-		// "Facility"
-		Reference facilityReference = new Reference();
-		facilityReference.setReference("Location/" + properties.openImisHFCode);
-		claimReq.setEnterer(facilityReference);
-
-		return claimReq;
-	}
-
-	private void populateClaimableItems() {
-
+		return listItemComponent;
 	}
 
 	@Override

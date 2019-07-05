@@ -81,11 +81,9 @@ public class RequestProcessor {
 	@ResponseBody
 	public String submitClaim(HttpServletResponse response,@RequestBody Map<String, Object> claimParams)
 			throws IOException, RestClientException, URISyntaxException {
-		//logger.debug("claimParams : "+claimParams);
 		
+		logger.debug("submitClaim");
 		Claim claimRequest =  fhirConstructorService.constructFhirClaimRequest(claimParams);
-
-		logger.debug("claimResponse");
 		ClaimResponseModel claimResponse = insuranceImplFactory.getInsuranceServiceImpl(100, properties)
 				.getDummyClaimResponse(claimRequest);
 		

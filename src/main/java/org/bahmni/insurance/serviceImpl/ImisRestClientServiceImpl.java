@@ -1,5 +1,7 @@
 package org.bahmni.insurance.serviceImpl;
 
+import static org.apache.log4j.Logger.getLogger;
+
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,9 +33,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 
@@ -41,6 +40,7 @@ import ca.uhn.fhir.parser.IParser;
 public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	private final RestTemplate restTemplate;
 	private final IParser parsear = FhirContext.forDstu3().newJsonParser();
+	private final org.apache.log4j.Logger logger = getLogger(ImisRestClientServiceImpl.class);
 
 	private AppProperties properties;
 
@@ -116,10 +116,8 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		ResponseEntity<String> claimResponseSample = sendGetRequest(properties.dummyClaimResponseUrl);
 		String claimResponseBody = claimResponseSample.getBody();
 		ClaimResponse dummyClaimResponse = (ClaimResponse) parsear.parseResource(claimResponseBody);
-		String jsonClaimRequest =parsear.encodeResourceToString(claimRequest);
-		
-		System.out.println("ClaimRequest ==> "+jsonClaimRequest);
-
+		String jsonClaimRequest = parsear.encodeResourceToString(claimRequest);
+		logger.debug("jsonClaimRequest ==> " + jsonClaimRequest);
 		return populateClaimRespModel(dummyClaimResponse);
 
 	}
@@ -133,12 +131,6 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		clmRespModel.setPaymentType(claimResponse.getPayment().getType().getCoding().get(0).getCode());
 		clmRespModel.setOutCome(claimResponse.getOutcome().getCoding().get(0).getCode());
 		clmRespModel.setDateProcessed(claimResponse.getPayment().getDate());
-
-		// nhisId;
-		// patientId;
-		// policyStatus;
-		// dateCreated;
-		// rejectionReason;
 
 		List<ClaimLineItem> claimLineItems = new ArrayList<>();
 		for (ItemComponent responseItem : claimResponse.getItem()) {
@@ -155,10 +147,6 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 					claimItem.setTotalApproved(adj.getAmount().getValue());
 				}
 			}
-			// quantityProvided;
-			// int quantityApproved;
-			// explanation;
-			// rejectionReason;
 
 			claimLineItems.add(claimItem);
 		}
