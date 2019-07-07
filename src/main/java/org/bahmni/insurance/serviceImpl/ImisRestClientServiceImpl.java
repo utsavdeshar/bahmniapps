@@ -5,7 +5,6 @@ import static org.apache.log4j.Logger.getLogger;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import org.bahmni.insurance.AppProperties;
@@ -104,11 +103,11 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	}
 
 	@Override
-	public EligibilityResponse getElibilityResponse(EligibilityRequest eligbilityRequest)
-			throws RestClientException, URISyntaxException {
+	public EligibilityResponseModel getElibilityResponse(EligibilityRequest eligbilityRequest)
+			throws RestClientException, URISyntaxException, FHIRException {
 		ResponseEntity<String> responseObject = sendPostRequest(eligbilityRequest, "/eligURL");// TODO:
 		EligibilityResponse eligibilityResponse = (EligibilityResponse) parsear.parseResource(responseObject.getBody());
-		return eligibilityResponse;
+		return populateEligibilityRespModel(eligibilityResponse);
 	}
 
 	@Override
@@ -160,38 +159,43 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		return clmRespModel;
 
 	}
+
 	@Override
 	public EligibilityResponseModel getDummyEligibilityResponse() throws FHIRException {
 		ResponseEntity<String> eligibiltyResponseSample = sendGetRequest(properties.dummyEligibiltyResponseUrl);
 		String eligibilityResponseBody = eligibiltyResponseSample.getBody();
-		EligibilityResponse dummyEligibiltyResponse = (EligibilityResponse) parsear.parseResource(eligibilityResponseBody);
+		EligibilityResponse dummyEligibiltyResponse = (EligibilityResponse) parsear
+				.parseResource(eligibilityResponseBody);
 		return populateEligibilityRespModel(dummyEligibiltyResponse);
 	}
-	
-	private EligibilityResponseModel populateEligibilityRespModel(EligibilityResponse eligibilityResponse) throws FHIRException {
+
+	private EligibilityResponseModel populateEligibilityRespModel(EligibilityResponse eligibilityResponse)
+			throws FHIRException {
 		EligibilityResponseModel eligRespModel = new EligibilityResponseModel();
 		eligRespModel.setNhisId(eligibilityResponse.getId());
 		eligRespModel.setPatientId(eligibilityResponse.getId());
 		eligRespModel.setStatus(eligibilityResponse.getStatus().toString());
-			
+
 		List<EligibilityBalance> eligibilityBalance = new ArrayList<>();
 		for (InsuranceComponent responseItem : eligibilityResponse.getInsurance()) {
 			EligibilityBalance eligBalance = new EligibilityBalance();
 			eligBalance.setCode(responseItem.getBenefitBalance().get(0).getTerm().getCoding().get(0).getCode());
-			eligBalance.setTerm(responseItem.getBenefitBalance().get(0).getFinancial().get(0).getType().getCoding().get(0).getCode());
-			eligBalance.setBenefitBalance(responseItem.getBenefitBalance().get(0).getFinancial().get(0).getAllowedMoney().getValue());
+			eligBalance.setTerm(responseItem.getBenefitBalance().get(0).getFinancial().get(0).getType().getCoding()
+					.get(0).getCode());
+			eligBalance.setBenefitBalance(
+					responseItem.getBenefitBalance().get(0).getFinancial().get(0).getAllowedMoney().getValue());
 			eligibilityBalance.add(eligBalance);
-			//nhisId
-			//patientId
-			//status
-			//Balance
+			// nhisId
+			// patientId
+			// status
+			// Balance
 		}
-	
+
 		eligRespModel.setEligibilityBalance(eligibilityBalance);
 
 		return eligRespModel;
-		}
-	
+	}
+
 	@Override
 	public ClaimTrackingModel getDummyClaimTrack() {
 		ResponseEntity<String> claimTrackingSample = sendGetRequest(properties.dummyClaimTrackUrl);

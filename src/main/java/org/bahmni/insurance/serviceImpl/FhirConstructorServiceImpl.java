@@ -22,12 +22,12 @@ import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.EligibilityRequest.EligibilityRequestStatus;
 import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.dstu3.model.Identifier.IdentifierUse;
-import org.hl7.fhir.dstu3.model.Task.TaskStatus;
 import org.hl7.fhir.dstu3.model.Money;
 import org.hl7.fhir.dstu3.model.Period;
 import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.dstu3.model.SimpleQuantity;
 import org.hl7.fhir.dstu3.model.Task;
+import org.hl7.fhir.dstu3.model.Task.TaskStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.http.HttpEntity;
@@ -182,9 +182,10 @@ public class FhirConstructorServiceImpl extends AOpernmrsFhirConstructorService 
 		Reference referenceInsurer = new Reference();
 		referenceInsurer.setReference("Organization/2");
 		eligibilityRequest.setInsurer(referenceInsurer);
-		
-		String eligibilityRequestValidation = FhirContext.forDstu3().newJsonParser().encodeResourceToString(eligibilityRequest);
-		
+
+		String eligibilityRequestValidation = FhirContext.forDstu3().newJsonParser()
+				.encodeResourceToString(eligibilityRequest);
+
 		boolean isValid = validateRequest(eligibilityRequestValidation);
 
 		return eligibilityRequest;

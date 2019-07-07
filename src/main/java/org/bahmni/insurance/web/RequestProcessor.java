@@ -63,23 +63,20 @@ public class RequestProcessor {
 		this.properties = props;
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/request/eligibility/{insuranceId}", produces = "application/json")
+	@RequestMapping(method = RequestMethod.GET, value = "/get/eligibilityResponse/{InsureeId}", produces = "application/json")
 	@ResponseBody
-	public EligibilityRequest getEligibilityResponse(HttpServletResponse response,
-			@PathVariable("insuranceId") String insuranceID)
-			throws IOException, RestClientException, URISyntaxException {
-		logger.debug("requestEligibity");
-
-		return fhirConstructorService.constructFhirEligibilityRequest(insuranceID);
-	}
-
-	@RequestMapping(method = RequestMethod.GET, value = "/get/eligibilityResponse/{claimId}", produces = "application/json")
-	@ResponseBody
-	public String setEligibilityResponse(HttpServletResponse response, @PathVariable("claimId") String patientId)
+	public String getEligibilityResponse(HttpServletResponse response, @PathVariable("InsureeId") String InsureeId)
 			throws IOException, FHIRException {
 		logger.debug("eligibityResponse");
+		EligibilityRequest eligReq = fhirConstructorService.constructFhirEligibilityRequest(InsureeId);
 		EligibilityResponseModel eligibilityResponse = insuranceImplFactory.getInsuranceServiceImpl(100, properties)
-				.getDummyEligibilityResponse();
+				.getDummyEligibilityResponse(); // TODO: remove Hardcoded 100
+
+		/*
+		 * EligibilityResponseModel eligibilityResponse =
+		 * insuranceImplFactory.getInsuranceServiceImpl(100,
+		 * properties).getElibilityResponse(eligReq);
+		 */
 		GsonBuilder builder = new GsonBuilder();
 		Gson gson = builder.setPrettyPrinting().create();
 		logger.debug("eligibilityResponse model == " + gson.toJson(eligibilityResponse));
@@ -102,23 +99,15 @@ public class RequestProcessor {
 		 */
 		GsonBuilder builder = new GsonBuilder();
 		Gson gson = builder.setPrettyPrinting().create();
-		logger.debug("ClaimResponse model == " + gson.toJson(claimResponse));
 		return gson.toJson(claimResponse);
 
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/request/claimTracking/{insuranceId}", produces = "application/json")
-	@ResponseBody
-	public Task getClaimTracking(HttpServletResponse response, @PathVariable("insuranceId") String insuranceID)
-			throws IOException, RestClientException, URISyntaxException {
-		logger.debug("requestClaimTracking");
-		return fhirConstructorService.constructFhirClaimTrackRequest(insuranceID);
-	}
-
 	@RequestMapping(method = RequestMethod.GET, value = "/get/claimTracking/{claimId}", produces = "application/json")
 	@ResponseBody
-	public String setClaimTracking(HttpServletResponse response, @PathVariable("claimId") String patientId)
+	public String getClaimTrackingStatus(HttpServletResponse response, @PathVariable("claimId") String claimId)
 			throws IOException {
+		Task claimTrackTask = fhirConstructorService.constructFhirClaimTrackRequest(claimId);
 		ClaimTrackingModel claimTracking = insuranceImplFactory.getInsuranceServiceImpl(100, properties)
 				.getDummyClaimTrack();
 		GsonBuilder builder = new GsonBuilder();
@@ -136,30 +125,16 @@ public class RequestProcessor {
 		return insuranceImplFactory.getInsuranceServiceImpl(0, properties).loginCheck();// TODO: remove hardcoded
 	}
 
-	/*
-	 * @RequestMapping(path = "/request/claimsubmit") public void
-	 * requestClaimSubmit(HttpServletResponse response) throws RestClientException,
-	 * URISyntaxException { logger.debug("requestClaimSubmit");
-	 * 
-	 * Claim claimRequest =
-	 * fhirConstructorService.constructFhirClaimRequest("StringPatientId");
-	 * 
-	 * ClaimResponse claimResponse = insuranceImplFactory.getInsuranceServiceImpl(0,
-	 * properties).getClaimResponse(claimRequest); // TODO: remove hardcoded }
-	 */
-
 	@RequestMapping(path = "/get/fhir/claims")
 	@ResponseBody
 	public List<FhirResourceModel> getFhirClaim() {
 		return fhirDaoService.findAll();
-
 	}
 
 	@RequestMapping(path = "/add/fhir/claim")
 	@ResponseBody
 	public int addFhirClaim() {
 		return fhirDaoService.insertFhirResource();
-
 	}
 
 	@RequestMapping(path = "/get/fhir/claim/id")
@@ -167,17 +142,6 @@ public class RequestProcessor {
 	public List<String> getFhirClaimId() {
 		return fhirDaoService.getClaimId();
 
-	}
-
-	@RequestMapping(path = "/request/claimstatus")
-	public void requestClaimStatus(HttpServletResponse response) {
-		logger.debug("requestClaimStatus");
-
-	}
-
-	@RequestMapping(path = "/auth")
-	public void auth(HttpServletResponse response) {
-		logger.debug("Authenticated");
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/patient/{patientId}", produces = "application/json")

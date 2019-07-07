@@ -7,7 +7,6 @@ import org.bahmni.insurance.service.AInsuranceClientService;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
-import org.hl7.fhir.dstu3.model.EligibilityResponse;
 import org.hl7.fhir.dstu3.model.Task;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -15,14 +14,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class ImisFhirClientServiceImpl extends AInsuranceClientService {
 
-		@Override
+	@Override
 	public ClaimResponse getClaimResponse(Claim claimRequest) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public EligibilityResponse getElibilityResponse(EligibilityRequest eligbilityRequest) {
+	public EligibilityResponseModel getElibilityResponse(EligibilityRequest eligbilityRequest) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -38,13 +37,12 @@ public class ImisFhirClientServiceImpl extends AInsuranceClientService {
 		return null;
 	}
 
-	
-
 	@Override
 	public ClaimResponseModel getDummyClaimResponse(Claim claimRequest) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 	@Override
 	public EligibilityResponseModel getDummyEligibilityResponse() {
 		// TODO Auto-generated method stub

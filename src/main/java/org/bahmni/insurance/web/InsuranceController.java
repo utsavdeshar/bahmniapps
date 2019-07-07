@@ -31,10 +31,11 @@ public class InsuranceController {
 
 	private final FInsuranceServiceFactory insuranceImplFactory;
 	private final AppProperties properties;
-	   @InitBinder
-	    public void initBinder(WebDataBinder binder) {
-	        binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
-	    }
+
+	@InitBinder
+	public void initBinder(WebDataBinder binder) {
+		binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
+	}
 
 	@Autowired
 	public InsuranceController(FhirConstructorServiceImpl fhirConstructorServiceImpl,
@@ -45,45 +46,40 @@ public class InsuranceController {
 
 		// this.restFactory = restFactory;
 	}
-    
-	@RequestMapping(value="/add-info", method=RequestMethod.GET)
+
+	@RequestMapping(value = "/add-info", method = RequestMethod.GET)
 	public String addInfo(Insurance insurance) {
-	return "add-info";
+		return "add-info";
 	}
-	
-	@RequestMapping(value="/add-info", method=RequestMethod.POST)
-	public String showWelcomePage(@ModelAttribute @Valid Insurance insurance, BindingResult bindingResult, Model model, @RequestParam String nhisNumber,
-			@RequestParam Boolean isMember) throws IOException, FHIRException {
-		 if (bindingResult.hasErrors()) {
-	            System.out.println("BINDING RESULT ERROR");
-	            return "add-info";
-	        } else {
-		EligibilityResponseModel eligibilityResponse = insuranceImplFactory.getInsuranceServiceImpl(100, properties)
-				.getDummyEligibilityResponse();
-		// String nhisId = eligibilityResponse.getNhisId();
-		String patientId = eligibilityResponse.getPatientId();
-		String status = eligibilityResponse.getStatus();
-		BigDecimal benefitBalance = eligibilityResponse.getEligibilityBalance().get(0).getBenefitBalance();
-		String code = eligibilityResponse.getEligibilityBalance().get(0).getCode();
-		String term = eligibilityResponse.getEligibilityBalance().get(0).getTerm();
-		
-	    model.addAttribute("patientId", patientId);
-	    model.addAttribute("status", status);
-	    model.addAttribute("benefitBalance", benefitBalance);
-	    model.addAttribute("code", code);
-	    model.addAttribute("term", term);
 
+	@RequestMapping(value = "/add-info", method = RequestMethod.POST)
+	public String showWelcomePage(@ModelAttribute @Valid Insurance insurance, BindingResult bindingResult, Model model,
+			@RequestParam String nhisNumber, @RequestParam Boolean isMember) throws IOException, FHIRException {
+		if (bindingResult.hasErrors()) {
+			System.out.println("BINDING RESULT ERROR");
+			return "add-info";
+		} else {
+			EligibilityResponseModel eligibilityResponse = insuranceImplFactory.getInsuranceServiceImpl(100, properties)
+					.getDummyEligibilityResponse();
+			// String nhisId = eligibilityResponse.getNhisId();
+			String patientId = eligibilityResponse.getPatientId();
+			String status = eligibilityResponse.getStatus();
+			BigDecimal benefitBalance = eligibilityResponse.getEligibilityBalance().get(0).getBenefitBalance();
+			String code = eligibilityResponse.getEligibilityBalance().get(0).getCode();
+			String term = eligibilityResponse.getEligibilityBalance().get(0).getTerm();
 
+			model.addAttribute("patientId", patientId);
+			model.addAttribute("status", status);
+			model.addAttribute("benefitBalance", benefitBalance);
+			model.addAttribute("code", code);
+			model.addAttribute("term", term);
+			model.addAttribute("insurance", insurance);
+			model.addAttribute("nhisNumber", insurance.getNhisNumber());
+			model.addAttribute("isMember", isMember);
+			System.out.println(model.addAttribute("nhisNumber", nhisNumber));
 
-        model.addAttribute("insurance",insurance);
-		model.addAttribute("nhisNumber", insurance.getNhisNumber());
-		model.addAttribute("isMember", isMember);
-		System.out.println(model.addAttribute("nhisNumber", nhisNumber));
-
-	return "index";
-	        }
+			return "index";
+		}
 	}
-	
-    
-	
+
 }
