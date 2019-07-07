@@ -27,6 +27,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-json</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -66,7 +72,7 @@
 			<version>1.1</version>
 		</dependency>
 		
-		<dependency>
+		<!-- <dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-structures-dstu3</artifactId>
 			<version>${hapiFhirStructureVersion}</version>
@@ -84,29 +90,14 @@
 					<artifactId>guava</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
+		</dependency> -->
 		
 		<dependency>
 			<groupId>org.openmrs.module</groupId>
 			<artifactId>fhir-api</artifactId>
 			<scope>provided</scope>
 			<version>${fhirVersion}</version>
-			<!-- <exclusions>
-				<exclusion>
-					<groupId>ca.uhn.hapi.fhir</groupId>
-					<artifactId>
-						hapi-fhir-validation-resources-dstu3
-					</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>ca.uhn.hapi.fhir</groupId>
-					<artifactId>hapi-fhir-structures-dstu3</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>ca.uhn.hapi.fhir</groupId>
-					<artifactId>hapi-fhir-base</artifactId>
-				</exclusion>
-			</exclusions> -->
+			
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>

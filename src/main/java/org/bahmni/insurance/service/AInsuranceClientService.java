@@ -11,6 +11,7 @@ import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.EligibilityResponse;
 import org.hl7.fhir.dstu3.model.Task;
+import org.hl7.fhir.exceptions.FHIRException;
 import org.openmrs.module.fhir.api.helper.ClientHelper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -27,17 +28,17 @@ public abstract class AInsuranceClientService {
 
 	public abstract ClaimResponse getClaimResponse(Claim claimRequest) throws RestClientException, URISyntaxException;
 
-	public abstract EligibilityResponse getElibilityResponse(EligibilityRequest eligbilityRequest) throws RestClientException, URISyntaxException;
+	public abstract EligibilityResponse getElibilityResponse(EligibilityRequest eligbilityRequest)
+			throws RestClientException, URISyntaxException;
 
 	public abstract ClaimResponse getClaimStatus(Task claimStatusRequest);
 
 	public abstract ResponseEntity<String> loginCheck();
 
-	public abstract ClaimResponseModel getDummyClaimResponse();
-	
-	public abstract EligibilityResponseModel getDummyEligibilityResponse();
-	
+	public abstract EligibilityResponseModel getDummyEligibilityResponse() throws FHIRException;
+
 	public abstract ClaimTrackingModel getDummyClaimTrack();
 
+	public abstract ClaimResponseModel getDummyClaimResponse(Claim claimRequest);
 
 }

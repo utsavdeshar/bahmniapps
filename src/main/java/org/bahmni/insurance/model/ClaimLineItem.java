@@ -2,72 +2,117 @@ package org.bahmni.insurance.model;
 
 import java.math.BigDecimal;
 
-import org.hl7.fhir.dstu3.model.PositiveIntType;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 public class ClaimLineItem {
 
-	private int sequenceLinkId;
-	private int quantityProvided;
-	private int quantityApproved;
-	private BigDecimal totalBenefit;
-	private BigDecimal totalCost;
-	private String explanation;
-	private String rejectionReason;
+	@SerializedName("category")
+	@Expose
+	private String category;
+	
+	@SerializedName("quantity")
+	@Expose
+	private BigDecimal quantity;
+	
+	@SerializedName("sequence")
+	@Expose
+	private Integer sequence;
+	
+	@SerializedName("service")
+	@Expose
+	private String service;
+	
+	@SerializedName("unitPrice")
+	@Expose
+	private BigDecimal unitPrice;
+	
+	@SerializedName("totalClaimed")
+	@Expose
+	private BigDecimal totalClaimed;
+	
+	@SerializedName("status")
+	@Expose
+	private String status;
+	
+	@SerializedName("rejectedReason")
+	@Expose
+	private String rejectedReason;
+	
+	@SerializedName("totalApproved")
+	@Expose
+	private BigDecimal totalApproved;
 
-	public int getSequenceLinkId() {
-		return sequenceLinkId;
+	public String getCategory() {
+		return category;
 	}
 
-	public void setSequenceLinkId(int sequenceLinkId) {
-		this.sequenceLinkId = sequenceLinkId;
+	public void setCategory(String category) {
+		this.category = category;
 	}
 
-	public int getQuantityProvided() {
-		return quantityProvided;
+	public BigDecimal getQuantity() {
+		return quantity;
 	}
 
-	public void setQuantityProvided(int quantityProvided) {
-		this.quantityProvided = quantityProvided;
+	public void setQuantity(BigDecimal quantity) {
+		this.quantity = quantity;
 	}
 
-	public int getQuantityApproved() {
-		return quantityApproved;
+	public Integer getSequence() {
+		return sequence;
 	}
 
-	public void setQuantityApproved(int quantityApproved) {
-		this.quantityApproved = quantityApproved;
+	public void setSequence(Integer sequence) {
+		this.sequence = sequence;
 	}
 
-	public BigDecimal getTotalBenefit() {
-		return totalBenefit;
+	public String getService() {
+		return service;
 	}
 
-	public void setTotalBenefit(BigDecimal totalBenefit) {
-		this.totalBenefit = totalBenefit;
+	public void setService(String service) {
+		this.service = service;
 	}
 
-	public BigDecimal getTotalCost() {
-		return totalCost;
+	public BigDecimal getUnitPrice() {
+		return unitPrice;
 	}
 
-	public void setTotalCost(BigDecimal totalCost) {
-		this.totalCost = totalCost;
+	public void setUnitPrice(BigDecimal unitPrice) {
+		this.unitPrice = unitPrice;
 	}
 
-	public String getExplanation() {
-		return explanation;
+	public BigDecimal getTotalClaimed() {
+		return totalClaimed;
 	}
 
-	public void setExplanation(String explanation) {
-		this.explanation = explanation;
+	public void setTotalClaimed(BigDecimal totalClaimed) {
+		this.totalClaimed = totalClaimed;
 	}
 
-	public String getRejectionReason() {
-		return rejectionReason;
+	public String getStatus() {
+		return status;
 	}
 
-	public void setRejectionReason(String rejectionReason) {
-		this.rejectionReason = rejectionReason;
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public String getRejectedReason() {
+		return rejectedReason;
+	}
+
+	public void setRejectedReason(String rejectedReason) {
+		this.rejectedReason = rejectedReason;
+	}
+
+	public BigDecimal getTotalApproved() {
+		return totalApproved;
+	}
+
+	public void setTotalApproved(BigDecimal totalApproved) {
+		this.totalApproved = totalApproved;
 	}
 
 }

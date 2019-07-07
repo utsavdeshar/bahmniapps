@@ -1,5 +1,7 @@
 package org.bahmni.insurance.serviceImpl;
 
+import static org.apache.log4j.Logger.getLogger;
+
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,6 +26,7 @@ import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.EligibilityResponse;
 import org.hl7.fhir.dstu3.model.EligibilityResponse.InsuranceComponent;
 import org.hl7.fhir.dstu3.model.Task;
+import org.hl7.fhir.exceptions.FHIRException;
 import org.openmrs.module.fhir.api.client.ClientHttpEntity;
 import org.openmrs.module.fhir.api.helper.ClientHelper;
 import org.springframework.http.HttpEntity;
@@ -43,6 +46,7 @@ import ca.uhn.fhir.parser.IParser;
 public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	private final RestTemplate restTemplate;
 	private final IParser parsear = FhirContext.forDstu3().newJsonParser();
+	private final org.apache.log4j.Logger logger = getLogger(ImisRestClientServiceImpl.class);
 
 	private AppProperties properties;
 
@@ -114,10 +118,12 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	}
 
 	@Override
-	public ClaimResponseModel getDummyClaimResponse() {
+	public ClaimResponseModel getDummyClaimResponse(Claim claimRequest) {
 		ResponseEntity<String> claimResponseSample = sendGetRequest(properties.dummyClaimResponseUrl);
 		String claimResponseBody = claimResponseSample.getBody();
 		ClaimResponse dummyClaimResponse = (ClaimResponse) parsear.parseResource(claimResponseBody);
+		String jsonClaimRequest = parsear.encodeResourceToString(claimRequest);
+		logger.debug("jsonClaimRequest ==> " + jsonClaimRequest);
 		return populateClaimRespModel(dummyClaimResponse);
 
 	}
@@ -132,31 +138,21 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		clmRespModel.setOutCome(claimResponse.getOutcome().getCoding().get(0).getCode());
 		clmRespModel.setDateProcessed(claimResponse.getPayment().getDate());
 
-		// nhisId;
-		// patientId;
-		// policyStatus;
-		// dateCreated;
-		// rejectionReason;
-
 		List<ClaimLineItem> claimLineItems = new ArrayList<>();
 		for (ItemComponent responseItem : claimResponse.getItem()) {
 			ClaimLineItem claimItem = new ClaimLineItem();
-			claimItem.setSequenceLinkId(responseItem.getSequenceLinkIdElement().getValue());
+			claimItem.setSequence(responseItem.getSequenceLinkIdElement().getValue());
 
 			for (AdjudicationComponent adj : responseItem.getAdjudication()) {
 				if (ImisConstants.ADJUDICATION_ELIGIBLE
 						.equalsIgnoreCase(adj.getCategory().getCoding().get(0).getCode())) {
-					claimItem.setTotalCost(adj.getAmount().getValue());
+					claimItem.setTotalClaimed(adj.getAmount().getValue());
 				}
 				if (ImisConstants.ADJUDICATION_BENEFIT
 						.equalsIgnoreCase(adj.getCategory().getCoding().get(0).getCode())) {
-					claimItem.setTotalBenefit(adj.getAmount().getValue());
+					claimItem.setTotalApproved(adj.getAmount().getValue());
 				}
 			}
-			// quantityProvided;
-			// int quantityApproved;
-			// explanation;
-			// rejectionReason;
 
 			claimLineItems.add(claimItem);
 		}
@@ -165,14 +161,14 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 
 	}
 	@Override
-	public EligibilityResponseModel getDummyEligibilityResponse() {
+	public EligibilityResponseModel getDummyEligibilityResponse() throws FHIRException {
 		ResponseEntity<String> eligibiltyResponseSample = sendGetRequest(properties.dummyEligibiltyResponseUrl);
 		String eligibilityResponseBody = eligibiltyResponseSample.getBody();
 		EligibilityResponse dummyEligibiltyResponse = (EligibilityResponse) parsear.parseResource(eligibilityResponseBody);
 		return populateEligibilityRespModel(dummyEligibiltyResponse);
 	}
 	
-	private EligibilityResponseModel populateEligibilityRespModel(EligibilityResponse eligibilityResponse) {
+	private EligibilityResponseModel populateEligibilityRespModel(EligibilityResponse eligibilityResponse) throws FHIRException {
 		EligibilityResponseModel eligRespModel = new EligibilityResponseModel();
 		eligRespModel.setNhisId(eligibilityResponse.getId());
 		eligRespModel.setPatientId(eligibilityResponse.getId());

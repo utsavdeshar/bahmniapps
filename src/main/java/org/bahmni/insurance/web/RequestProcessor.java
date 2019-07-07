@@ -5,6 +5,7 @@ import static org.apache.log4j.Logger.getLogger;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -20,11 +21,16 @@ import org.bahmni.insurance.model.FhirResourceModel;
 import org.bahmni.insurance.service.AOpernmrsFhirConstructorService;
 import org.bahmni.insurance.service.FInsuranceServiceFactory;
 import org.bahmni.insurance.service.IOpenmrsOdooService;
-import org.bahmni.insurance.serviceImpl.OpenmrsFhirConstructorServiceImpl;
+import org.bahmni.insurance.serviceImpl.FhirConstructorServiceImpl;
 import org.bahmni.insurance.serviceImpl.OpenmrsOdooServiceImpl;
+import org.hl7.fhir.dstu3.model.Claim;
+import org.hl7.fhir.dstu3.model.EligibilityRequest;
+import org.hl7.fhir.dstu3.model.Task;
+import org.hl7.fhir.exceptions.FHIRException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -47,7 +53,7 @@ public class RequestProcessor {
 	private final AppProperties properties;
 
 	@Autowired
-	public RequestProcessor(OpenmrsFhirConstructorServiceImpl fhirConstructorServiceImpl,
+	public RequestProcessor(FhirConstructorServiceImpl fhirConstructorServiceImpl,
 			OpenmrsOdooServiceImpl openmrsOdooServiceImpl, FhirResourceDaoServiceImpl fhirServiceImpl,
 			FInsuranceServiceFactory insuranceImplFactory, RestTemplateFactory restFactory, AppProperties props) {
 		this.fhirConstructorService = fhirConstructorServiceImpl;
@@ -56,59 +62,59 @@ public class RequestProcessor {
 		this.insuranceImplFactory = insuranceImplFactory;
 		this.properties = props;
 	}
-	
+
 	@RequestMapping(method = RequestMethod.GET, value = "/request/eligibility/{insuranceId}", produces = "application/json")
 	@ResponseBody
-	public String getEligibilityResponse(HttpServletResponse response, @PathVariable("insuranceId") String insuranceID)
+	public EligibilityRequest getEligibilityResponse(HttpServletResponse response,
+			@PathVariable("insuranceId") String insuranceID)
 			throws IOException, RestClientException, URISyntaxException {
 		logger.debug("requestEligibity");
-		
+
 		return fhirConstructorService.constructFhirEligibilityRequest(insuranceID);
 	}
-	
+
 	@RequestMapping(method = RequestMethod.GET, value = "/get/eligibilityResponse/{claimId}", produces = "application/json")
 	@ResponseBody
 	public String setEligibilityResponse(HttpServletResponse response, @PathVariable("claimId") String patientId)
-			throws IOException {
+			throws IOException, FHIRException {
 		logger.debug("eligibityResponse");
 		EligibilityResponseModel eligibilityResponse = insuranceImplFactory.getInsuranceServiceImpl(100, properties)
 				.getDummyEligibilityResponse();
 		GsonBuilder builder = new GsonBuilder();
 		Gson gson = builder.setPrettyPrinting().create();
 		logger.debug("eligibilityResponse model == " + gson.toJson(eligibilityResponse));
-		return gson.toJson(eligibilityResponse);	
+		return gson.toJson(eligibilityResponse);
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/request/claim/{insuranceId}", produces = "application/json")
+	@RequestMapping(method = RequestMethod.POST, value = "/submit/claim", produces = "application/json")
 	@ResponseBody
-	public String getClaimResponse(HttpServletResponse response, @PathVariable("insuranceId") String insuranceID)
+	public String submitClaim(HttpServletResponse response, @RequestBody Map<String, Object> claimParams)
 			throws IOException, RestClientException, URISyntaxException {
-		logger.debug("requestClaim");
-		return fhirConstructorService.constructFhirClaimRequest(insuranceID);
-	}
-	
-	@RequestMapping(method = RequestMethod.GET, value = "/get/claimResponse/{claimId}", produces = "application/json")
-	@ResponseBody
-	public String setClaimResponse(HttpServletResponse response, @PathVariable("claimId") String patientId)
-			throws IOException {
-		logger.debug("claimResponse");
+
+		logger.debug("submitClaim");
+		Claim claimRequest = fhirConstructorService.constructFhirClaimRequest(claimParams);
 		ClaimResponseModel claimResponse = insuranceImplFactory.getInsuranceServiceImpl(100, properties)
-				.getDummyClaimResponse();
+				.getDummyClaimResponse(claimRequest);
+
+		/*
+		 * ClaimResponse claimResponse = insuranceImplFactory.getInsuranceServiceImpl(0,
+		 * properties).getClaimResponse(claimRequest);
+		 */
 		GsonBuilder builder = new GsonBuilder();
 		Gson gson = builder.setPrettyPrinting().create();
 		logger.debug("ClaimResponse model == " + gson.toJson(claimResponse));
 		return gson.toJson(claimResponse);
 
 	}
-	
+
 	@RequestMapping(method = RequestMethod.GET, value = "/request/claimTracking/{insuranceId}", produces = "application/json")
 	@ResponseBody
-	public String getClaimTracking(HttpServletResponse response, @PathVariable("insuranceId") String insuranceID)
+	public Task getClaimTracking(HttpServletResponse response, @PathVariable("insuranceId") String insuranceID)
 			throws IOException, RestClientException, URISyntaxException {
 		logger.debug("requestClaimTracking");
 		return fhirConstructorService.constructFhirClaimTrackRequest(insuranceID);
 	}
-	
+
 	@RequestMapping(method = RequestMethod.GET, value = "/get/claimTracking/{claimId}", produces = "application/json")
 	@ResponseBody
 	public String setClaimTracking(HttpServletResponse response, @PathVariable("claimId") String patientId)
@@ -130,14 +136,17 @@ public class RequestProcessor {
 		return insuranceImplFactory.getInsuranceServiceImpl(0, properties).loginCheck();// TODO: remove hardcoded
 	}
 
-//	@RequestMapping(path = "/request/claimsubmit")
-//	public void requestClaimSubmit(HttpServletResponse response) throws RestClientException, URISyntaxException {
-//		logger.debug("requestClaimSubmit");
-//		
-//		 Claim claimRequest = fhirConstructorService.constructFhirClaimRequest("StringPatientId"); 
-//		 
-//		 ClaimResponse claimResponse = insuranceImplFactory.getInsuranceServiceImpl(0, properties).getClaimResponse(claimRequest); // TODO: remove hardcoded
-//	}
+	/*
+	 * @RequestMapping(path = "/request/claimsubmit") public void
+	 * requestClaimSubmit(HttpServletResponse response) throws RestClientException,
+	 * URISyntaxException { logger.debug("requestClaimSubmit");
+	 * 
+	 * Claim claimRequest =
+	 * fhirConstructorService.constructFhirClaimRequest("StringPatientId");
+	 * 
+	 * ClaimResponse claimResponse = insuranceImplFactory.getInsuranceServiceImpl(0,
+	 * properties).getClaimResponse(claimRequest); // TODO: remove hardcoded }
+	 */
 
 	@RequestMapping(path = "/get/fhir/claims")
 	@ResponseBody
@@ -179,11 +188,13 @@ public class RequestProcessor {
 
 	}
 
-	/*@RequestMapping(path = "/odercost")
-	public void getOrderCost(HttpServletResponse response) {
-		logger.debug("getOrderCost");
-		System.out.println(odooService.getOrderCost("9065024b-9499-4c9b-9a2f-a53f703be2aa"));
-
-	}*/
+	/*
+	 * @RequestMapping(path = "/odercost") public void
+	 * getOrderCost(HttpServletResponse response) { logger.debug("getOrderCost");
+	 * System.out.println(odooService.getOrderCost(
+	 * "9065024b-9499-4c9b-9a2f-a53f703be2aa"));
+	 * 
+	 * }
+	 */
 
 }

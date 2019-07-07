@@ -41,7 +41,6 @@ public class AppProperties {
 
 	@Value("${openmrs.odoo.api}")
 	public String openmrsOdooApi;
-
 	
 	@Value("${dummy.claimResponse.url}")
 	public String dummyClaimResponseUrl;
@@ -53,9 +52,12 @@ public class AppProperties {
 	@Value("${dummy.claimTrack.url}")
 	public String dummyClaimTrackUrl;
 	
+	@Value("${openimis.enterer.id}")
+	public String openImisEntererId;
 	
-	
-	
+
+	@Value("${openimis.healthFacility.id}")
+	public String openImisHFCode;
 
 	
 }

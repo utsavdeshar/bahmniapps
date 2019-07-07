@@ -1,48 +1,30 @@
-package org.bahmni.insurance.controller;
+package org.bahmni.insurance.web;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
-import org.apache.log4j.spi.LoggerFactory;
 import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.client.RestTemplateFactory;
 import org.bahmni.insurance.dao.FhirResourceDaoServiceImpl;
-import org.bahmni.insurance.model.EligibilityBalance;
 import org.bahmni.insurance.model.EligibilityResponseModel;
 import org.bahmni.insurance.model.Insurance;
 import org.bahmni.insurance.service.FInsuranceServiceFactory;
-import org.bahmni.insurance.serviceImpl.OpenmrsFhirConstructorServiceImpl;
+import org.bahmni.insurance.serviceImpl.FhirConstructorServiceImpl;
 import org.bahmni.insurance.serviceImpl.OpenmrsOdooServiceImpl;
-import org.hl7.fhir.dstu3.model.EligibilityResponse.InsuranceComponent;
+import org.hl7.fhir.exceptions.FHIRException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 @Controller
 public class InsuranceController {
@@ -55,7 +37,7 @@ public class InsuranceController {
 	    }
 
 	@Autowired
-	public InsuranceController(OpenmrsFhirConstructorServiceImpl fhirConstructorServiceImpl,
+	public InsuranceController(FhirConstructorServiceImpl fhirConstructorServiceImpl,
 			OpenmrsOdooServiceImpl openmrsOdooServiceImpl, FhirResourceDaoServiceImpl fhirServiceImpl,
 			FInsuranceServiceFactory insuranceImplFactory, RestTemplateFactory restFactory, AppProperties props) {
 		this.insuranceImplFactory = insuranceImplFactory;
@@ -71,7 +53,7 @@ public class InsuranceController {
 	
 	@RequestMapping(value="/add-info", method=RequestMethod.POST)
 	public String showWelcomePage(@ModelAttribute @Valid Insurance insurance, BindingResult bindingResult, Model model, @RequestParam String nhisNumber,
-			@RequestParam Boolean isMember) throws IOException {
+			@RequestParam Boolean isMember) throws IOException, FHIRException {
 		 if (bindingResult.hasErrors()) {
 	            System.out.println("BINDING RESULT ERROR");
 	            return "add-info";
