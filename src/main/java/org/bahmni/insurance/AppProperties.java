@@ -54,10 +54,16 @@ public class AppProperties {
 	
 	@Value("${openimis.enterer.id}")
 	public String openImisEntererId;
-	
 
 	@Value("${openimis.healthFacility.id}")
 	public String openImisHFCode;
+	
+	@Value("${openimis.fhir.api.claim}")
+	public String openImisFhirApiClaim;
+	
+	@Value("${openimis.fhir.api.elig}")
+	public String openImisFhirApiElig;
+
 
 	
 }

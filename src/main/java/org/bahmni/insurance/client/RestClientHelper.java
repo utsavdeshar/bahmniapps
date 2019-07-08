@@ -7,16 +7,20 @@ import java.util.List;
 
 import javax.transaction.NotSupportedException;
 
-import org.bahmni.insurance.utils.InsuranceUtils;
+import org.bahmni.insurance.utils.InsuranceUtils;/*
 import org.openmrs.module.fhir.api.client.ClientHttpEntity;
 import org.openmrs.module.fhir.api.client.ClientHttpRequestInterceptor;
-import org.openmrs.module.fhir.api.helper.ClientHelper;
+import org.openmrs.module.fhir.api.helper.ClientHelper;*/
 import org.springframework.http.HttpMethod;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 
 import com.google.gson.Gson;
 
+public class RestClientHelper{
+}
+
+/*
 public class RestClientHelper implements ClientHelper {
 	private final Gson defaultJsonParser = InsuranceUtils.createDefaultGson();
 
@@ -73,19 +77,19 @@ public class RestClientHelper implements ClientHelper {
 	@Override
 	public String convertToFormattedData(Object object) {
 		return defaultJsonParser.toJson(object);
-		/*
+		
 		 * if (RestResource.class.isAssignableFrom(object.getClass())) { return
 		 * restConverter.convertToJson((RestResource) object); } else if
 		 * (SimpleObject.class.isAssignableFrom(object.getClass())) { return
 		 * simpleConverter.convertToJson((SimpleObject) object); } else { throw new
 		 * UnsupportedOperationException(getNotSupportedClassMsg(object.getClass().
 		 * getCanonicalName())); }
-		 */}
+		 }
 
 	@Override
 	public Object convertToOpenMrsObject(Object object, String category) throws NotSupportedException {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 }
+*/

@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.bahmni.insurance.AppProperties;
+import org.bahmni.insurance.ImisConstants;
 import org.bahmni.insurance.client.RestTemplateFactory;
 import org.bahmni.insurance.dao.FhirResourceDaoServiceImpl;
 import org.bahmni.insurance.dao.IFhirResourceDaoService;
@@ -49,6 +50,7 @@ public class RequestProcessor {
 	private final IOpenmrsOdooService odooService;
 	private final IFhirResourceDaoService fhirDaoService;
 	private final FInsuranceServiceFactory insuranceImplFactory;
+	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 	private final AppProperties properties;
 
@@ -69,17 +71,14 @@ public class RequestProcessor {
 			throws IOException, FHIRException {
 		logger.debug("eligibityResponse");
 		EligibilityRequest eligReq = fhirConstructorService.constructFhirEligibilityRequest(InsureeId);
-		EligibilityResponseModel eligibilityResponse = insuranceImplFactory.getInsuranceServiceImpl(100, properties)
-				.getDummyEligibilityResponse(); // TODO: remove Hardcoded 100
+		EligibilityResponseModel eligibilityResponse = insuranceImplFactory
+				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getDummyEligibilityResponse();
 
 		/*
 		 * EligibilityResponseModel eligibilityResponse =
-		 * insuranceImplFactory.getInsuranceServiceImpl(100,
+		 * insuranceImplFactory.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR,
 		 * properties).getElibilityResponse(eligReq);
 		 */
-		GsonBuilder builder = new GsonBuilder();
-		Gson gson = builder.setPrettyPrinting().create();
-		logger.debug("eligibilityResponse model == " + gson.toJson(eligibilityResponse));
 		return gson.toJson(eligibilityResponse);
 	}
 
@@ -90,15 +89,15 @@ public class RequestProcessor {
 
 		logger.debug("submitClaim");
 		Claim claimRequest = fhirConstructorService.constructFhirClaimRequest(claimParams);
-		ClaimResponseModel claimResponse = insuranceImplFactory.getInsuranceServiceImpl(100, properties)
-				.getDummyClaimResponse(claimRequest);
+		ClaimResponseModel claimResponse = insuranceImplFactory
+				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getDummyClaimResponse(claimRequest);
 
 		/*
-		 * ClaimResponse claimResponse = insuranceImplFactory.getInsuranceServiceImpl(0,
+		 * ClaimResponse claimResponse =
+		 * insuranceImplFactory.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR,
 		 * properties).getClaimResponse(claimRequest);
 		 */
-		GsonBuilder builder = new GsonBuilder();
-		Gson gson = builder.setPrettyPrinting().create();
+
 		return gson.toJson(claimResponse);
 
 	}
@@ -108,10 +107,8 @@ public class RequestProcessor {
 	public String getClaimTrackingStatus(HttpServletResponse response, @PathVariable("claimId") String claimId)
 			throws IOException {
 		Task claimTrackTask = fhirConstructorService.constructFhirClaimTrackRequest(claimId);
-		ClaimTrackingModel claimTracking = insuranceImplFactory.getInsuranceServiceImpl(100, properties)
-				.getDummyClaimTrack();
-		GsonBuilder builder = new GsonBuilder();
-		Gson gson = builder.setPrettyPrinting().create();
+		ClaimTrackingModel claimTracking = insuranceImplFactory
+				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getDummyClaimTrack();
 		logger.debug("ClaimTracking model == " + gson.toJson(claimTracking));
 		return gson.toJson(claimTracking);
 
@@ -122,7 +119,9 @@ public class RequestProcessor {
 	public ResponseEntity<String> checkLogin(HttpServletResponse response)
 			throws RestClientException, URISyntaxException {
 		logger.debug("requestEligibity");
-		return insuranceImplFactory.getInsuranceServiceImpl(0, properties).loginCheck();// TODO: remove hardcoded
+		return insuranceImplFactory.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).loginCheck();// TODO:
+																													// remove
+																													// hardcoded
 	}
 
 	@RequestMapping(path = "/get/fhir/claims")

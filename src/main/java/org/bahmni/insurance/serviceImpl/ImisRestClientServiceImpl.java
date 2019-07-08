@@ -25,9 +25,9 @@ import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.EligibilityResponse;
 import org.hl7.fhir.dstu3.model.EligibilityResponse.InsuranceComponent;
 import org.hl7.fhir.dstu3.model.Task;
-import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.exceptions.FHIRException;/*
 import org.openmrs.module.fhir.api.client.ClientHttpEntity;
-import org.openmrs.module.fhir.api.helper.ClientHelper;
+import org.openmrs.module.fhir.api.helper.ClientHelper;*/
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -59,13 +59,21 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		return restFactory.getRestTemplate(100); // TODO: remove hardcoded
 	}
 
-	private ResponseEntity<String> sendPostRequest(Object object, String url)
+	private ResponseEntity<String> sendPostRequest(String requestJson, String url)
 			throws RestClientException, URISyntaxException {
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+		HttpEntity<String> entity = new HttpEntity<String>(requestJson, headers);
+		return restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+		
+		/*
 		ClientHelper helper = getClientHelper(ImisConstants.REST_CLIENT);
 		prepareRestTemplate(helper);
 		ClientHttpEntity<?> request = helper.createRequest(properties.imisUrl + url, object);
 		return exchange(helper, request, String.class);
-	}
+	*/
+		}
 
 	private ResponseEntity<String> sendGetRequest(String url) {
 		HttpHeaders headers = new HttpHeaders();
@@ -75,12 +83,13 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 
 	}
 
-	private ResponseEntity<String> exchange(ClientHelper helper, ClientHttpEntity<?> request, Class<String> clazz) {
+/*	private ResponseEntity<String> exchange(ClientHelper helper, ClientHttpEntity<?> request, Class<String> clazz) {
+		
 		HttpHeaders headers = new HttpHeaders();
 		HttpEntity<?> entity = new HttpEntity<Object>(request.getBody(), headers);
 		return restTemplate.exchange(request.getUrl(), request.getMethod(), entity, clazz);
 	}
-
+*/
 	/*
 	 * private HttpHeaders setRequestHeaders(ClientHelper clientHelper, HttpHeaders
 	 * headers) { for (ClientHttpRequestInterceptor interceptor :
@@ -89,15 +98,16 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	 * headers; }
 	 */
 
-	private void prepareRestTemplate(ClientHelper clientHelper) {
+	/*private void prepareRestTemplate(ClientHelper clientHelper) {
 		List<HttpMessageConverter<?>> converters = new ArrayList<>(clientHelper.getCustomMessageConverter());
 		converters.add(new RequestWrapperConverter());
 		restTemplate.setMessageConverters(converters);
-	}
+	}*/
 
 	@Override
 	public ClaimResponse getClaimResponse(Claim claimRequest) throws RestClientException, URISyntaxException {
-		ResponseEntity<String> responseObject = sendPostRequest(claimRequest, "/claimURL"); // TODO:
+		String jsonClaimRequest = parsear.encodeResourceToString(claimRequest);
+		ResponseEntity<String> responseObject = sendPostRequest(jsonClaimRequest, properties.openImisFhirApiClaim); 
 		ClaimResponse claimResponse = (ClaimResponse) parsear.parseResource(responseObject.getBody());
 		return claimResponse;
 	}
@@ -105,7 +115,8 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	@Override
 	public EligibilityResponseModel getElibilityResponse(EligibilityRequest eligbilityRequest)
 			throws RestClientException, URISyntaxException, FHIRException {
-		ResponseEntity<String> responseObject = sendPostRequest(eligbilityRequest, "/eligURL");// TODO:
+		String jsonEligRequest = parsear.encodeResourceToString(eligbilityRequest);
+		ResponseEntity<String> responseObject = sendPostRequest(jsonEligRequest, properties.openImisFhirApiElig);
 		EligibilityResponse eligibilityResponse = (EligibilityResponse) parsear.parseResource(responseObject.getBody());
 		return populateEligibilityRespModel(eligibilityResponse);
 	}

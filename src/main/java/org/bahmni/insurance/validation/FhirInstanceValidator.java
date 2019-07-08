@@ -2,7 +2,6 @@ package org.bahmni.insurance.validation;
 
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
-import ca.uhn.fhir.model.api.Bundle;
 import ca.uhn.fhir.validation.IValidationContext;
 import ca.uhn.fhir.validation.IValidatorModule;
 
@@ -20,10 +19,6 @@ implements IValidatorModule{
 		
 	}
 
-	@Override
-	public void validateBundle(IValidationContext<Bundle> theContext) {
-		// TODO Auto-generated method stub
-		
-	}
+	
 
 }
