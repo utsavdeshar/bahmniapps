@@ -10,11 +10,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
 import org.springframework.security.web.firewall.HttpFirewall;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 
 @Configuration
 @ComponentScan("org.possible.imisconnect")
-@EnableWebMvc
+
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	
@@ -40,11 +40,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable()
 		.authorizeRequests()
-		.anyRequest()
-		.authenticated()
-		.and()
+		.antMatchers("/h2-console/**")
+		.permitAll()
+		.antMatchers("/v2/api-docs", "/configuration/**", "/swagger*/**", "/webjars/**")
+		.permitAll()
+		.anyRequest().authenticated().and()
 		.httpBasic()
 		.authenticationEntryPoint(authEntryPoint);
+		
+        http.headers().frameOptions().disable();
+
 	}
 
 	@Autowired
@@ -60,6 +65,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	    return new DefaultHttpFirewall();
 	}
 	
+	
+	 public void addResourceHandlers(ResourceHandlerRegistry registry) {
+	        registry.addResourceHandler("swagger-ui.html")
+	                .addResourceLocations("classpath:/META-INF/resources/");
+
+	        registry.addResourceHandler("/webjars/**")
+	                .addResourceLocations("classpath:/META-INF/resources/webjars/");
+	    }
 	
 
 
