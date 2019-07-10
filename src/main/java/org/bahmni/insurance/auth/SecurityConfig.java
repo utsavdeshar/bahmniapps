@@ -13,7 +13,7 @@ import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 
 @Configuration
-@ComponentScan("org.possible.imisconnect")
+@ComponentScan("org.bahmni.insurance")
 
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	

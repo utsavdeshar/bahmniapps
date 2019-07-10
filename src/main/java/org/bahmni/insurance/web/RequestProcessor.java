@@ -145,9 +145,17 @@ public class RequestProcessor {
 
 	@RequestMapping(method = RequestMethod.GET, value = "/patient/{patientId}", produces = "application/json")
 	@ResponseBody
-	public String generatePatient(HttpServletResponse response, @PathVariable("patientId") String patientId) {
-		logger.debug("generatePatient");
-		return fhirConstructorService.getFhirPatient(patientId); // 9065024b-9499-4c9b-9a2f-a53f703be2aa
+	public ResponseEntity<String> retrievePatient(HttpServletResponse response, @PathVariable("patientId") String patientId) {
+		logger.debug("retreivePatient : ");
+		return fhirConstructorService.getFhirPatient(patientId); 
+
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/patient", produces = "application/json")
+	@ResponseBody
+	public ResponseEntity<String> generatePatient(HttpServletResponse response, @RequestBody String personJson) {
+		logger.debug("generatePatient : ");
+		return fhirConstructorService.createFhirPatient(personJson); 
 
 	}
 

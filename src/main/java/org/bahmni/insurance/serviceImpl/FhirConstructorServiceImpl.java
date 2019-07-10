@@ -1,12 +1,14 @@
 package org.bahmni.insurance.serviceImpl;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.codec.binary.Base64;
 import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.ImisConstants;
 import org.bahmni.insurance.model.ClaimLineItem;
@@ -34,6 +36,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import com.google.gson.Gson;
@@ -45,19 +48,43 @@ import ca.uhn.fhir.validation.SingleValidationMessage;
 import ca.uhn.fhir.validation.ValidationResult;
 
 @Component
-@Configurable
 public class FhirConstructorServiceImpl extends AOpernmrsFhirConstructorService {
 
 	@Autowired
 	private AppProperties properties;
 
 	@Override
-	public String getFhirPatient(String patientId) {
-		HttpHeaders headers = new HttpHeaders();
-		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+	public ResponseEntity<String> getFhirPatient(String patientId) {
+		HttpHeaders headers = createHeaders(properties.openmrsUser, properties.openmrsPassword);
+		headers.add("Accept", MediaType.APPLICATION_JSON_VALUE);
 		HttpEntity<String> entity = new HttpEntity<String>(headers);
-		return this.getApiClient().exchange(properties.openmrsFhirUrl + patientId, HttpMethod.GET, entity, String.class)
-				.getBody();
+		return this.getApiClient().exchange(properties.openmrsFhirUrl + patientId, HttpMethod.GET, entity,
+				String.class);
+	}
+	
+	
+	@Override
+	public ResponseEntity<String> createFhirPatient(String patientJson) {
+		HttpHeaders headers = createHeaders(properties.openmrsUser, properties.openmrsPassword);
+	    headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+	    headers.add("Content-Type", "application/fhir+json;q=1.0, application/json+fhir;q=0.9");
+		HttpEntity<String> entity = new HttpEntity<String>(patientJson, headers);
+		return this.getApiClient().exchange(properties.openmrsFhirUrl, HttpMethod.POST, entity,
+				String.class);
+	}
+	
+	
+
+	private HttpHeaders createHeaders(String username, String password) {
+		return new HttpHeaders() {
+			private static final long serialVersionUID = 1L;
+			{
+				String auth = username + ":" + password;
+				byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("US-ASCII")));
+				String authHeader = "Basic " + new String(encodedAuth);
+				set("Authorization", authHeader);
+			}
+		};
 	}
 
 	@Override

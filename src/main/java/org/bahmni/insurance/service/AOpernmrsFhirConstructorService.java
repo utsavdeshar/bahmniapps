@@ -9,10 +9,10 @@ import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.Task;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-@Component
 public abstract class AOpernmrsFhirConstructorService {
 
 	@Autowired
@@ -26,8 +26,10 @@ public abstract class AOpernmrsFhirConstructorService {
 
 	public abstract EligibilityRequest constructFhirEligibilityRequest(String insuranceID) throws IOException;
 
-	public abstract String getFhirPatient(String patientId);
+	public abstract ResponseEntity<String> getFhirPatient(String patientId);
 
 	public abstract Task constructFhirClaimTrackRequest(String insuranceID) throws IOException;
+
+	public abstract ResponseEntity<String> createFhirPatient(String patientId);
 
 }

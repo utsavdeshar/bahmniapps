@@ -13,10 +13,8 @@ import org.hl7.fhir.dstu3.model.Task;
 import org.hl7.fhir.exceptions.FHIRException;
 /*import org.openmrs.module.fhir.api.helper.ClientHelper;*/
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 
-@Component
 public abstract class AInsuranceClientService {
 	/*private ClientHelper clientHelper;
 
