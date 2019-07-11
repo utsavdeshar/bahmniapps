@@ -15,6 +15,7 @@ import org.bahmni.insurance.ImisConstants;
 import org.bahmni.insurance.client.RestTemplateFactory;
 import org.bahmni.insurance.dao.FhirResourceDaoServiceImpl;
 import org.bahmni.insurance.dao.IFhirResourceDaoService;
+import org.bahmni.insurance.model.ClaimParam;
 import org.bahmni.insurance.model.ClaimResponseModel;
 import org.bahmni.insurance.model.ClaimTrackingModel;
 import org.bahmni.insurance.model.EligibilityResponseModel;
@@ -84,10 +85,10 @@ public class RequestProcessor {
 
 	@RequestMapping(method = RequestMethod.POST, value = "/submit/claim", produces = "application/json")
 	@ResponseBody
-	public String submitClaim(HttpServletResponse response, @RequestBody Map<String, Object> claimParams)
+	public String submitClaim(HttpServletResponse response, @RequestBody ClaimParam claimParams)
 			throws IOException, RestClientException, URISyntaxException {
 
-		logger.debug("submitClaim");
+		logger.debug("submitClaim : "+gson.toJson(claimParams));
 		Claim claimRequest = fhirConstructorService.constructFhirClaimRequest(claimParams);
 		ClaimResponseModel claimResponse = insuranceImplFactory
 				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getDummyClaimResponse(claimRequest);
@@ -95,7 +96,7 @@ public class RequestProcessor {
 		/*
 		 * ClaimResponse claimResponse =
 		 * insuranceImplFactory.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR,
-		 * properties).getClaimResponse(claimRequest);
+		 * properties).submitClaim(claimRequest);`
 		 */
 
 		return gson.toJson(claimResponse);
@@ -116,12 +117,10 @@ public class RequestProcessor {
 
 	@RequestMapping(path = "/openIMIS/login")
 	@ResponseBody
-	public ResponseEntity<String> checkLogin(HttpServletResponse response)
+	public String checkLogin(HttpServletResponse response)
 			throws RestClientException, URISyntaxException {
-		logger.debug("requestEligibity");
-		return insuranceImplFactory.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).loginCheck();// TODO:
-																													// remove
-																													// hardcoded
+		logger.debug("checkLogin");
+		return insuranceImplFactory.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).loginCheck();
 	}
 
 	@RequestMapping(path = "/get/fhir/claims")

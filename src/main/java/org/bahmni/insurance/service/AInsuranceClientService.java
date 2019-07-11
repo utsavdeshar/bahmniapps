@@ -9,6 +9,7 @@ import org.bahmni.insurance.model.EligibilityResponseModel;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
+import org.hl7.fhir.dstu3.model.OperationOutcome;
 import org.hl7.fhir.dstu3.model.Task;
 import org.hl7.fhir.exceptions.FHIRException;
 /*import org.openmrs.module.fhir.api.helper.ClientHelper;*/
@@ -23,14 +24,14 @@ public abstract class AInsuranceClientService {
 		return clientHelper;
 	}
 */
-	public abstract ClaimResponse getClaimResponse(Claim claimRequest) throws RestClientException, URISyntaxException;
+	public abstract OperationOutcome submitClaim(Claim claimRequest) throws RestClientException, URISyntaxException;
 
 	public abstract EligibilityResponseModel getElibilityResponse(EligibilityRequest eligbilityRequest)
 			throws RestClientException, URISyntaxException, FHIRException;
 
 	public abstract ClaimResponse getClaimStatus(Task claimStatusRequest);
 
-	public abstract ResponseEntity<String> loginCheck();
+	public abstract String loginCheck();
 
 	public abstract EligibilityResponseModel getDummyEligibilityResponse() throws FHIRException;
 

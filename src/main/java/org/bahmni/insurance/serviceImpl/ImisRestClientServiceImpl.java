@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.ImisConstants;
-import org.bahmni.insurance.client.RequestWrapperConverter;
 import org.bahmni.insurance.client.RestTemplateFactory;
 import org.bahmni.insurance.model.ClaimLineItem;
 import org.bahmni.insurance.model.ClaimResponseModel;
@@ -24,6 +23,7 @@ import org.hl7.fhir.dstu3.model.ClaimResponse.ItemComponent;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.EligibilityResponse;
 import org.hl7.fhir.dstu3.model.EligibilityResponse.InsuranceComponent;
+import org.hl7.fhir.dstu3.model.OperationOutcome;
 import org.hl7.fhir.dstu3.model.Task;
 import org.hl7.fhir.exceptions.FHIRException;/*
 import org.openmrs.module.fhir.api.client.ClientHttpEntity;
@@ -33,7 +33,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -44,7 +44,7 @@ import ca.uhn.fhir.parser.IParser;
 @Component
 public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	private final RestTemplate restTemplate;
-	private final IParser parsear = FhirContext.forDstu3().newJsonParser();
+	private final IParser FhirParser = FhirContext.forDstu3().newJsonParser();
 	private final org.apache.log4j.Logger logger = getLogger(ImisRestClientServiceImpl.class);
 
 	private AppProperties properties;
@@ -65,6 +65,7 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 		HttpEntity<String> entity = new HttpEntity<String>(requestJson, headers);
+		HttpComponentsClientHttpRequestFactory requestFactory = (HttpComponentsClientHttpRequestFactory) restTemplate.getRequestFactory();
 		return restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
 		
 		/*
@@ -75,11 +76,11 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	*/
 		}
 
-	private ResponseEntity<String> sendGetRequest(String url) {
+	private String sendGetRequest(String url) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 		HttpEntity<String> entity = new HttpEntity<String>(headers);
-		return restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+		return restTemplate.exchange(url, HttpMethod.GET, entity, String.class).getBody();
 
 	}
 
@@ -105,19 +106,19 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	}*/
 
 	@Override
-	public ClaimResponse getClaimResponse(Claim claimRequest) throws RestClientException, URISyntaxException {
-		String jsonClaimRequest = parsear.encodeResourceToString(claimRequest);
+	public OperationOutcome submitClaim(Claim claimRequest) throws RestClientException, URISyntaxException {
+		String jsonClaimRequest = FhirParser.encodeResourceToString(claimRequest);
 		ResponseEntity<String> responseObject = sendPostRequest(jsonClaimRequest, properties.openImisFhirApiClaim); 
-		ClaimResponse claimResponse = (ClaimResponse) parsear.parseResource(responseObject.getBody());
-		return claimResponse;
+		OperationOutcome outCome = (OperationOutcome) FhirParser.parseResource(responseObject.getBody());
+		return outCome;
 	}
 
 	@Override
 	public EligibilityResponseModel getElibilityResponse(EligibilityRequest eligbilityRequest)
 			throws RestClientException, URISyntaxException, FHIRException {
-		String jsonEligRequest = parsear.encodeResourceToString(eligbilityRequest);
+		String jsonEligRequest = FhirParser.encodeResourceToString(eligbilityRequest);
 		ResponseEntity<String> responseObject = sendPostRequest(jsonEligRequest, properties.openImisFhirApiElig);
-		EligibilityResponse eligibilityResponse = (EligibilityResponse) parsear.parseResource(responseObject.getBody());
+		EligibilityResponse eligibilityResponse = (EligibilityResponse) FhirParser.parseResource(responseObject.getBody());
 		return populateEligibilityRespModel(eligibilityResponse);
 	}
 
@@ -129,10 +130,9 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 
 	@Override
 	public ClaimResponseModel getDummyClaimResponse(Claim claimRequest) {
-		ResponseEntity<String> claimResponseSample = sendGetRequest(properties.dummyClaimResponseUrl);
-		String claimResponseBody = claimResponseSample.getBody();
-		ClaimResponse dummyClaimResponse = (ClaimResponse) parsear.parseResource(claimResponseBody);
-		String jsonClaimRequest = parsear.encodeResourceToString(claimRequest);
+		String claimResponseBody =  sendGetRequest(properties.dummyClaimResponseUrl);
+		ClaimResponse dummyClaimResponse = (ClaimResponse) FhirParser.parseResource(claimResponseBody);
+		String jsonClaimRequest = FhirParser.encodeResourceToString(claimRequest);
 		logger.debug("jsonClaimRequest ==> " + jsonClaimRequest);
 		return populateClaimRespModel(dummyClaimResponse);
 
@@ -173,9 +173,8 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 
 	@Override
 	public EligibilityResponseModel getDummyEligibilityResponse() throws FHIRException {
-		ResponseEntity<String> eligibiltyResponseSample = sendGetRequest(properties.dummyEligibiltyResponseUrl);
-		String eligibilityResponseBody = eligibiltyResponseSample.getBody();
-		EligibilityResponse dummyEligibiltyResponse = (EligibilityResponse) parsear
+		String eligibilityResponseBody = sendGetRequest(properties.dummyEligibiltyResponseUrl);
+		EligibilityResponse dummyEligibiltyResponse = (EligibilityResponse) FhirParser
 				.parseResource(eligibilityResponseBody);
 		return populateEligibilityRespModel(dummyEligibiltyResponse);
 	}
@@ -209,9 +208,8 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 
 	@Override
 	public ClaimTrackingModel getDummyClaimTrack() {
-		ResponseEntity<String> claimTrackingSample = sendGetRequest(properties.dummyClaimTrackUrl);
-		String claimTrackingBody = claimTrackingSample.getBody();
-		Task dummyClaimTrack = (Task) parsear.parseResource(claimTrackingBody);
+		String claimTrackingSample = sendGetRequest(properties.dummyClaimTrackUrl);
+		Task dummyClaimTrack = (Task) FhirParser.parseResource(claimTrackingSample);
 		return populateClaimTrackModel(dummyClaimTrack);
 
 	}
@@ -230,7 +228,7 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	}
 
 	@Override
-	public ResponseEntity<String> loginCheck() {
+	public String loginCheck() {
 		return sendGetRequest(properties.imisUrl);
 	}
 

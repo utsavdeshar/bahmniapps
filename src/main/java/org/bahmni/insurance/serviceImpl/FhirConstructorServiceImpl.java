@@ -6,13 +6,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.ImisConstants;
 import org.bahmni.insurance.model.ClaimLineItem;
-import org.bahmni.insurance.model.ListClaimItem;
+import org.bahmni.insurance.model.ClaimParam;
 import org.bahmni.insurance.service.AOpernmrsFhirConstructorService;
 import org.bahmni.insurance.validation.FhirInstanceValidator;
 import org.hl7.fhir.dstu3.model.Claim;
@@ -37,9 +36,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.validation.FhirValidator;
@@ -87,7 +83,7 @@ public class FhirConstructorServiceImpl extends AOpernmrsFhirConstructorService 
 	}
 
 	@Override
-	public Claim constructFhirClaimRequest(Map<String, Object> claimParams) throws IOException {
+	public Claim constructFhirClaimRequest(ClaimParam claimParam) throws IOException {
 
 		Claim claimReq = new Claim();
 
@@ -101,13 +97,13 @@ public class FhirConstructorServiceImpl extends AOpernmrsFhirConstructorService 
 		codeableConcept2.addCoding(code2);
 		identifier2.setType(codeableConcept2);
 		identifier2.setUse(IdentifierUse.USUAL);
-		identifier2.setValue((String) claimParams.get(ImisConstants.CLAIM_ID));
+		identifier2.setValue(claimParam.getClaimId());
 		identifierList.add(identifier2);
 		claimReq.setIdentifier(identifierList);
 
 		// Insuree patient
 		Reference patientReference = new Reference();
-		patientReference.setReference("Patient/" + (String) claimParams.get(ImisConstants.INSUREE_ID));
+		patientReference.setReference("Patient/" + claimParam.getInsureeId());
 		claimReq.setPatient(patientReference);
 
 		// BillablePeriod
@@ -133,7 +129,7 @@ public class FhirConstructorServiceImpl extends AOpernmrsFhirConstructorService 
 
 		// Items/services for claims
 
-		List<ItemComponent> listItemComponent = populateClaimableItems(claimParams.get(ImisConstants.CLAIM_ITEMS));
+		List<ItemComponent> listItemComponent = populateClaimableItems(claimParam.getItem());
 		claimReq.setItem(listItemComponent);
 
 		// "enterer"
@@ -153,13 +149,9 @@ public class FhirConstructorServiceImpl extends AOpernmrsFhirConstructorService 
 		return claimReq;
 	}
 
-	private List<ItemComponent> populateClaimableItems(Object claimsParamItem) {
-		GsonBuilder builder = new GsonBuilder();
-		Gson gson = builder.create();
-		String jsonStrItems = "{ \"item\": " + gson.toJson(claimsParamItem) + " } ";
-		ListClaimItem listItem = gson.fromJson(jsonStrItems, ListClaimItem.class);
+	private List<ItemComponent> populateClaimableItems(List<ClaimLineItem> listItem) {
 		List<ItemComponent> listItemComponent = new ArrayList<>();
-		for (ClaimLineItem claimItem : listItem.getItem()) {
+		for (ClaimLineItem claimItem : listItem) {
 			ItemComponent itemComponent = new ItemComponent();
 			itemComponent.setSequence(claimItem.getSequence());
 

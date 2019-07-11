@@ -18,6 +18,7 @@ public class ClaimResponseModel {
 	private String outCome;
 	private String claimStatus;
 	private String paymentType;
+	private List<ClaimLineItem> claimLineItems;
 
 /*	public enum ClaimStatus {
 		REJECTED, ENTERED, CHECKED, PROCESSED, VALUATED
@@ -27,7 +28,6 @@ public class ClaimResponseModel {
 		COMPLETE, PARTIAL
 	};*/
 
-	private List<ClaimLineItem> claimLineItems;
 	
 	public String getClaimId() {
 		return claimId;

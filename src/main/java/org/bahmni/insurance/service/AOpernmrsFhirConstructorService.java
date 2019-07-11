@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.bahmni.insurance.ImisConstants;
 import org.bahmni.insurance.client.RestTemplateFactory;
+import org.bahmni.insurance.model.ClaimParam;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.Task;
@@ -22,7 +23,7 @@ public abstract class AOpernmrsFhirConstructorService {
 		return restFactory.getRestTemplate(ImisConstants.OPENMRS_FHIR);
 	}
 
-	public abstract Claim constructFhirClaimRequest(Map<String, Object> claimParams) throws IOException;
+	public abstract Claim constructFhirClaimRequest(ClaimParam claimParamObj) throws IOException;
 
 	public abstract EligibilityRequest constructFhirEligibilityRequest(String insuranceID) throws IOException;
 

@@ -7,6 +7,7 @@ import org.bahmni.insurance.service.AInsuranceClientService;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
+import org.hl7.fhir.dstu3.model.OperationOutcome;
 import org.hl7.fhir.dstu3.model.Task;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
 public class ImisFhirClientServiceImpl extends AInsuranceClientService {
 
 	@Override
-	public ClaimResponse getClaimResponse(Claim claimRequest) {
+	public OperationOutcome submitClaim(Claim claimRequest) {
 		// TODO Auto-generated method stub
 		return null;
 	}
