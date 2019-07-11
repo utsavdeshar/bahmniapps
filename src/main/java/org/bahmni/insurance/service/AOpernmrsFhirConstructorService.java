@@ -26,7 +26,7 @@ public abstract class AOpernmrsFhirConstructorService {
 
 	public abstract EligibilityRequest constructFhirEligibilityRequest(String insuranceID) throws IOException;
 
-	public abstract ResponseEntity<String> getFhirPatient(String patientId);
+	public abstract String getFhirPatient(String patientId);
 
 	public abstract Task constructFhirClaimTrackRequest(String insuranceID) throws IOException;
 

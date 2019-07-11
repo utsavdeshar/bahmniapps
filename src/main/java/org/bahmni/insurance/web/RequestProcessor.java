@@ -143,11 +143,11 @@ public class RequestProcessor {
 
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/patient/{patientId}", produces = "application/json")
+	@RequestMapping(method = RequestMethod.GET, value = "/patient/{name}", produces = "application/json")
 	@ResponseBody
-	public ResponseEntity<String> retrievePatient(HttpServletResponse response, @PathVariable("patientId") String patientId) {
+	public String retrievePatientByName(HttpServletResponse response, @PathVariable("name") String name) {
 		logger.debug("retreivePatient : ");
-		return fhirConstructorService.getFhirPatient(patientId); 
+		return fhirConstructorService.getFhirPatient(name); 
 
 	}
 	

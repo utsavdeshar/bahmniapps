@@ -31,7 +31,6 @@ import org.hl7.fhir.dstu3.model.SimpleQuantity;
 import org.hl7.fhir.dstu3.model.Task;
 import org.hl7.fhir.dstu3.model.Task.TaskStatus;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -54,12 +53,12 @@ public class FhirConstructorServiceImpl extends AOpernmrsFhirConstructorService 
 	private AppProperties properties;
 
 	@Override
-	public ResponseEntity<String> getFhirPatient(String patientId) {
+	public String getFhirPatient(String name) {
 		HttpHeaders headers = createHeaders(properties.openmrsUser, properties.openmrsPassword);
 		headers.add("Accept", MediaType.APPLICATION_JSON_VALUE);
 		HttpEntity<String> entity = new HttpEntity<String>(headers);
-		return this.getApiClient().exchange(properties.openmrsFhirUrl + patientId, HttpMethod.GET, entity,
-				String.class);
+		return this.getApiClient().exchange(properties.openmrsFhirUrl+"?name="+name, HttpMethod.GET, entity,
+				String.class).getBody();
 	}
 	
 	
@@ -69,7 +68,7 @@ public class FhirConstructorServiceImpl extends AOpernmrsFhirConstructorService 
 	    headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 	    headers.add("Content-Type", "application/fhir+json;q=1.0, application/json+fhir;q=0.9");
 		HttpEntity<String> entity = new HttpEntity<String>(patientJson, headers);
-		return this.getApiClient().exchange(properties.openmrsFhirUrl, HttpMethod.POST, entity,
+		return this.getApiClient().exchange(properties.openmrsFhirUrl+"/", HttpMethod.POST, entity,
 				String.class);
 	}
 	
