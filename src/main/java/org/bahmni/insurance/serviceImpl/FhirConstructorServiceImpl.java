@@ -10,9 +10,10 @@ import java.util.List;
 import org.apache.commons.codec.binary.Base64;
 import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.ImisConstants;
+import org.bahmni.insurance.exception.FhirFormatException;
 import org.bahmni.insurance.model.ClaimLineItem;
 import org.bahmni.insurance.model.ClaimParam;
-import org.bahmni.insurance.service.AOpernmrsFhirConstructorService;
+import org.bahmni.insurance.service.AFhirConstructorService;
 import org.bahmni.insurance.validation.FhirInstanceValidator;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.Claim.DiagnosisComponent;
@@ -43,7 +44,7 @@ import ca.uhn.fhir.validation.SingleValidationMessage;
 import ca.uhn.fhir.validation.ValidationResult;
 
 @Component
-public class FhirConstructorServiceImpl extends AOpernmrsFhirConstructorService {
+public class FhirConstructorServiceImpl extends AFhirConstructorService {
 
 	@Autowired
 	private AppProperties properties;
@@ -53,22 +54,18 @@ public class FhirConstructorServiceImpl extends AOpernmrsFhirConstructorService 
 		HttpHeaders headers = createHeaders(properties.openmrsUser, properties.openmrsPassword);
 		headers.add("Accept", MediaType.APPLICATION_JSON_VALUE);
 		HttpEntity<String> entity = new HttpEntity<String>(headers);
-		return this.getApiClient().exchange(properties.openmrsFhirUrl+"?name="+name, HttpMethod.GET, entity,
-				String.class).getBody();
+		return this.getApiClient()
+				.exchange(properties.openmrsFhirUrl + "?name=" + name, HttpMethod.GET, entity, String.class).getBody();
 	}
-	
-	
+
 	@Override
 	public ResponseEntity<String> createFhirPatient(String patientJson) {
 		HttpHeaders headers = createHeaders(properties.openmrsUser, properties.openmrsPassword);
-	    headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-	    headers.add("Content-Type", "application/fhir+json;q=1.0, application/json+fhir;q=0.9");
+		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+		headers.add("Content-Type", "application/fhir+json;q=1.0, application/json+fhir;q=0.9");
 		HttpEntity<String> entity = new HttpEntity<String>(patientJson, headers);
-		return this.getApiClient().exchange(properties.openmrsFhirUrl+"/", HttpMethod.POST, entity,
-				String.class);
+		return this.getApiClient().exchange(properties.openmrsFhirUrl + "/", HttpMethod.POST, entity, String.class);
 	}
-	
-	
 
 	private HttpHeaders createHeaders(String username, String password) {
 		return new HttpHeaders() {
@@ -141,11 +138,6 @@ public class FhirConstructorServiceImpl extends AOpernmrsFhirConstructorService 
 		Reference facilityReference = new Reference();
 		facilityReference.setReference("Location/" + properties.openImisHFCode);
 		claimReq.setEnterer(facilityReference);
-
-		String claimRequestValidation = FhirContext.forDstu3().newJsonParser().encodeResourceToString(claimReq);
-
-		boolean isValid = validateRequest(claimRequestValidation);
-
 		return claimReq;
 	}
 
@@ -201,11 +193,6 @@ public class FhirConstructorServiceImpl extends AOpernmrsFhirConstructorService 
 		referenceInsurer.setReference("Organization/2");
 		eligibilityRequest.setInsurer(referenceInsurer);
 
-		String eligibilityRequestValidation = FhirContext.forDstu3().newJsonParser()
-				.encodeResourceToString(eligibilityRequest);
-
-		boolean isValid = validateRequest(eligibilityRequestValidation);
-
 		return eligibilityRequest;
 	}
 
@@ -226,34 +213,29 @@ public class FhirConstructorServiceImpl extends AOpernmrsFhirConstructorService 
 		referenceOrg.setReference("Organization/1");
 		claimTracking.setOwner(referenceOrg);
 
-		String trackingRequestValidation = FhirContext.forDstu3().newJsonParser().encodeResourceToString(claimTracking);
-
-		boolean isValid = validateRequest(trackingRequestValidation);
-
 		return claimTracking;
 	}
 
-	private boolean validateRequest(String eligibilityRequestValidation) throws IOException {
+	@Override
+	public boolean validateRequest(String eligibilityRequestValidation) throws IOException {
 		FhirContext ctx = FhirContext.forDstu3();
 
-		// Create a FhirInstanceValidator and register it to a validator
 		FhirValidator validator = ctx.newValidator();
 		FhirInstanceValidator instanceValidator = new FhirInstanceValidator();
 		validator.registerValidatorModule(instanceValidator);
 		instanceValidator.setAnyExtensionsAllowed(true);
 
-		// validate
 		ValidationResult result = validator.validateWithResult(eligibilityRequestValidation);
 
-		// error checking
-		if (result.isSuccessful() == false) {
+		if (!result.isSuccessful()) {
+			String errorMsg = "";
 			for (SingleValidationMessage next : result.getMessages()) {
-				System.out.println(" Next issue " + next.getSeverity() + " - " + next.getLocationString() + " - "
-						+ next.getMessage());
+				errorMsg = next.getSeverity() + " - " + next.getLocationString() + " - " + next.getMessage();
 			}
-		} else {
-			System.out.println("validation sucessful");
+
+			throw new FhirFormatException(errorMsg);
 		}
+
 		return result.isSuccessful();
 	}
 

@@ -1,46 +1,32 @@
-package com.bahmni.insurance.test.web;
+package org.bahmni.insurance.test.web;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import javax.sql.DataSource;
-
-import org.bahmni.insurance.SpringBootConsoleApplication;
-import org.bahmni.insurance.dao.FhirResourceDaoServiceImpl;
+import org.bahmni.insurance.test.AbstractWebTest;
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.OperationOutcome;
+import org.hl7.fhir.dstu3.model.OperationOutcome.IssueSeverity;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@WebMvcTest(SpringBootConsoleApplication.class)
-@WebAppConfiguration
-@ContextConfiguration(classes = SpringBootConsoleApplication.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestRequestProcessor extends AbstractWebTest {
 
 	@Autowired
 	protected MockMvc mvc;
-
-	@MockBean
-	private DataSource datasource;
-
-	@MockBean
-	private FhirResourceDaoServiceImpl fhirResourceDaoServiceImpl;
-
+	
+	public TestRequestProcessor(){
+		super();
+	}
+	
 	@Test
 	@WithMockUser
 	public void createPatientTest() throws Exception {
@@ -84,6 +70,38 @@ public class TestRequestProcessor extends AbstractWebTest {
 		assertTrue(bundle.getTotal() > 0);
 
 	}
+	
+	@Test
+	@WithMockUser
+	public void getClaimResponse() throws Exception {
+
+		String claimParamJson = "{\r\n" + "	\"patientUUID\":\"123123123avfa21\",\r\n"
+				+ "	\"visitUUID\":\"1231231231123212\",\r\n" + "	\"claimId\": \"123\",\r\n"
+				+ "	\"insureeId\": \"Patient123\",\r\n" + "	\"item\": [\r\n" + "		{\r\n"
+				+ "		\"category\": \"item\",\r\n" + "		\"quantity\": 10,\r\n" + "		\"sequence\": 1,\r\n"
+				+ "		\"service\": \"ICode\",\r\n" + "		\"unitPrice\": 20,\r\n"
+				+ "		\"totalClaimed\":30,\r\n" + "		\"status\":\"Aproved\",\r\n"
+				+ "		\"rejectedReason\":\"Dont know\",\r\n" + "		\"totalApproved\":20\r\n" + "      },\r\n"
+				+ "	  {\r\n" + "		\"category\": \"service\",\r\n" + "		\"quantity\": 20,\r\n"
+				+ "		\"sequence\": 1,\r\n" + "		\"service\": \"SCode\",\r\n" + "		\"unitPrice\": 20,\r\n"
+				+ "		\"totalClaimed\":20,\r\n" + "		\"status\":\"Aproved\",\r\n"
+				+ "		\"rejectedReason\":\"Dont know\",\r\n" + "		\"totalApproved\":20\r\n" + "      }\r\n"
+				+ "	],\r\n" + "	\"total\": \"40\"\r\n" + "\r\n" + "}";
+
+		MvcResult mvcresult = mvc.perform(MockMvcRequestBuilders.post("/get/claim/response")
+				.accept(MediaType.APPLICATION_JSON)
+				.contentType("application/json").content(claimParamJson))
+				.andReturn();
+		
+		int status = mvcresult.getResponse().getStatus();
+		assertEquals(200, status);
+		
+		/*String resultContent = mvcresult.getResponse().getContentAsString();
+		OperationOutcome outcome = (OperationOutcome) FhirParser.parseResource(resultContent);
+		assertEquals(IssueSeverity.INFORMATION, outcome.getIssue().get(0).getSeverity());*/
+		
+
+	}
 
 	@Test
 	@WithMockUser
@@ -110,8 +128,10 @@ public class TestRequestProcessor extends AbstractWebTest {
 		int status = mvcresult.getResponse().getStatus();
 		assertEquals(200, status);
 		
-		/*String resultContent = mvcresult.getResponse().getContentAsString();
-		OperationOutcome outcome = (OperationOutcome) FhirParser.parseResource(resultContent);*/
+		String resultContent = mvcresult.getResponse().getContentAsString();
+		OperationOutcome outcome = (OperationOutcome) FhirParser.parseResource(resultContent);
+		assertEquals(IssueSeverity.INFORMATION, outcome.getIssue().get(0).getSeverity());
+		
 
 	}
 

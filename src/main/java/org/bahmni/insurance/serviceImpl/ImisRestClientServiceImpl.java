@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.ImisConstants;
 import org.bahmni.insurance.client.RestTemplateFactory;
@@ -56,7 +57,7 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 
 	public RestTemplate getRestClient() {
 		RestTemplateFactory restFactory = new RestTemplateFactory(properties);
-		return restFactory.getRestTemplate(100); // TODO: remove hardcoded
+		return restFactory.getRestTemplate(100); // TODO: remove hardcoded only for dummy
 	}
 
 	private ResponseEntity<String> sendPostRequest(String requestJson, String url)
@@ -66,6 +67,7 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 		HttpEntity<String> entity = new HttpEntity<String>(requestJson, headers);
 		HttpComponentsClientHttpRequestFactory requestFactory = (HttpComponentsClientHttpRequestFactory) restTemplate.getRequestFactory();
+		CloseableHttpClient httpClient = (CloseableHttpClient) requestFactory.getHttpClient();
 		return restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
 		
 		/*

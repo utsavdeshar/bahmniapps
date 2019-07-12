@@ -13,9 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ImisFhirClientServiceImpl extends AInsuranceClientService {
+public class ImisFhirClientServiceImpl  {
 
-	@Override
+	/*@Override
 	public OperationOutcome submitClaim(Claim claimRequest) {
 		// TODO Auto-generated method stub
 		return null;
@@ -34,7 +34,7 @@ public class ImisFhirClientServiceImpl extends AInsuranceClientService {
 	}
 
 	@Override
-	public ResponseEntity<String> loginCheck() {
+	public String loginCheck() {
 		return null;
 	}
 
@@ -54,6 +54,6 @@ public class ImisFhirClientServiceImpl extends AInsuranceClientService {
 	public ClaimTrackingModel getDummyClaimTrack() {
 		// TODO Auto-generated method stub
 		return null;
-	}
+	}*/
 
 }
