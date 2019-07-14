@@ -1,10 +1,15 @@
 package org.bahmni.insurance.utils;
 
+import java.io.IOException;
 import java.util.Date;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
@@ -32,5 +37,17 @@ public class InsuranceUtils {
 		// Build the definitive safe Gson instance
 		return new GsonBuilder().setDateFormat(DATE_FORMAT).registerTypeAdapter(Date.class, safeDateTypeAdapter)
 				.create();
+	}
+	
+	public static String mapToJson(Object obj) throws JsonProcessingException {
+
+		ObjectMapper objectMapper = new ObjectMapper();
+		return objectMapper.writeValueAsString(obj);
+	}
+
+	public static <T> T mapFromJson(String json, Class<T> clazz) throws JsonParseException, JsonMappingException, IOException {
+
+		ObjectMapper objectMapper = new ObjectMapper();
+		return objectMapper.readValue(json, clazz);
 	}
 }

@@ -32,7 +32,11 @@ import org.hl7.fhir.dstu3.model.OperationOutcome;
 import org.hl7.fhir.dstu3.model.Task;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,6 +44,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.context.request.WebRequest;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -73,21 +78,35 @@ public class RequestProcessor {
 		this.properties = props;
 	}
 
+	@ExceptionHandler({ AccessDeniedException.class })
+	public ResponseEntity<Object> handleAccessDeniedException(Exception ex, WebRequest request) {
+		return new ResponseEntity<Object>("Access denied ", new HttpHeaders(), HttpStatus.FORBIDDEN);
+	}
+
 	@RequestMapping(method = RequestMethod.GET, value = "/get/eligibilityResponse/{InsureeId}", produces = "application/json")
 	@ResponseBody
-	public String getEligibilityResponse(HttpServletResponse response, @PathVariable("InsureeId") String InsureeId)
-			throws IOException, FHIRException {
-		logger.debug("eligibityResponse");
-		EligibilityRequest eligReq = fhirConstructorService.constructFhirEligibilityRequest(InsureeId);
-		EligibilityResponseModel eligibilityResponse = insuranceImplFactory
-				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getDummyEligibilityResponse();
+	public String getEligibilityResponse(HttpServletResponse response, @PathVariable("InsureeId") String InsureeId) {
+		try {
+			logger.debug("eligibityResponse");
+			EligibilityRequest eligReq = fhirConstructorService.constructFhirEligibilityRequest(InsureeId);
+			fhirConstructorService.validateRequest(FhirParser.encodeResourceToString(eligReq));
+			EligibilityResponseModel eligibilityResponse = insuranceImplFactory
+					.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getDummyEligibilityResponse();
 
-		/*
-		 * EligibilityResponseModel eligibilityResponse =
-		 * insuranceImplFactory.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR,
-		 * properties).getElibilityResponse(eligReq);
-		 */
-		return gson.toJson(eligibilityResponse);
+			/*
+			 * EligibilityResponseModel eligibilityResponse =
+			 * insuranceImplFactory.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR,
+			 * properties).getElibilityResponse(eligReq);
+			 */
+			return gson.toJson(eligibilityResponse);
+
+		} catch (DataFormatException | IOException | RestClientException | FhirFormatException e) {
+			OperationOutcomeException operationOutcomeException = new OperationOutcomeException(e.getMessage());
+			logger.error("operationOutcomeException : "
+					+ FhirParser.encodeResourceToString(operationOutcomeException.getOperationOutcome()));
+			return FhirParser.encodeResourceToString(operationOutcomeException.getOperationOutcome());
+
+		}
 	}
 
 	@RequestMapping(method = RequestMethod.POST, value = "/submit/claim", produces = "application/json")
@@ -97,17 +116,17 @@ public class RequestProcessor {
 
 			logger.debug("submitClaim : ");
 			Claim claimRequest = fhirConstructorService.constructFhirClaimRequest(claimParams);
-			fhirConstructorService
-					.validateRequest(FhirParser.encodeResourceToString(claimRequest));
-			
+			fhirConstructorService.validateRequest(FhirParser.encodeResourceToString(claimRequest));
+
 			OperationOutcome claimOperationOutcome = insuranceImplFactory
 					.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).submitClaim(claimRequest);
-			logger.debug("claimOperationOutcome : "+FhirParser.encodeResourceToString(claimOperationOutcome));
+			logger.debug("claimOperationOutcome : " + FhirParser.encodeResourceToString(claimOperationOutcome));
 			return FhirParser.encodeResourceToString(claimOperationOutcome);
 
 		} catch (DataFormatException | IOException | RestClientException | URISyntaxException | FhirFormatException e) {
 			OperationOutcomeException operationOutcomeException = new OperationOutcomeException(e.getMessage());
-			logger.error("operationOutcomeException : "+FhirParser.encodeResourceToString(operationOutcomeException.getOperationOutcome()));
+			logger.error("operationOutcomeException : "
+					+ FhirParser.encodeResourceToString(operationOutcomeException.getOperationOutcome()));
 			return FhirParser.encodeResourceToString(operationOutcomeException.getOperationOutcome());
 
 		}
@@ -119,8 +138,7 @@ public class RequestProcessor {
 	public String getClaimResponse(HttpServletResponse response, @RequestBody ClaimParam claimParams) {
 		try {
 			Claim claimRequest = fhirConstructorService.constructFhirClaimRequest(claimParams);
-			fhirConstructorService
-					.validateRequest(FhirParser.encodeResourceToString(claimRequest));
+			fhirConstructorService.validateRequest(FhirParser.encodeResourceToString(claimRequest));
 
 			ClaimResponseModel claimResponseModel = insuranceImplFactory
 					.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties)
@@ -130,7 +148,8 @@ public class RequestProcessor {
 
 		} catch (DataFormatException | IOException | RestClientException | FhirFormatException e) {
 			OperationOutcomeException operationOutcomeException = new OperationOutcomeException(e.getMessage());
-			logger.error("operationOutcomeException : "+FhirParser.encodeResourceToString(operationOutcomeException.getOperationOutcome()));
+			logger.error("operationOutcomeException : "
+					+ FhirParser.encodeResourceToString(operationOutcomeException.getOperationOutcome()));
 			return FhirParser.encodeResourceToString(operationOutcomeException.getOperationOutcome());
 
 		}
