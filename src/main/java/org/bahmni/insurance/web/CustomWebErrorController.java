@@ -1,37 +1,37 @@
 package org.bahmni.insurance.web;
 
+import static org.apache.log4j.Logger.getLogger;
+
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.bahmni.insurance.model.ErrorJson;
-import org.bahmni.insurance.utils.InsuranceUtils;
+import org.apache.log4j.Logger;
+import org.bahmni.insurance.exception.ErrorJson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.ModelAndView;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 @RestController
-public class CustomErrorController implements ErrorController {
+public class CustomWebErrorController implements ErrorController {
 
 	private static final String PATH = "/error";
+
+	private final Logger logger = getLogger(CustomWebErrorController.class);
 
 	@Autowired
 	private ErrorAttributes errorAttributes;
 
 	@RequestMapping("/error")
-	public ModelAndView handleError(WebRequest request, HttpServletResponse response) throws JsonProcessingException {
-		ModelAndView modelAndView = new ModelAndView();
-		modelAndView.setViewName("error-page");
-		ErrorJson error = new ErrorJson(response.getStatus(), getErrorAttributes(request, false));
+	public ErrorJson handleError(WebRequest request, HttpServletResponse response) {
+		boolean includeStackTrace = false; // TODO: from properties
+		ErrorJson error = new ErrorJson(response.getStatus(), getErrorAttributes(request, includeStackTrace));
+		logger.error(error.getError() + " " + error.getMessage());
+		return error;
 
-		modelAndView.addObject("error", InsuranceUtils.mapToJson(error));
-		return modelAndView;
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-package org.bahmni.insurance.model;
+package org.bahmni.insurance.exception;
 
 import java.util.Map;
 
