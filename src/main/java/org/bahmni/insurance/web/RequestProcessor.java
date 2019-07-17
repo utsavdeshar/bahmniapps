@@ -108,7 +108,11 @@ public class RequestProcessor {
 		}*/
 		logger.debug("submitClaim : ");
 		Claim claimRequest = fhirConstructorService.constructFhirClaimRequest(claimParams);
-		fhirConstructorService.validateRequest(FhirParser.encodeResourceToString(claimRequest));
+		String claimReqStr = FhirParser.encodeResourceToString(claimRequest);
+		if(properties.saveClaimResource) {
+			fhirDaoService.insertFhirResource(claimReqStr, ImisConstants.FHIR_RESOURCE_TYPE.CLAIM.getValue() );
+		}
+		fhirConstructorService.validateRequest(claimReqStr);
 
 		OperationOutcome claimOperationOutcome = insuranceImplFactory
 				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).submitClaim(claimRequest);
@@ -155,11 +159,11 @@ public class RequestProcessor {
 		return fhirDaoService.findAll();
 	}
 
-	@RequestMapping(path = "/add/fhir/claim")
+/*	@RequestMapping(path = "/add/fhir/claim")
 	@ResponseBody
 	public int addFhirClaim() {
 		return fhirDaoService.insertFhirResource();
-	}
+	}*/
 
 	@RequestMapping(path = "/get/fhir/claim/id")
 	@ResponseBody

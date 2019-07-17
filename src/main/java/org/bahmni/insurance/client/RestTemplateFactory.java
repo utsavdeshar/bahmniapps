@@ -64,6 +64,7 @@ public class RestTemplateFactory {
 				Header header = new BasicHeader("Authorization",
 						"Basic " + Base64.encodeBase64(properties.imisUser.getBytes("UTF-8")));
 				defaultHeaders.add(header);
+				
 				credentialsProvider.setCredentials(AuthScope.ANY,
 						new UsernamePasswordCredentials(properties.imisUser, properties.imisPassword));
 			} else if (clientType == ImisConstants.OPENMRS_FHIR) {

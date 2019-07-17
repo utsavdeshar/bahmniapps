@@ -3,10 +3,12 @@ package org.bahmni.insurance.serviceImpl;
 import static org.apache.log4j.Logger.getLogger;
 
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.ImisConstants;
@@ -44,7 +46,7 @@ import ca.uhn.fhir.parser.IParser;
 
 @Component
 public class ImisRestClientServiceImpl extends AInsuranceClientService {
-	private final RestTemplate restTemplate;
+	private final RestTemplate restTemplate = new RestTemplate();
 	private final IParser FhirParser = FhirContext.forDstu3().newJsonParser();
 	private final org.apache.log4j.Logger logger = getLogger(ImisRestClientServiceImpl.class);
 
@@ -52,22 +54,34 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 
 	public ImisRestClientServiceImpl(AppProperties prop) {
 		properties = prop;
-		restTemplate = getRestClient();
+		//restTemplate = getRestClient();
 	}
 
 	public RestTemplate getRestClient() {
 		RestTemplateFactory restFactory = new RestTemplateFactory(properties);
-		return restFactory.getRestTemplate(100); // TODO: remove hardcoded only for dummy
+		return restFactory.getRestTemplate(ImisConstants.OPENIMIS_FHIR); // TODO: remove hardcoded only for dummy
+	}
+	
+	private HttpHeaders createHeaders(String username, String password) {
+		return new HttpHeaders() {
+			private static final long serialVersionUID = 1L;
+			{
+				String auth = username + ":" + password;
+				byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("US-ASCII")));
+				String authHeader = "Basic " + new String(encodedAuth);
+				set("Authorization", authHeader);
+			}
+		};
 	}
 
 	private ResponseEntity<String> sendPostRequest(String requestJson, String url)
 			throws RestClientException, URISyntaxException {
 
-		HttpHeaders headers = new HttpHeaders();
+		HttpHeaders headers = createHeaders(properties.imisUser, properties.imisPassword);
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+		headers.add("Content-Type", "application/json");
 		HttpEntity<String> entity = new HttpEntity<String>(requestJson, headers);
-		HttpComponentsClientHttpRequestFactory requestFactory = (HttpComponentsClientHttpRequestFactory) restTemplate.getRequestFactory();
-		CloseableHttpClient httpClient = (CloseableHttpClient) requestFactory.getHttpClient();
+		System.out.println("requestJson : "+requestJson);
 		return restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
 		
 		/*
