@@ -10,6 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication
 @ComponentScan("org.bahmni.insurance")
 public class SpringBootConsoleApplication {
+	
 	@Autowired
 	DataSource dataSource;
 

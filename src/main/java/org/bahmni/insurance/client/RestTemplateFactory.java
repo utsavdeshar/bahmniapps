@@ -18,6 +18,8 @@ import org.apache.http.message.BasicHeader;
 import org.apache.log4j.Logger;
 import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.ImisConstants;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -39,8 +41,8 @@ public class RestTemplateFactory {
 
 		HttpComponentsClientHttpRequestFactory requestFactory = getClientHttpRequestFactory(clientType);
 
-		// requestFactory.setConnectTimeout(portalConfig.connectTimeout());
-		// requestFactory.setReadTimeout(portalConfig.readTimeout());
+		//requestFactory.setConnectTimeout(3000);
+		//requestFactory.setReadTimeout(3000);
 
 		restTemplate.setRequestFactory(requestFactory);
 		return restTemplate;
@@ -62,6 +64,7 @@ public class RestTemplateFactory {
 				Header header = new BasicHeader("Authorization",
 						"Basic " + Base64.encodeBase64(properties.imisUser.getBytes("UTF-8")));
 				defaultHeaders.add(header);
+				
 				credentialsProvider.setCredentials(AuthScope.ANY,
 						new UsernamePasswordCredentials(properties.imisUser, properties.imisPassword));
 			} else if (clientType == ImisConstants.OPENMRS_FHIR) {
@@ -69,13 +72,18 @@ public class RestTemplateFactory {
 						"Basic " + Base64.encodeBase64(properties.imisUser.getBytes("UTF-8")));
 				defaultHeaders.add(header);
 				credentialsProvider.setCredentials(AuthScope.ANY,
-						new UsernamePasswordCredentials(properties.imisUser, properties.imisPassword));
+						new UsernamePasswordCredentials(properties.openmrsUser, properties.openmrsPassword));
 			} else if (clientType == ImisConstants.OPENMRS_ODOO) {
 				Header header = new BasicHeader("Authorization",
 						"Basic " + Base64.encodeBase64(properties.imisUser.getBytes("UTF-8")));
 				defaultHeaders.add(header);
 				credentialsProvider.setCredentials(AuthScope.ANY,
-						new UsernamePasswordCredentials(properties.imisUser, properties.imisPassword));
+						new UsernamePasswordCredentials(properties.imisConnectUser, properties.imisPassword));
+
+			} else if (clientType == 100) {
+				Header headers = new BasicHeader("Accept",
+						"application/fhir+xml;q=1.0, application/fhir+json;q=1.0, application/xml+fhir;q=0.9, application/json+fhir;q=0.9");
+				defaultHeaders.add(headers);
 
 			}
 

@@ -8,6 +8,6 @@ import org.springframework.dao.DataAccessException;
 
 public interface IFhirResourceDaoService {
     List<FhirResourceModel> findAll();
-	int insertFhirResource() throws DataAccessException;
+	int insertFhirResource(String fhirResource, String resourceType) throws DataAccessException;
 	List<String> getClaimId();
 }

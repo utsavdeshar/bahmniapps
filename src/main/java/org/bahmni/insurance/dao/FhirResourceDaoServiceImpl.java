@@ -3,6 +3,7 @@ package org.bahmni.insurance.dao;
 import java.util.Date;
 import java.util.List;
 
+import org.bahmni.insurance.ImisConstants;
 import org.bahmni.insurance.model.FhirResourceModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -29,9 +30,9 @@ public class FhirResourceDaoServiceImpl implements IFhirResourceDaoService {
 	
 	
 	@Override
-	public int insertFhirResource() throws DataAccessException {
-		return jdbcTemplate.update("INSERT INTO fhir_resource(id, ts, version, resource_type, status, resource) "
-				+ "VALUES (?,?,?,?,?,CAST(? as jsonb))", 11111123, new Date(), "STU3", "Claim", "Requested", convertStringToJson());
+	public int insertFhirResource(String fhirResource, String type) throws DataAccessException {
+		return jdbcTemplate.update("INSERT INTO fhir_resource( ts, version, resource_type, status, resource) "
+				+ "VALUES (?,?,?,?,CAST(? as jsonb))",  new Date(), ImisConstants.FHIR_VERSION, type, "Requested", fhirResource);
 		
 
 	}

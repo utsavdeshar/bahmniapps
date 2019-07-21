@@ -41,5 +41,37 @@ public class AppProperties {
 
 	@Value("${openmrs.odoo.api}")
 	public String openmrsOdooApi;
+	
+	@Value("${dummy.claimResponse.url}")
+	public String dummyClaimResponseUrl;
+	
 
+	@Value("${dummy.eligibilityResponse.url}")
+	public String dummyEligibiltyResponseUrl;
+	
+	@Value("${dummy.claimTrack.url}")
+	public String dummyClaimTrackUrl;
+	
+	@Value("${openimis.enterer.id}")
+	public String openImisEntererId;
+
+	@Value("${openimis.healthFacility.id}")
+	public String openImisHFCode;
+	
+	@Value("${openimis.fhir.api.claim}")
+	public String openImisFhirApiClaim;
+	
+	@Value("${openimis.fhir.api.elig}")
+	public String openImisFhirApiElig;
+	
+	@Value("${imisconnect.eligresource.save}")
+	public boolean saveEligResource;
+	
+	@Value("${imisconnect.claimresource.save}")
+	public boolean saveClaimResource;
+	
+	
+
+
+	
 }
