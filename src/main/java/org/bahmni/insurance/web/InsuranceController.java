@@ -1,6 +1,5 @@
 package org.bahmni.insurance.web;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 
 import javax.validation.Valid;
@@ -13,7 +12,6 @@ import org.bahmni.insurance.model.Insurance;
 import org.bahmni.insurance.service.FInsuranceServiceFactory;
 import org.bahmni.insurance.serviceImpl.FhirConstructorServiceImpl;
 import org.bahmni.insurance.serviceImpl.OpenmrsOdooServiceImpl;
-import org.hl7.fhir.exceptions.FHIRException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
@@ -54,10 +52,11 @@ public class InsuranceController {
 
 	@RequestMapping(value = "/add-info", method = RequestMethod.POST)
 	public String showWelcomePage(@ModelAttribute @Valid Insurance insurance, BindingResult bindingResult, Model model,
-			@RequestParam String nhisNumber, @RequestParam Boolean isMember) throws IOException, FHIRException {
+			@RequestParam String nhisNumber, @RequestParam Boolean isMember) {
 		if (bindingResult.hasErrors()) {
 			System.out.println("BINDING RESULT ERROR");
-			return "add-info";
+			model.addAttribute("error", bindingResult.getAllErrors());
+			return "error-page";
 		} else {
 			EligibilityResponseModel eligibilityResponse = insuranceImplFactory.getInsuranceServiceImpl(100, properties)
 					.getDummyEligibilityResponse();
@@ -76,9 +75,9 @@ public class InsuranceController {
 			model.addAttribute("insurance", insurance);
 			model.addAttribute("nhisNumber", insurance.getNhisNumber());
 			model.addAttribute("isMember", isMember);
-			System.out.println(model.addAttribute("nhisNumber", nhisNumber));
 
 			return "index";
+
 		}
 	}
 

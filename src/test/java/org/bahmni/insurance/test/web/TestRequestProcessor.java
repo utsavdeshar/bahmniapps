@@ -124,11 +124,12 @@ public class TestRequestProcessor extends AbstractWebTest {
 				.accept(MediaType.APPLICATION_JSON)
 				.contentType("application/json").content(claimParamJson))
 				.andReturn();
+		String resultContent = mvcresult.getResponse().getContentAsString();
+		System.out.println("resultContent "+resultContent);
 		
 		int status = mvcresult.getResponse().getStatus();
 		assertEquals(200, status);
 		
-		String resultContent = mvcresult.getResponse().getContentAsString();
 		OperationOutcome outcome = (OperationOutcome) FhirParser.parseResource(resultContent);
 		assertEquals(IssueSeverity.INFORMATION, outcome.getIssue().get(0).getSeverity());
 		

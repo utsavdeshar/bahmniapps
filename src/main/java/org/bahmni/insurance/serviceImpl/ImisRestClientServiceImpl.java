@@ -2,12 +2,14 @@ package org.bahmni.insurance.serviceImpl;
 
 import static org.apache.log4j.Logger.getLogger;
 
+import java.net.HttpCookie;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.commons.codec.binary.Base64;
 import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.ImisConstants;
 import org.bahmni.insurance.client.RestTemplateFactory;
@@ -27,14 +29,13 @@ import org.hl7.fhir.dstu3.model.EligibilityResponse.InsuranceComponent;
 import org.hl7.fhir.dstu3.model.OperationOutcome;
 import org.hl7.fhir.dstu3.model.Task;
 import org.hl7.fhir.exceptions.FHIRException;/*
-import org.openmrs.module.fhir.api.client.ClientHttpEntity;
-import org.openmrs.module.fhir.api.helper.ClientHelper;*/
+												import org.openmrs.module.fhir.api.client.ClientHttpEntity;
+												import org.openmrs.module.fhir.api.helper.ClientHelper;*/
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -44,7 +45,7 @@ import ca.uhn.fhir.parser.IParser;
 
 @Component
 public class ImisRestClientServiceImpl extends AInsuranceClientService {
-	private final RestTemplate restTemplate;
+	private final RestTemplate restTemplate = new RestTemplate();
 	private final IParser FhirParser = FhirContext.forDstu3().newJsonParser();
 	private final org.apache.log4j.Logger logger = getLogger(ImisRestClientServiceImpl.class);
 
@@ -52,31 +53,62 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 
 	public ImisRestClientServiceImpl(AppProperties prop) {
 		properties = prop;
-		restTemplate = getRestClient();
+		// restTemplate = getRestClient();
 	}
 
 	public RestTemplate getRestClient() {
 		RestTemplateFactory restFactory = new RestTemplateFactory(properties);
-		return restFactory.getRestTemplate(100); // TODO: remove hardcoded only for dummy
+		return restFactory.getRestTemplate(ImisConstants.OPENIMIS_FHIR);
 	}
 
-	private ResponseEntity<String> sendPostRequest(String requestJson, String url)
-			throws RestClientException, URISyntaxException {
+	private HttpHeaders createHeaders(String username, String password) {
+		return new HttpHeaders() {
+			private static final long serialVersionUID = 1L;
+			{
+				String auth = username + ":" + password;
+				byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("US-ASCII")));
+				String authHeader = "Basic " + new String(encodedAuth);
+				set("Authorization", authHeader);
+			}
+		};
+	}
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-		HttpEntity<String> entity = new HttpEntity<String>(requestJson, headers);
-		HttpComponentsClientHttpRequestFactory requestFactory = (HttpComponentsClientHttpRequestFactory) restTemplate.getRequestFactory();
-		CloseableHttpClient httpClient = (CloseableHttpClient) requestFactory.getHttpClient();
-		return restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-		
-		/*
-		ClientHelper helper = getClientHelper(ImisConstants.REST_CLIENT);
-		prepareRestTemplate(helper);
-		ClientHttpEntity<?> request = helper.createRequest(properties.imisUrl + url, object);
-		return exchange(helper, request, String.class);
-	*/
+	private String getCSRFToken() {
+
+		HttpHeaders headers = createHeaders(properties.imisUser, properties.imisPassword);
+		// headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+		HttpEntity<String> entity = new HttpEntity<String>(headers);
+		HttpHeaders responseHeaders = restTemplate.exchange(properties.imisUrl, HttpMethod.GET, entity, String.class)
+				.getHeaders();
+		// return responseHeaders.get("Set-Cookie").get(0);
+
+		List<HttpCookie> cookies = HttpCookie.parse(responseHeaders.get("Set-Cookie").get(0));
+		String csrfToken = null;
+		for (HttpCookie c : cookies) {
+			if ("csrftoken".equals(c.getName())) {
+				csrfToken = c.getValue();
+				break;
+			}
 		}
+		return csrfToken;
+
+	}
+
+	private ResponseEntity<String> sendPostRequest(String requestJson, String url) {
+
+		HttpHeaders headers = createHeaders(properties.imisUser, properties.imisPassword);
+		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+		headers.add("Content-Type", "application/json");
+		HttpEntity<String> entity = new HttpEntity<String>(requestJson, headers);
+		return restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+
+		/*
+		 * ClientHelper helper = getClientHelper(ImisConstants.REST_CLIENT);
+		 * prepareRestTemplate(helper); ClientHttpEntity<?> request =
+		 * helper.createRequest(properties.imisUrl + url, object); return
+		 * exchange(helper, request, String.class);
+		 */
+	}
 
 	private String sendGetRequest(String url) {
 		HttpHeaders headers = new HttpHeaders();
@@ -86,13 +118,15 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 
 	}
 
-/*	private ResponseEntity<String> exchange(ClientHelper helper, ClientHttpEntity<?> request, Class<String> clazz) {
-		
-		HttpHeaders headers = new HttpHeaders();
-		HttpEntity<?> entity = new HttpEntity<Object>(request.getBody(), headers);
-		return restTemplate.exchange(request.getUrl(), request.getMethod(), entity, clazz);
-	}
-*/
+	/*
+	 * private ResponseEntity<String> exchange(ClientHelper helper,
+	 * ClientHttpEntity<?> request, Class<String> clazz) {
+	 * 
+	 * HttpHeaders headers = new HttpHeaders(); HttpEntity<?> entity = new
+	 * HttpEntity<Object>(request.getBody(), headers); return
+	 * restTemplate.exchange(request.getUrl(), request.getMethod(), entity, clazz);
+	 * }
+	 */
 	/*
 	 * private HttpHeaders setRequestHeaders(ClientHelper clientHelper, HttpHeaders
 	 * headers) { for (ClientHttpRequestInterceptor interceptor :
@@ -101,17 +135,19 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	 * headers; }
 	 */
 
-	/*private void prepareRestTemplate(ClientHelper clientHelper) {
-		List<HttpMessageConverter<?>> converters = new ArrayList<>(clientHelper.getCustomMessageConverter());
-		converters.add(new RequestWrapperConverter());
-		restTemplate.setMessageConverters(converters);
-	}*/
+	/*
+	 * private void prepareRestTemplate(ClientHelper clientHelper) {
+	 * List<HttpMessageConverter<?>> converters = new
+	 * ArrayList<>(clientHelper.getCustomMessageConverter()); converters.add(new
+	 * RequestWrapperConverter()); restTemplate.setMessageConverters(converters); }
+	 */
 
 	@Override
-	public OperationOutcome submitClaim(Claim claimRequest) throws RestClientException, URISyntaxException {
+	public OperationOutcome submitClaim(Claim claimRequest) {
 		String jsonClaimRequest = FhirParser.encodeResourceToString(claimRequest);
-		ResponseEntity<String> responseObject = sendPostRequest(jsonClaimRequest, properties.openImisFhirApiClaim); 
+		ResponseEntity<String> responseObject = sendPostRequest(jsonClaimRequest, properties.openImisFhirApiClaim);
 		OperationOutcome outCome = (OperationOutcome) FhirParser.parseResource(responseObject.getBody());
+
 		return outCome;
 	}
 
@@ -120,7 +156,8 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 			throws RestClientException, URISyntaxException, FHIRException {
 		String jsonEligRequest = FhirParser.encodeResourceToString(eligbilityRequest);
 		ResponseEntity<String> responseObject = sendPostRequest(jsonEligRequest, properties.openImisFhirApiElig);
-		EligibilityResponse eligibilityResponse = (EligibilityResponse) FhirParser.parseResource(responseObject.getBody());
+		EligibilityResponse eligibilityResponse = (EligibilityResponse) FhirParser
+				.parseResource(responseObject.getBody());
 		return populateEligibilityRespModel(eligibilityResponse);
 	}
 
@@ -132,7 +169,7 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 
 	@Override
 	public ClaimResponseModel getDummyClaimResponse(Claim claimRequest) {
-		String claimResponseBody =  sendGetRequest(properties.dummyClaimResponseUrl);
+		String claimResponseBody = sendGetRequest(properties.dummyClaimResponseUrl);
 		ClaimResponse dummyClaimResponse = (ClaimResponse) FhirParser.parseResource(claimResponseBody);
 		String jsonClaimRequest = FhirParser.encodeResourceToString(claimRequest);
 		logger.debug("jsonClaimRequest ==> " + jsonClaimRequest);

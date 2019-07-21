@@ -15,7 +15,6 @@ import org.bahmni.insurance.client.RestTemplateFactory;
 import org.bahmni.insurance.dao.FhirResourceDaoServiceImpl;
 import org.bahmni.insurance.dao.IFhirResourceDaoService;
 import org.bahmni.insurance.exception.FhirFormatException;
-import org.bahmni.insurance.exception.OperationOutcomeException;
 import org.bahmni.insurance.model.ClaimParam;
 import org.bahmni.insurance.model.ClaimResponseModel;
 import org.bahmni.insurance.model.ClaimTrackingModel;
@@ -26,13 +25,17 @@ import org.bahmni.insurance.service.FInsuranceServiceFactory;
 import org.bahmni.insurance.service.IOpenmrsOdooService;
 import org.bahmni.insurance.serviceImpl.FhirConstructorServiceImpl;
 import org.bahmni.insurance.serviceImpl.OpenmrsOdooServiceImpl;
+import org.bahmni.insurance.utils.InsuranceUtils;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.OperationOutcome;
 import org.hl7.fhir.dstu3.model.Task;
-import org.hl7.fhir.exceptions.FHIRException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,9 +43,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import org.springframework.web.context.request.WebRequest;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.DataFormatException;
@@ -57,7 +58,6 @@ public class RequestProcessor {
 	private final IOpenmrsOdooService odooService;
 	private final IFhirResourceDaoService fhirDaoService;
 	private final FInsuranceServiceFactory insuranceImplFactory;
-	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	private final IParser FhirParser = FhirContext.forDstu3().newJsonParser();
 
 	private final AppProperties properties;
@@ -73,12 +73,18 @@ public class RequestProcessor {
 		this.properties = props;
 	}
 
+	@ExceptionHandler({ AccessDeniedException.class })
+	public ResponseEntity<Object> handleAccessDeniedException(Exception ex, WebRequest request) {
+		return new ResponseEntity<Object>("Access denied ", new HttpHeaders(), HttpStatus.FORBIDDEN);
+	}
+
 	@RequestMapping(method = RequestMethod.GET, value = "/get/eligibilityResponse/{InsureeId}", produces = "application/json")
 	@ResponseBody
 	public String getEligibilityResponse(HttpServletResponse response, @PathVariable("InsureeId") String InsureeId)
-			throws IOException, FHIRException {
+			throws DataFormatException, IOException {
 		logger.debug("eligibityResponse");
 		EligibilityRequest eligReq = fhirConstructorService.constructFhirEligibilityRequest(InsureeId);
+		fhirConstructorService.validateRequest(FhirParser.encodeResourceToString(eligReq));
 		EligibilityResponseModel eligibilityResponse = insuranceImplFactory
 				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getDummyEligibilityResponse();
 
@@ -87,53 +93,44 @@ public class RequestProcessor {
 		 * insuranceImplFactory.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR,
 		 * properties).getElibilityResponse(eligReq);
 		 */
-		return gson.toJson(eligibilityResponse);
+		return InsuranceUtils.mapToJson(eligibilityResponse);
+		//return gson.toJson(eligibilityResponse);
+
 	}
 
 	@RequestMapping(method = RequestMethod.POST, value = "/submit/claim", produces = "application/json")
 	@ResponseBody
-	public String submitClaim(HttpServletResponse response, @RequestBody ClaimParam claimParams) {
-		try {
-
-			logger.debug("submitClaim : ");
-			Claim claimRequest = fhirConstructorService.constructFhirClaimRequest(claimParams);
-			fhirConstructorService
-					.validateRequest(FhirParser.encodeResourceToString(claimRequest));
-			
-			OperationOutcome claimOperationOutcome = insuranceImplFactory
-					.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).submitClaim(claimRequest);
-			logger.debug("claimOperationOutcome : "+FhirParser.encodeResourceToString(claimOperationOutcome));
-			return FhirParser.encodeResourceToString(claimOperationOutcome);
-
-		} catch (DataFormatException | IOException | RestClientException | URISyntaxException | FhirFormatException e) {
-			OperationOutcomeException operationOutcomeException = new OperationOutcomeException(e.getMessage());
-			logger.error("operationOutcomeException : "+FhirParser.encodeResourceToString(operationOutcomeException.getOperationOutcome()));
-			return FhirParser.encodeResourceToString(operationOutcomeException.getOperationOutcome());
-
+	public String submitClaim(HttpServletResponse response, @RequestBody ClaimParam claimParams)
+			throws RestClientException, URISyntaxException, DataFormatException, IOException {
+		/*boolean something = true;
+		if (something) {
+			throw new FhirFormatException("Fhir format error");
+		}*/
+		logger.debug("submitClaim : ");
+		Claim claimRequest = fhirConstructorService.constructFhirClaimRequest(claimParams);
+		String claimReqStr = FhirParser.encodeResourceToString(claimRequest);
+		if(properties.saveClaimResource) {
+			fhirDaoService.insertFhirResource(claimReqStr, ImisConstants.FHIR_RESOURCE_TYPE.CLAIM.getValue() );
 		}
+		fhirConstructorService.validateRequest(claimReqStr);
+
+		OperationOutcome claimOperationOutcome = insuranceImplFactory
+				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).submitClaim(claimRequest);
+		logger.debug("claimOperationOutcome : " + FhirParser.encodeResourceToString(claimOperationOutcome));
+
+		return FhirParser.encodeResourceToString(claimOperationOutcome);
 
 	}
 
 	@RequestMapping(method = RequestMethod.POST, value = "get/claim/response", produces = "application/json")
 	@ResponseBody
-	public String getClaimResponse(HttpServletResponse response, @RequestBody ClaimParam claimParams) {
-		try {
-			Claim claimRequest = fhirConstructorService.constructFhirClaimRequest(claimParams);
-			fhirConstructorService
-					.validateRequest(FhirParser.encodeResourceToString(claimRequest));
-
-			ClaimResponseModel claimResponseModel = insuranceImplFactory
-					.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties)
-					.getDummyClaimResponse(claimRequest);
-
-			return gson.toJson(claimResponseModel);
-
-		} catch (DataFormatException | IOException | RestClientException | FhirFormatException e) {
-			OperationOutcomeException operationOutcomeException = new OperationOutcomeException(e.getMessage());
-			logger.error("operationOutcomeException : "+FhirParser.encodeResourceToString(operationOutcomeException.getOperationOutcome()));
-			return FhirParser.encodeResourceToString(operationOutcomeException.getOperationOutcome());
-
-		}
+	public String getClaimResponse(HttpServletResponse response, @RequestBody ClaimParam claimParams)
+			throws IOException {
+		Claim claimRequest = fhirConstructorService.constructFhirClaimRequest(claimParams);
+		fhirConstructorService.validateRequest(FhirParser.encodeResourceToString(claimRequest));
+		ClaimResponseModel claimResponseModel = insuranceImplFactory
+				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getDummyClaimResponse(claimRequest);
+		return InsuranceUtils.mapToJson(claimResponseModel);
 
 	}
 
@@ -144,8 +141,8 @@ public class RequestProcessor {
 		Task claimTrackTask = fhirConstructorService.constructFhirClaimTrackRequest(claimId);
 		ClaimTrackingModel claimTracking = insuranceImplFactory
 				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getDummyClaimTrack();
-		logger.debug("ClaimTracking model == " + gson.toJson(claimTracking));
-		return gson.toJson(claimTracking);
+		logger.debug("ClaimTracking model == " + InsuranceUtils.mapToJson(claimTracking));
+		return InsuranceUtils.mapToJson(claimTracking);
 
 	}
 
@@ -162,11 +159,11 @@ public class RequestProcessor {
 		return fhirDaoService.findAll();
 	}
 
-	@RequestMapping(path = "/add/fhir/claim")
+/*	@RequestMapping(path = "/add/fhir/claim")
 	@ResponseBody
 	public int addFhirClaim() {
 		return fhirDaoService.insertFhirResource();
-	}
+	}*/
 
 	@RequestMapping(path = "/get/fhir/claim/id")
 	@ResponseBody
