@@ -8,13 +8,15 @@ public class ErrorJson {
 	private String error;
 	private String message;
 	private String timeStamp;
+	private String operationOutComeException;
 	private String trace;
 
-	public ErrorJson(int status, Map<String, Object> errorAttributes) {
+	public ErrorJson(int status, String operationOutComeException, Map<String, Object> errorAttributes) {
 		this.status = status;
 		this.error = (String) errorAttributes.get("error");
 		this.message = (String) errorAttributes.get("message");
 		this.timeStamp = errorAttributes.get("timestamp").toString();
+		this.operationOutComeException = operationOutComeException;
 		this.trace = (String) errorAttributes.get("trace");
 	}
 
@@ -36,5 +38,13 @@ public class ErrorJson {
 
 	public String getTrace() {
 		return trace;
+	}
+
+	public String getOperationOutComeException() {
+		return operationOutComeException;
+	}
+
+	public void setOperationOutComeException(String operationOutComeException) {
+		this.operationOutComeException = operationOutComeException;
 	}
 }
