@@ -2,7 +2,6 @@ package org.bahmni.insurance.serviceImpl;
 
 import static org.apache.log4j.Logger.getLogger;
 
-import java.net.HttpCookie;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -13,7 +12,8 @@ import org.apache.commons.codec.binary.Base64;
 import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.ImisConstants;
 import org.bahmni.insurance.client.RestTemplateFactory;
-import org.bahmni.insurance.model.ClaimLineItem;
+import org.bahmni.insurance.model.ClaimLineItemRequest;
+import org.bahmni.insurance.model.ClaimLineItemResponse;
 import org.bahmni.insurance.model.ClaimResponseModel;
 import org.bahmni.insurance.model.ClaimTrackingModel;
 import org.bahmni.insurance.model.EligibilityBalance;
@@ -26,7 +26,6 @@ import org.hl7.fhir.dstu3.model.ClaimResponse.ItemComponent;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.EligibilityResponse;
 import org.hl7.fhir.dstu3.model.EligibilityResponse.InsuranceComponent;
-import org.hl7.fhir.dstu3.model.OperationOutcome;
 import org.hl7.fhir.dstu3.model.Task;
 import org.hl7.fhir.exceptions.FHIRException;/*
 												import org.openmrs.module.fhir.api.client.ClientHttpEntity;
@@ -42,6 +41,7 @@ import org.springframework.web.client.RestTemplate;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
+import ch.qos.logback.core.net.SyslogOutputStream;
 
 @Component
 public class ImisRestClientServiceImpl extends AInsuranceClientService {
@@ -71,27 +71,6 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 				set("Authorization", authHeader);
 			}
 		};
-	}
-
-	private String getCSRFToken() {
-
-		HttpHeaders headers = createHeaders(properties.imisUser, properties.imisPassword);
-		// headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-		HttpEntity<String> entity = new HttpEntity<String>(headers);
-		HttpHeaders responseHeaders = restTemplate.exchange(properties.imisUrl, HttpMethod.GET, entity, String.class)
-				.getHeaders();
-		// return responseHeaders.get("Set-Cookie").get(0);
-
-		List<HttpCookie> cookies = HttpCookie.parse(responseHeaders.get("Set-Cookie").get(0));
-		String csrfToken = null;
-		for (HttpCookie c : cookies) {
-			if ("csrftoken".equals(c.getName())) {
-				csrfToken = c.getValue();
-				break;
-			}
-		}
-		return csrfToken;
-
 	}
 
 	private ResponseEntity<String> sendPostRequest(String requestJson, String url) {
@@ -143,12 +122,12 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	 */
 
 	@Override
-	public OperationOutcome submitClaim(Claim claimRequest) {
+	public ClaimResponseModel submitClaim(Claim claimRequest) {
 		String jsonClaimRequest = FhirParser.encodeResourceToString(claimRequest);
 		ResponseEntity<String> responseObject = sendPostRequest(jsonClaimRequest, properties.openImisFhirApiClaim);
-		OperationOutcome outCome = (OperationOutcome) FhirParser.parseResource(responseObject.getBody());
-
-		return outCome;
+		ClaimResponse claimResponse = (ClaimResponse) FhirParser.parseResource(responseObject.getBody());
+		System.out.println("ClaimResponse : "+FhirParser.encodeResourceToString(claimResponse));
+		return populateClaimRespModel(claimResponse);
 	}
 
 	@Override
@@ -179,35 +158,38 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 
 	private ClaimResponseModel populateClaimRespModel(ClaimResponse claimResponse) {
 		ClaimResponseModel clmRespModel = new ClaimResponseModel();
+		
+		clmRespModel.setClaimStatus(claimResponse.getOutcome().getText());
 		clmRespModel.setClaimId(claimResponse.getId());
-		clmRespModel.setApprovedTotal(claimResponse.getTotalBenefit().getValue());
-		clmRespModel.setClaimedTotal(claimResponse.getTotalCost().getValue());
-		clmRespModel.setClaimStatus(claimResponse.getStatus().toString());
-		clmRespModel.setPaymentType(claimResponse.getPayment().getType().getCoding().get(0).getCode());
-		clmRespModel.setOutCome(claimResponse.getOutcome().getCoding().get(0).getCode());
-		clmRespModel.setDateProcessed(claimResponse.getPayment().getDate());
+		
+		if(ImisConstants.CLAIM_OUTCOME.REJECTED.getOutCome().equals(claimResponse.getOutcome().getText())) {
+			clmRespModel.setApprovedTotal(claimResponse.getTotalBenefit().getValue());
+			clmRespModel.setDateProcessed(claimResponse.getPayment().getDate());
+		}
 
-		List<ClaimLineItem> claimLineItems = new ArrayList<>();
+		List<ClaimLineItemResponse> claimLineItems = new ArrayList<>();
 		for (ItemComponent responseItem : claimResponse.getItem()) {
-			ClaimLineItem claimItem = new ClaimLineItem();
+			ClaimLineItemResponse claimItem = new ClaimLineItemResponse();
 			claimItem.setSequence(responseItem.getSequenceLinkIdElement().getValue());
 
 			for (AdjudicationComponent adj : responseItem.getAdjudication()) {
-				if (ImisConstants.ADJUDICATION_ELIGIBLE
-						.equalsIgnoreCase(adj.getCategory().getCoding().get(0).getCode())) {
-					claimItem.setTotalClaimed(adj.getAmount().getValue());
+				if(ImisConstants.CLAIM_ADJ_CATEGORY.GENERAL.equals(adj.getCategory().getText())){
+					claimItem.setStatus(adj.getReason().getText());
+					claimItem.setQuantityApproved(adj.getValue());
+					if (ImisConstants.CLAIM_ITEM_STATUS.PASSED.equalsIgnoreCase(adj.getReason().getText())) {
+						claimItem.setTotalApproved(adj.getAmount().getValue());
+					}
 				}
-				if (ImisConstants.ADJUDICATION_BENEFIT
-						.equalsIgnoreCase(adj.getCategory().getCoding().get(0).getCode())) {
-					claimItem.setTotalApproved(adj.getAmount().getValue());
+				if(ImisConstants.CLAIM_ADJ_CATEGORY.REJECTED_REASON.equals(adj.getCategory().getText())){
+					claimItem.setRejectedReason(adj.getReason().getCoding().get(0).getCode());
 				}
 			}
-
+			claimItem.setSequence(responseItem.getSequenceLinkId());
 			claimLineItems.add(claimItem);
+			
 		}
 		clmRespModel.setClaimLineItems(claimLineItems);
 		return clmRespModel;
-
 	}
 
 	@Override

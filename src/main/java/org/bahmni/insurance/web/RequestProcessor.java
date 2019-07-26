@@ -14,7 +14,6 @@ import org.bahmni.insurance.ImisConstants;
 import org.bahmni.insurance.client.RestTemplateFactory;
 import org.bahmni.insurance.dao.FhirResourceDaoServiceImpl;
 import org.bahmni.insurance.dao.IFhirResourceDaoService;
-import org.bahmni.insurance.exception.FhirFormatException;
 import org.bahmni.insurance.model.ClaimParam;
 import org.bahmni.insurance.model.ClaimResponseModel;
 import org.bahmni.insurance.model.ClaimTrackingModel;
@@ -27,8 +26,8 @@ import org.bahmni.insurance.serviceImpl.FhirConstructorServiceImpl;
 import org.bahmni.insurance.serviceImpl.OpenmrsOdooServiceImpl;
 import org.bahmni.insurance.utils.InsuranceUtils;
 import org.hl7.fhir.dstu3.model.Claim;
+import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
-import org.hl7.fhir.dstu3.model.OperationOutcome;
 import org.hl7.fhir.dstu3.model.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -100,25 +99,22 @@ public class RequestProcessor {
 
 	@RequestMapping(method = RequestMethod.POST, value = "/submit/claim", produces = "application/json")
 	@ResponseBody
-	public String submitClaim(HttpServletResponse response, @RequestBody ClaimParam claimParams)
+	public ClaimResponseModel submitClaim(HttpServletResponse response, @RequestBody ClaimParam claimParams)
 			throws RestClientException, URISyntaxException, DataFormatException, IOException {
-		/*boolean something = true;
-		if (something) {
-			throw new FhirFormatException("Fhir format error");
-		}*/
 		logger.debug("submitClaim : ");
 		Claim claimRequest = fhirConstructorService.constructFhirClaimRequest(claimParams);
+		logger.error("claimRequest : "+FhirParser.encodeResourceToString(claimRequest));
 		String claimReqStr = FhirParser.encodeResourceToString(claimRequest);
 		if(properties.saveClaimResource) {
 			fhirDaoService.insertFhirResource(claimReqStr, ImisConstants.FHIR_RESOURCE_TYPE.CLAIM.getValue() );
 		}
 		fhirConstructorService.validateRequest(claimReqStr);
 
-		OperationOutcome claimOperationOutcome = insuranceImplFactory
+		ClaimResponseModel claimResponseModel = insuranceImplFactory
 				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).submitClaim(claimRequest);
-		logger.debug("claimOperationOutcome : " + FhirParser.encodeResourceToString(claimOperationOutcome));
+		logger.debug("claimResponseModel : " + InsuranceUtils.mapToJson(claimResponseModel));
 
-		return FhirParser.encodeResourceToString(claimOperationOutcome);
+		return claimResponseModel;
 
 	}
 

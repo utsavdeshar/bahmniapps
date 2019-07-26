@@ -24,7 +24,7 @@ public abstract class AInsuranceClientService {
 		return clientHelper;
 	}
 */
-	public abstract OperationOutcome submitClaim(Claim claimRequest) throws RestClientException, URISyntaxException;
+	public abstract ClaimResponseModel submitClaim(Claim claimRequest) throws RestClientException, URISyntaxException;
 
 	public abstract EligibilityResponseModel getElibilityResponse(EligibilityRequest eligbilityRequest)
 			throws RestClientException, URISyntaxException, FHIRException;
