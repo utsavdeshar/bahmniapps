@@ -85,7 +85,7 @@ public class TestRequestProcessor extends AbstractWebTest {
 	public void getClaimResponse() throws Exception {
 
 		String claimParamJson = "{\r\n" + "	\"patientUUID\":\"123123123avfa21\",\r\n"
-				+ "	\"visitUUID\":\"1231231231123212\",\r\n" + "	\"claimId\": \"CID00091\",\r\n"
+				+ "	\"visitUUID\":\"63273a41-b589-464c-af03-355de823d1b3\",\r\n" + "	\"claimId\": \"CID00091\",\r\n"
 				+ "	\"insureeId\": \"105000002\",\r\n" + "	\"item\": [\r\n" + "		{\r\n"
 				+ "		\"category\": \"item\",\r\n" + "		\"quantity\": 10,\r\n" + "		\"sequence\": 1,\r\n"
 				+ "		\"service\": \"ICode\",\r\n" + "		\"unitPrice\": 20,\r\n"

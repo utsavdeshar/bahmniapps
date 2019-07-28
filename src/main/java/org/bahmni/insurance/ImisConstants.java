@@ -5,6 +5,7 @@ public class ImisConstants {
 	public final static int OPENIMIS_FHIR = 0;
 	public final static int OPENMRS_FHIR = 1;
 	public final static int OPENMRS_ODOO = 2;
+	public final static int OPENMRS_API = 3;
 	
 	public class CLAIM_ITEM_STATUS {
 		public final static String PASSED = "passed";

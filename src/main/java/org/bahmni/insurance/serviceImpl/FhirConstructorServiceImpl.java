@@ -13,11 +13,11 @@ import org.bahmni.insurance.ImisConstants;
 import org.bahmni.insurance.exception.FhirFormatException;
 import org.bahmni.insurance.model.ClaimLineItemRequest;
 import org.bahmni.insurance.model.ClaimParam;
+import org.bahmni.insurance.model.VisitSummary;
 import org.bahmni.insurance.service.AFhirConstructorService;
 import org.bahmni.insurance.utils.InsuranceUtils;
 import org.bahmni.insurance.validation.FhirInstanceValidator;
 import org.hl7.fhir.dstu3.model.Claim;
-import org.hl7.fhir.dstu3.model.Claim.DiagnosisComponent;
 import org.hl7.fhir.dstu3.model.Claim.ItemComponent;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
@@ -49,6 +49,9 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 
 	@Autowired
 	private AppProperties properties;
+	
+	@Autowired 
+	private BahmniOpenmrsApiClientServiceImpl bahmniApiService;
 
 	@Override
 	public String getFhirPatient(String name) {
@@ -105,9 +108,11 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 		claimReq.setPatient(patientReference);
 
 		// BillablePeriod
+		
 		Period period = new Period();
-		period.setStart(InsuranceUtils.convertBahmniDateToImis("2019-07-04 08:30:35.0"));
-		period.setEnd(new Date());
+		VisitSummary visitDetails = bahmniApiService.getVisitDetail(claimParam.getVisitUUID());
+		period.setStart(new Date( visitDetails.getStartDateTime()));
+		period.setEnd(new Date( visitDetails.getStopDateTime()));
 		claimReq.setBillablePeriod(period);
 		claimReq.setCreated(new Date());
 
@@ -150,7 +155,7 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 		
 		
 		CodeableConcept typeValue =  new CodeableConcept();
-		typeValue.setText("O") ; // TODO: extract from visit type
+		typeValue.setText(visitDetails.getVisitType()) ; 
 		claimReq.setType(typeValue);
 		
 		return claimReq;
