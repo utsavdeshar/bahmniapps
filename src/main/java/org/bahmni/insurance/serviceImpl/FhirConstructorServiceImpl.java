@@ -11,12 +11,13 @@ import org.apache.commons.codec.binary.Base64;
 import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.ImisConstants;
 import org.bahmni.insurance.exception.FhirFormatException;
-import org.bahmni.insurance.model.ClaimLineItem;
+import org.bahmni.insurance.model.ClaimLineItemRequest;
 import org.bahmni.insurance.model.ClaimParam;
+import org.bahmni.insurance.model.VisitSummary;
 import org.bahmni.insurance.service.AFhirConstructorService;
+import org.bahmni.insurance.utils.InsuranceUtils;
 import org.bahmni.insurance.validation.FhirInstanceValidator;
 import org.hl7.fhir.dstu3.model.Claim;
-import org.hl7.fhir.dstu3.model.Claim.DiagnosisComponent;
 import org.hl7.fhir.dstu3.model.Claim.ItemComponent;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
@@ -48,6 +49,9 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 
 	@Autowired
 	private AppProperties properties;
+	
+	@Autowired 
+	private BahmniOpenmrsApiClientServiceImpl bahmniApiService;
 
 	@Override
 	public String getFhirPatient(String name) {
@@ -104,26 +108,31 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 		claimReq.setPatient(patientReference);
 
 		// BillablePeriod
+		
 		Period period = new Period();
-		period.setStart(new Date());
-		period.setEnd(new Date());
+		VisitSummary visitDetails = bahmniApiService.getVisitDetail(claimParam.getVisitUUID());
+		period.setStart(new Date( visitDetails.getStartDateTime()));
+		period.setEnd(new Date( visitDetails.getStopDateTime()));
 		claimReq.setBillablePeriod(period);
 		claimReq.setCreated(new Date());
 
-		// Diagnosis : //TODO: retrieve diagnosis from openmrs
-		List<DiagnosisComponent> listDiagnosis = new ArrayList<>();
-		DiagnosisComponent diagnosis = new DiagnosisComponent();
-		diagnosis.setSequence(1);
-		CodeableConcept codeableConcept = new CodeableConcept();
+		// Diagnosis 
+		Claim.DiagnosisComponent diagnosisComponent = new Claim.DiagnosisComponent();
+		CodeableConcept concept = new CodeableConcept();
 		Coding code = new Coding();
-		code.setSystem("https://icd.who.int/browse10/2010/en"); // TODO:
-		code.setCode("ICD10-code"); // TODO:
-		code.setDisplay("Diagnosis Name");// TODO:
-		codeableConcept.addCoding(code);
-		diagnosis.addType(codeableConcept);
-		listDiagnosis.add(diagnosis);
-		claimReq.setDiagnosis(listDiagnosis);
+		code.setCode("A09"); // TODO: extract from openmrs api
+		concept.addCoding(code);
+		diagnosisComponent.setDiagnosis(concept);
+		
+		diagnosisComponent.setSequence(1);
+		
+		CodeableConcept conceptType = new CodeableConcept();
+		conceptType.setText("icd_0"); //TODO: remove hardcoded
+		diagnosisComponent.addType(conceptType);
+		
 
+		claimReq.addDiagnosis(diagnosisComponent);
+		
 		// Items/services for claims
 
 		List<ItemComponent> listItemComponent = populateClaimableItems(claimParam.getItem());
@@ -137,13 +146,24 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 		// "Facility"
 		Reference facilityReference = new Reference();
 		facilityReference.setReference("Location/" + properties.openImisHFCode);
-		claimReq.setEnterer(facilityReference);
+		claimReq.setFacility(facilityReference);
+		claimReq.setId(claimParam.getClaimId());
+		
+		Money total  = new Money();
+		total.setValue(claimParam.getTotal());
+		claimReq.setTotal(total);
+		
+		
+		CodeableConcept typeValue =  new CodeableConcept();
+		typeValue.setText(visitDetails.getVisitType()) ; 
+		claimReq.setType(typeValue);
+		
 		return claimReq;
 	}
 
-	private List<ItemComponent> populateClaimableItems(List<ClaimLineItem> listItem) {
+	private List<ItemComponent> populateClaimableItems(List<ClaimLineItemRequest> listItem) {
 		List<ItemComponent> listItemComponent = new ArrayList<>();
-		for (ClaimLineItem claimItem : listItem) {
+		for (ClaimLineItemRequest claimItem : listItem) {
 			ItemComponent itemComponent = new ItemComponent();
 			itemComponent.setSequence(claimItem.getSequence());
 
@@ -156,7 +176,7 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 			itemComponent.setQuantity(simpleQuantity);
 
 			CodeableConcept codeConceptService = new CodeableConcept();
-			codeConceptService.setText(claimItem.getService());
+			codeConceptService.setText(claimItem.getCode());
 			itemComponent.setService(codeConceptService);
 
 			Money value = new Money();

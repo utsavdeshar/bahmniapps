@@ -7,58 +7,20 @@ import java.util.List;
 public class ClaimResponseModel {
 
 	private String claimId;
-	private String nhisId;
-	private String patientId;
-	private String policyStatus;
 	private BigDecimal claimedTotal;
 	private BigDecimal approvedTotal;
-	private Date dateCreated;
 	private Date dateProcessed;
 	private String rejectionReason;
-	private String outCome;
 	private String claimStatus;
 	private String paymentType;
-	private List<ClaimLineItem> claimLineItems;
+	private List<ClaimLineItemResponse> claimLineItems;
 
-/*	public enum ClaimStatus {
-		REJECTED, ENTERED, CHECKED, PROCESSED, VALUATED
-	};
-	
-	public enum PaymentType {
-		COMPLETE, PARTIAL
-	};*/
-
-	
 	public String getClaimId() {
 		return claimId;
 	}
 
 	public void setClaimId(String claimId) {
 		this.claimId = claimId;
-	}
-
-	public String getNhisId() {
-		return nhisId;
-	}
-
-	public void setNhisId(String nhisId) {
-		this.nhisId = nhisId;
-	}
-
-	public String getPatientId() {
-		return patientId;
-	}
-
-	public void setPatientId(String patientId) {
-		this.patientId = patientId;
-	}
-
-	public String getPolicyStatus() {
-		return policyStatus;
-	}
-
-	public void setPolicyStatus(String policyStatus) {
-		this.policyStatus = policyStatus;
 	}
 
 	public BigDecimal getClaimedTotal() {
@@ -77,13 +39,7 @@ public class ClaimResponseModel {
 		this.approvedTotal = approvedTotal;
 	}
 
-	public Date getDateCreated() {
-		return dateCreated;
-	}
-
-	public void setDateCreated(Date dateCreated) {
-		this.dateCreated = dateCreated;
-	}
+	
 
 	public Date getDateProcessed() {
 		return dateProcessed;
@@ -101,11 +57,11 @@ public class ClaimResponseModel {
 		this.rejectionReason = rejectionReason;
 	}
 
-	public List<ClaimLineItem> getClaimLineItems() {
+	public List<ClaimLineItemResponse> getClaimLineItems() {
 		return claimLineItems;
 	}
 
-	public void setClaimLineItems(List<ClaimLineItem> claimLineItems) {
+	public void setClaimLineItems(List<ClaimLineItemResponse> claimLineItems) {
 		this.claimLineItems = claimLineItems;
 	}
 
@@ -124,15 +80,5 @@ public class ClaimResponseModel {
 	public void setPaymentType(String paymentType) {
 		this.paymentType = paymentType;
 	}
-
-	public String getOutCome() {
-		return outCome;
-	}
-
-	public void setOutCome(String outCome) {
-		this.outCome = outCome;
-	}
-
-	
 
 }

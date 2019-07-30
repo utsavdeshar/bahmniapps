@@ -1,7 +1,14 @@
 package org.bahmni.insurance.utils;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Locale;
+import java.util.SimpleTimeZone;
+import java.util.TimeZone;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,5 +58,26 @@ public class InsuranceUtils {
 
 		ObjectMapper objectMapper = new ObjectMapper();
 		return objectMapper.readValue(json, clazz);
+	}
+	
+	public static Date convertBahmniDateToImis(String dateStr) {
+		SimpleDateFormat inputPutdateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+		SimpleDateFormat outPutDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+		Date date = null;
+		SimpleTimeZone tz = new SimpleTimeZone(0, "Out Timezone"); 
+		try {
+
+			inputPutdateFormat.setTimeZone(tz);
+			date =  inputPutdateFormat.parse(dateStr);
+			System.out.println(date);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		/*DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH);
+		LocalDateTime newdate = LocalDateTime.parse(outStr, formatter);
+		return newdate;*/
+		return date;
+		
 	}
 }
