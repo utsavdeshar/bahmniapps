@@ -25,7 +25,7 @@ public class ClaimParam {
 
 	@SerializedName("item")
 	@Expose
-	private List<ClaimLineItem> item;
+	private List<ClaimLineItemRequest> item;
 
 	@SerializedName("total")
 	@Expose
@@ -63,11 +63,11 @@ public class ClaimParam {
 		this.insureeId = insureeId;
 	}
 
-	public List<ClaimLineItem> getItem() {
+	public List<ClaimLineItemRequest> getItem() {
 		return item;
 	}
 
-	public void setItem(List<ClaimLineItem> item) {
+	public void setItem(List<ClaimLineItemRequest> item) {
 		this.item = item;
 	}
 
