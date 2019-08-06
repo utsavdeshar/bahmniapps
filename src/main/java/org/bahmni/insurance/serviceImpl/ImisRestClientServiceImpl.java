@@ -8,11 +8,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+
 import org.apache.commons.codec.binary.Base64;
 import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.ImisConstants;
+import org.bahmni.insurance.auth.AuthenticationFilter;
+import org.bahmni.insurance.auth.OpenMRSAuthenticator;
 import org.bahmni.insurance.client.RestTemplateFactory;
-import org.bahmni.insurance.model.ClaimLineItemRequest;
 import org.bahmni.insurance.model.ClaimLineItemResponse;
 import org.bahmni.insurance.model.ClaimResponseModel;
 import org.bahmni.insurance.model.ClaimTrackingModel;
@@ -39,16 +41,17 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
-import ch.qos.logback.core.net.SyslogOutputStream;
 
 @Component
 public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	private final RestTemplate restTemplate = new RestTemplate();
 	private final IParser FhirParser = FhirContext.forDstu3().newJsonParser();
 	private final org.apache.log4j.Logger logger = getLogger(ImisRestClientServiceImpl.class);
-
+	
+	
 	private AppProperties properties;
 
 	public ImisRestClientServiceImpl(AppProperties prop) {
@@ -193,7 +196,7 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	}
 
 	@Override
-	public EligibilityResponseModel getDummyEligibilityResponse() throws FHIRException {
+	public EligibilityResponseModel getDummyEligibilityResponse(EligibilityRequest eligRequest) throws FHIRException {
 		String eligibilityResponseBody = sendGetRequest(properties.dummyEligibiltyResponseUrl);
 		EligibilityResponse dummyEligibiltyResponse = (EligibilityResponse) FhirParser
 				.parseResource(eligibilityResponseBody);
@@ -252,5 +255,9 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	public String loginCheck() {
 		return sendGetRequest(properties.imisUrl);
 	}
+
+
+	
+	
 
 }

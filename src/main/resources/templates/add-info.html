@@ -3,18 +3,15 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-<link rel="stylesheet"
-    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
-   	integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
-    crossorigin="anonymous"></link></head>
+    <link rel="stylesheet" href="css/stylesheet.css"></head>
 
 <body>
 
-    <div class="wrapper">
+    <div class="Wrapper">
 
 
         <!-- main content -->
-        <div class="content">
+        <div class="Content">
             <div class="container-fluid">
                 <div class="row">
 
@@ -30,11 +27,11 @@
                                     <input type="text" id="nhisNumber" name="nhisNumber" th:placeholder="nhisNumber" class="form-control" /> <br/>
                                 </div>
                                 <label for="isMember" class="col-sm-2 col-form-label">Is Member</label>
-                                <div class="col-sm-10">
+                                <div class="col-sm-5">
                                     <input type="checkbox" id="isMember" name="isMember"  th:placeholder="isMember" class="form-control" /> <br/>
                                 </div>
                             </div>
-                            <button class="btn btn-lg btn-primary" name="Submit" value="Submit" type="Submit" th:text="Submit"></button>
+                            <button class="btn" name="Submit" value="Submit" type="Submit" th:text="Submit"></button>
 
                         </form>
 
