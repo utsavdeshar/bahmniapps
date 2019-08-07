@@ -3,8 +3,12 @@ package org.bahmni.insurance.serviceImpl;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
+import org.bahmni.insurance.model.BahmniDiagnosis;
+import org.bahmni.insurance.model.ClaimLineItemResponse;
+import org.bahmni.insurance.model.Diagnosis;
 import org.bahmni.insurance.model.VisitSummary;
 import org.bahmni.insurance.service.IApiClientService;
 import org.bahmni.insurance.utils.InsuranceUtils;
@@ -80,5 +84,17 @@ public class BahmniOpenmrsApiClientServiceImpl implements IApiClientService {
 		}
 		return visit;
 	}
+	
+	public BahmniDiagnosis getDiagnosis(String patientUUID, String visitUUID) throws JsonParseException, JsonMappingException, IOException {
+		String diagnosisJson =  sendGetRequest(openmrsAPIUrl+"/bahmnicore/diagnosis/search?patientUuid="+patientUUID+"&visitUuid="+visitUUID);
+		BahmniDiagnosis bahmniDiagnosisList = null;
+		diagnosisJson = "{\"diagnosis\" : "+diagnosisJson+ "}";
+		if(diagnosisJson != null){
+			bahmniDiagnosisList = InsuranceUtils.mapFromJson(diagnosisJson, BahmniDiagnosis.class);
+		}
+		return bahmniDiagnosisList;
+	}
+	
+	
 
 }

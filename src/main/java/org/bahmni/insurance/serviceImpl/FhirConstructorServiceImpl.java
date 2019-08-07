@@ -11,21 +11,19 @@ import org.apache.commons.codec.binary.Base64;
 import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.ImisConstants;
 import org.bahmni.insurance.exception.FhirFormatException;
+import org.bahmni.insurance.model.BahmniDiagnosis;
 import org.bahmni.insurance.model.ClaimLineItemRequest;
 import org.bahmni.insurance.model.ClaimParam;
-import org.bahmni.insurance.model.EligibilityItemRequest;
 import org.bahmni.insurance.model.EligibilityParam;
+import org.bahmni.insurance.model.Diagnosis;
 import org.bahmni.insurance.model.VisitSummary;
 import org.bahmni.insurance.service.AFhirConstructorService;
-import org.bahmni.insurance.utils.InsuranceUtils;
 import org.bahmni.insurance.validation.FhirInstanceValidator;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.Claim.ItemComponent;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
-import org.hl7.fhir.dstu3.model.EligibilityRequest.EligibilityRequestStatus;
-import org.hl7.fhir.dstu3.model.EligibilityResponse;
 import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.dstu3.model.Identifier.IdentifierUse;
 import org.hl7.fhir.dstu3.model.Money;
@@ -34,7 +32,6 @@ import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.dstu3.model.SimpleQuantity;
 import org.hl7.fhir.dstu3.model.Task;
 import org.hl7.fhir.dstu3.model.Task.TaskStatus;
-import org.hl7.fhir.dstu3.model.codesystems.BenefitCategory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -116,26 +113,33 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 		Period period = new Period();
 		VisitSummary visitDetails = bahmniApiService.getVisitDetail(claimParam.getVisitUUID());
 		period.setStart(new Date( visitDetails.getStartDateTime()));
-		period.setEnd(new Date( visitDetails.getStopDateTime()));
+		if( visitDetails.getStopDateTime() != null) {
+			period.setEnd(new Date( visitDetails.getStopDateTime()));
+		} //TODO: validation if visitendDate is not closed
+		
 		claimReq.setBillablePeriod(period);
 		claimReq.setCreated(new Date());
 
 		// Diagnosis 
-		Claim.DiagnosisComponent diagnosisComponent = new Claim.DiagnosisComponent();
-		CodeableConcept concept = new CodeableConcept();
-		Coding code = new Coding();
-		code.setCode("A09"); // TODO: extract from openmrs api
-		concept.addCoding(code);
-		diagnosisComponent.setDiagnosis(concept);
-		
-		diagnosisComponent.setSequence(1);
-		
-		CodeableConcept conceptType = new CodeableConcept();
-		conceptType.setText("icd_0"); //TODO: remove hardcoded
-		diagnosisComponent.addType(conceptType);
+		BahmniDiagnosis bahmniDianosis  =  bahmniApiService.getDiagnosis(claimParam.getPatientUUID(), claimParam.getVisitUUID());
+		int sequence = 1;
+		for (Diagnosis diag :bahmniDianosis.getDiagnosis() ) {
+			Claim.DiagnosisComponent diagnosisComponent = new Claim.DiagnosisComponent();
+			CodeableConcept concept = new CodeableConcept();
+			Coding code = new Coding();
+			code.setCode(diag.getCodedAnswer().getMappings().get(0).getCode()); // TODO: extract from openmrs api
+			concept.addCoding(code);
+			diagnosisComponent.setDiagnosis(concept);
+			diagnosisComponent.setSequence(sequence);
+			CodeableConcept conceptType = new CodeableConcept();
+			conceptType.setText("icd_0"); //TODO: remove hardcoded
+			diagnosisComponent.addType(conceptType);
+			claimReq.addDiagnosis(diagnosisComponent);
+			sequence++;
+		}
+		sequence=0;
 		
 
-		claimReq.addDiagnosis(diagnosisComponent);
 		
 		// Items/services for claims
 
