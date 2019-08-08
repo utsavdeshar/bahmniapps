@@ -6,27 +6,30 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.ImisConstants;
+import org.bahmni.insurance.auth.AuthenticationFilter;
 import org.bahmni.insurance.client.RestTemplateFactory;
 import org.bahmni.insurance.dao.FhirResourceDaoServiceImpl;
 import org.bahmni.insurance.dao.IFhirResourceDaoService;
 import org.bahmni.insurance.model.ClaimParam;
 import org.bahmni.insurance.model.ClaimResponseModel;
 import org.bahmni.insurance.model.ClaimTrackingModel;
+import org.bahmni.insurance.model.EligibilityParam;
 import org.bahmni.insurance.model.EligibilityResponseModel;
 import org.bahmni.insurance.model.FhirResourceModel;
 import org.bahmni.insurance.service.AFhirConstructorService;
+import org.bahmni.insurance.service.AInsuranceClientService;
 import org.bahmni.insurance.service.FInsuranceServiceFactory;
 import org.bahmni.insurance.service.IOpenmrsOdooService;
 import org.bahmni.insurance.serviceImpl.FhirConstructorServiceImpl;
 import org.bahmni.insurance.serviceImpl.OpenmrsOdooServiceImpl;
 import org.bahmni.insurance.utils.InsuranceUtils;
 import org.hl7.fhir.dstu3.model.Claim;
-import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.Task;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,42 +63,66 @@ public class RequestProcessor {
 	private final IParser FhirParser = FhirContext.forDstu3().newJsonParser();
 
 	private final AppProperties properties;
+	private final AuthenticationFilter authenticationFilter;
 
 	@Autowired
 	public RequestProcessor(FhirConstructorServiceImpl fhirConstructorServiceImpl,
 			OpenmrsOdooServiceImpl openmrsOdooServiceImpl, FhirResourceDaoServiceImpl fhirServiceImpl,
-			FInsuranceServiceFactory insuranceImplFactory, RestTemplateFactory restFactory, AppProperties props) {
+			FInsuranceServiceFactory insuranceImplFactory, RestTemplateFactory restFactory,
+			AuthenticationFilter authenticationFilter,
+			AInsuranceClientService insuranceClientService,AppProperties props) {
 		this.fhirConstructorService = fhirConstructorServiceImpl;
 		this.odooService = openmrsOdooServiceImpl;
 		this.fhirDaoService = fhirServiceImpl;
 		this.insuranceImplFactory = insuranceImplFactory;
 		this.properties = props;
+		this.authenticationFilter = authenticationFilter;
 	}
 
 	@ExceptionHandler({ AccessDeniedException.class })
 	public ResponseEntity<Object> handleAccessDeniedException(Exception ex, WebRequest request) {
 		return new ResponseEntity<Object>("Access denied ", new HttpHeaders(), HttpStatus.FORBIDDEN);
 	}
-
-	@RequestMapping(method = RequestMethod.GET, value = "/get/eligibilityResponse/{InsureeId}", produces = "application/json")
+	
+	@RequestMapping(path = "/hasInsurancePrivilege")
+	public Boolean checkPrevilage(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    	return  authenticationFilter.preHandle(request, response);
+    }
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/check/eligibility", produces = "application/json")
 	@ResponseBody
-	public String getEligibilityResponse(HttpServletResponse response, @PathVariable("InsureeId") String InsureeId)
-			throws DataFormatException, IOException {
-		logger.debug("eligibityResponse");
-		EligibilityRequest eligReq = fhirConstructorService.constructFhirEligibilityRequest(InsureeId);
-		fhirConstructorService.validateRequest(FhirParser.encodeResourceToString(eligReq));
-		EligibilityResponseModel eligibilityResponse = insuranceImplFactory
-				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getDummyEligibilityResponse();
+	public EligibilityResponseModel checkEligibility(HttpServletResponse response, @RequestBody EligibilityParam eligibilityParams)
+			throws RestClientException, URISyntaxException, DataFormatException, IOException {
+		logger.debug("checkEligibility : ");
+		EligibilityRequest eligRequest = fhirConstructorService.constructFhirEligibilityRequest(eligibilityParams);
+		logger.error("eligibilityRequest : "+FhirParser.encodeResourceToString(eligRequest));
+		String eligReqStr = FhirParser.encodeResourceToString(eligRequest);
+		if(properties.saveEligResource) {
+			fhirDaoService.insertFhirResource(eligReqStr, ImisConstants.FHIR_RESOURCE_TYPE.ELIGIBILITYREQUEST.getValue() );
+		}
+		fhirConstructorService.validateRequest(eligReqStr);
+		logger.debug("here I am");
 
-		/*
-		 * EligibilityResponseModel eligibilityResponse =
-		 * insuranceImplFactory.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR,
-		 * properties).getElibilityResponse(eligReq);
-		 */
-		return InsuranceUtils.mapToJson(eligibilityResponse);
-		//return gson.toJson(eligibilityResponse);
+		EligibilityResponseModel eligibilityResponseModel = insuranceImplFactory
+				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getElibilityResponse(eligRequest);
+		logger.debug("eligibilityResponseModel : " + InsuranceUtils
+				.mapToJson(eligibilityResponseModel));
+		return eligibilityResponseModel;
 
 	}
+	@RequestMapping(method = RequestMethod.POST, value = "get/eligibility/response", produces = "application/json")
+	@ResponseBody
+	public String getEligibilityResponse(HttpServletResponse response, @RequestBody EligibilityParam eligibilityParams)
+			throws IOException {
+		EligibilityRequest eligRequest = fhirConstructorService.constructFhirEligibilityRequest(eligibilityParams);
+		fhirConstructorService.validateRequest(FhirParser.encodeResourceToString(eligRequest));
+		EligibilityResponseModel eligResponseModel = insuranceImplFactory
+				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getDummyEligibilityResponse(eligRequest);
+		return InsuranceUtils.mapToJson(eligResponseModel);
+
+	}
+
+
 
 	@RequestMapping(method = RequestMethod.POST, value = "/submit/claim", produces = "application/json")
 	@ResponseBody
@@ -129,7 +156,8 @@ public class RequestProcessor {
 		return InsuranceUtils.mapToJson(claimResponseModel);
 
 	}
-
+	
+	
 	@RequestMapping(method = RequestMethod.GET, value = "/get/claimTracking/{claimId}", produces = "application/json")
 	@ResponseBody
 	public String getClaimTrackingStatus(HttpServletResponse response, @PathVariable("claimId") String claimId)

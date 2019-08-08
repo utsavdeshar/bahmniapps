@@ -14,6 +14,7 @@ import org.bahmni.insurance.exception.FhirFormatException;
 import org.bahmni.insurance.model.BahmniDiagnosis;
 import org.bahmni.insurance.model.ClaimLineItemRequest;
 import org.bahmni.insurance.model.ClaimParam;
+import org.bahmni.insurance.model.EligibilityParam;
 import org.bahmni.insurance.model.Diagnosis;
 import org.bahmni.insurance.model.VisitSummary;
 import org.bahmni.insurance.service.AFhirConstructorService;
@@ -23,7 +24,6 @@ import org.hl7.fhir.dstu3.model.Claim.ItemComponent;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
-import org.hl7.fhir.dstu3.model.EligibilityRequest.EligibilityRequestStatus;
 import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.dstu3.model.Identifier.IdentifierUse;
 import org.hl7.fhir.dstu3.model.Money;
@@ -194,35 +194,58 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 		}
 		return listItemComponent;
 	}
-
+	
 	@Override
-	public EligibilityRequest constructFhirEligibilityRequest(String insuranceID) throws IOException {
-
+	public EligibilityRequest constructFhirEligibilityRequest(EligibilityParam eligibilityParam)  throws IOException {
+		
 		EligibilityRequest eligibilityRequest = new EligibilityRequest();
-
+		
 		List<Identifier> identifierList = new ArrayList<>();
 		Identifier identifier = new Identifier();
 		identifier.setSystem("SenderID");
-		identifier.setValue(insuranceID);
 		identifierList.add(identifier);
 		eligibilityRequest.setIdentifier(identifierList);
 
-		eligibilityRequest.setStatus(EligibilityRequestStatus.ACTIVE);
 
+		//patient
 		Reference patientReference = new Reference();
-		patientReference.setReference("Patient/" + insuranceID);
+		patientReference.setReference("Patient/" + eligibilityParam.getChfID());
 		eligibilityRequest.setPatient(patientReference);
+		
+		/*
+	
 
-		Reference referenceOrg = new Reference();
-		referenceOrg.setReference("Organization/1");
-		eligibilityRequest.setOrganization(referenceOrg);
-
-		Reference referenceInsurer = new Reference();
-		referenceInsurer.setReference("Organization/2");
-		eligibilityRequest.setInsurer(referenceInsurer);
+		List<ItemComponent> listItemComponent = populateELigibilityItems(eligibilityParam.getItemCode());
+		eligibilityRequest.setItem(listItemComponent);*/
 
 		return eligibilityRequest;
 	}
+
+	/*private List<ItemComponent> populateELigibilityItems(List<EligibilityItemRequest> listItem) {
+		List<ItemComponent> listItemComponent = new ArrayList<>();
+		for (EligibilityItemRequest eligibleItem : listItem) {
+			ItemComponent itemComponent = new ItemComponent();
+			itemComponent.setSequence(eligibleItem.getSequence());
+
+			CodeableConcept codeConceptCategory = new CodeableConcept();
+			codeConceptCategory.setText(eligibleItem.getCategory());
+			itemComponent.setCategory(codeConceptCategory);
+
+			
+
+			CodeableConcept codeConceptService = new CodeableConcept();
+			codeConceptService.setText(eligibleItem.getCode());
+			itemComponent.setService(codeConceptService);
+
+			Money value = new Money();
+			value.setValue(eligibleItem.getAllowedMoney());
+			itemComponent.setUnitPrice(value);
+			listItemComponent.add(itemComponent);
+		}
+		return listItemComponent;
+	}*/
+	
+	
 
 	@Override
 	public Task constructFhirClaimTrackRequest(String insuranceID) throws IOException {

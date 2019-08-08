@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+
 import java.util.ArrayList;
 
 @Component
@@ -35,7 +36,7 @@ public class OpenMRSAuthenticator {
 
 		return AuthenticationResponse.NOT_AUTHENTICATED;
 	}
-
+    
 	public ResponseEntity<Privileges> callOpenMRS(String sessionId) {
 		Privilege p = new Privilege();
 		p.setName("app:reports");

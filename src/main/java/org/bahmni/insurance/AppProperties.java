@@ -11,6 +11,9 @@ public class AppProperties {
 
 	@Value("${openelis.db.url}")
 	public String openelisDBUrl;
+	
+	@Value("${openmrs.root.url}")
+	public String openmrsRootUrl;
 
 	@Value("${imisconnect.user}")
 	public String imisConnectUser;

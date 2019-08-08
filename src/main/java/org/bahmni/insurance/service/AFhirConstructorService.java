@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.bahmni.insurance.ImisConstants;
 import org.bahmni.insurance.client.RestTemplateFactory;
 import org.bahmni.insurance.model.ClaimParam;
+import org.bahmni.insurance.model.EligibilityParam;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.Task;
@@ -23,7 +24,7 @@ public abstract class AFhirConstructorService {
 
 	public abstract Claim constructFhirClaimRequest(ClaimParam claimParamObj) throws IOException;
 
-	public abstract EligibilityRequest constructFhirEligibilityRequest(String insuranceID) throws IOException;
+	public abstract EligibilityRequest constructFhirEligibilityRequest(EligibilityParam eligibilityParamObj) throws IOException;
 
 	public abstract String getFhirPatient(String patientId);
 

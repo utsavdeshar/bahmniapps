@@ -28,16 +28,15 @@ public class AuthenticationFilter extends HandlerInterceptorAdapter {
 		this.authenticator = authenticator;
 	}
 
-	@Override
-	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+	public boolean preHandle(HttpServletRequest request, HttpServletResponse response)
 			throws Exception {
 		System.out.println("preHandle1");
-		if (handler == null) {
+		/*if (handler == null) {
 			System.out.println("handler == null");
 			response.sendError(HttpServletResponse.SC_NOT_FOUND,
 					"Reports application cannot handle url " + request.getRequestURI());
 			return false;
-		}
+		}*/
 
 		Cookie[] cookies = request.getCookies();
 		if (cookies == null) {
@@ -45,20 +44,32 @@ public class AuthenticationFilter extends HandlerInterceptorAdapter {
 			return redirectToLogin(request, response);
 		}
 		AuthenticationResponse authenticationResponse = AuthenticationResponse.NOT_AUTHENTICATED;
+		System.out.println(" authenticationResponse" + authenticationResponse);
 
 		for (Cookie cookie : cookies) {
 			if (cookie.getName().equals(REPORTING_COOKIE_NAME)) {
 				System.out.println(" preHandle2" + cookie.getName());
+				System.out.println(" authenticationResponse" + authenticator.authenticate(cookie.getValue()));
+
 				authenticationResponse = authenticator.authenticate(cookie.getValue());
+
+				
 			}
 		}
 
 		switch (authenticationResponse) {
 		case AUTHORIZED:
+			response.sendError(HttpServletResponse.SC_FORBIDDEN, "authorized");
 			return true;
 		case UNAUTHORIZED:
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Privileges is required to access reports");
 			return false;
+		 case INSURANCE_AUTHORIZED:
+         	return true;
+         case INSURANCE_UNAUTHORIZED:
+         	response.sendError(HttpServletResponse.SC_FORBIDDEN,
+                     "Privileges is required to submit this report");
+         	return false;
 		default:
 			return redirectToLogin(request, response);
 		}

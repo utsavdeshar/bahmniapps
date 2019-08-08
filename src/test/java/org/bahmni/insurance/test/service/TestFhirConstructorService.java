@@ -45,13 +45,13 @@ public class TestFhirConstructorService extends AbstractWebTest {
 
 	}
 
-	@Test
+	/*@Test
 	public void constructFhirEligRequestTest() throws IOException {
 		EligibilityRequest eligReqSample = fhirConstructorServiceImpl.constructFhirEligibilityRequest("insurance-12321312");
 		String eligReqSampleStr = FhirParser.encodeResourceToString(eligReqSample);
 		assertTrue(fhirConstructorServiceImpl.validateRequest(eligReqSampleStr));
 
-	}
+	}*/
 
 	@Test
 	public void constructFhirClaimTrackRequestTest() throws IOException {
