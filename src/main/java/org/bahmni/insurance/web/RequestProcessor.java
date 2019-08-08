@@ -128,7 +128,7 @@ public class RequestProcessor {
 	@ResponseBody
 	public ClaimResponseModel submitClaim(HttpServletResponse response, @RequestBody ClaimParam claimParams)
 			throws RestClientException, URISyntaxException, DataFormatException, IOException {
-		logger.debug("submitClaim : ");
+	/*	logger.debug("submitClaim : ");
 		Claim claimRequest = fhirConstructorService.constructFhirClaimRequest(claimParams);
 		logger.error("claimRequest : "+FhirParser.encodeResourceToString(claimRequest));
 		String claimReqStr = FhirParser.encodeResourceToString(claimRequest);
@@ -141,19 +141,24 @@ public class RequestProcessor {
 				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).submitClaim(claimRequest);
 		logger.debug("claimResponseModel : " + InsuranceUtils.mapToJson(claimResponseModel));
 
+		return claimResponseModel;*/
+		ClaimResponseModel claimResponseModel = insuranceImplFactory
+				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getClaimResponse("L21");
+		System.out.println("claimResponseModel : " + InsuranceUtils.mapToJson(claimResponseModel));
 		return claimResponseModel;
+		
 
 	}
 
-	@RequestMapping(method = RequestMethod.POST, value = "get/claim/response", produces = "application/json")
+	@RequestMapping(method = RequestMethod.GET, value = "get/claimresponse/{claimId}", produces = "application/json")
 	@ResponseBody
-	public String getClaimResponse(HttpServletResponse response, @RequestBody ClaimParam claimParams)
+	public ClaimResponseModel getClaimResponse(HttpServletResponse response,@PathVariable("claimId") String claimId)
 			throws IOException {
-		Claim claimRequest = fhirConstructorService.constructFhirClaimRequest(claimParams);
-		fhirConstructorService.validateRequest(FhirParser.encodeResourceToString(claimRequest));
 		ClaimResponseModel claimResponseModel = insuranceImplFactory
-				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getDummyClaimResponse(claimRequest);
-		return InsuranceUtils.mapToJson(claimResponseModel);
+				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getClaimResponse(claimId);
+		System.out.println("claimResponseModel : " + InsuranceUtils.mapToJson(claimResponseModel));
+
+		return claimResponseModel;
 
 	}
 	
@@ -169,6 +174,19 @@ public class RequestProcessor {
 		return InsuranceUtils.mapToJson(claimTracking);
 
 	}
+	
+	@RequestMapping(method = RequestMethod.GET, value = "/get/claimtrack/{claimId}", produces = "application/json")
+	@ResponseBody
+	public String getClaimTracking(HttpServletResponse response, @PathVariable("claimId") String claimId)
+			throws IOException {
+		Task claimTrackTask = fhirConstructorService.constructFhirClaimTrackRequest(claimId);
+		ClaimTrackingModel claimTracking = insuranceImplFactory
+				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getDummyClaimTrack();
+		logger.debug("ClaimTracking model == " + InsuranceUtils.mapToJson(claimTracking));
+		return InsuranceUtils.mapToJson(claimTracking);
+	}
+
+	
 
 	@RequestMapping(path = "/openIMIS/login")
 	@ResponseBody

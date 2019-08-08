@@ -93,8 +93,9 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	}
 
 	private String sendGetRequest(String url) {
-		HttpHeaders headers = new HttpHeaders();
+		HttpHeaders headers = createHeaders(properties.imisUser, properties.imisPassword);
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+		headers.add("Content-Type", "application/json");
 		HttpEntity<String> entity = new HttpEntity<String>(headers);
 		return restTemplate.exchange(url, HttpMethod.GET, entity, String.class).getBody();
 
@@ -254,6 +255,14 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	@Override
 	public String loginCheck() {
 		return sendGetRequest(properties.imisUrl);
+	}
+
+	@Override
+	public ClaimResponseModel getClaimResponse(String claimID) {
+		String claimResponseStr = sendGetRequest(properties.imisUrl+"/ClaimResponse/"+claimID);
+		ClaimResponse claimResponse = (ClaimResponse) FhirParser.parseResource(claimResponseStr);
+		return populateClaimRespModel(claimResponse); 
+		
 	}
 
 

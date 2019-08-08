@@ -28,6 +28,7 @@ public abstract class AInsuranceClientService {
 */
 	public abstract ClaimResponseModel submitClaim(Claim claimRequest) throws RestClientException, URISyntaxException;
 
+	public abstract ClaimResponseModel getClaimResponse(String claimID);
 	public abstract EligibilityResponseModel getElibilityResponse(EligibilityRequest eligbilityRequest)
 			throws RestClientException, URISyntaxException, FHIRException;
 
