@@ -139,6 +139,7 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 			throws RestClientException, URISyntaxException, FHIRException {
 		String jsonEligRequest = FhirParser.encodeResourceToString(eligbilityRequest);
 		ResponseEntity<String> responseObject = sendPostRequest(jsonEligRequest, properties.openImisFhirApiElig);
+		System.out.println("eligibilityResponse :"+responseObject.getBody());
 		EligibilityResponse eligibilityResponse = (EligibilityResponse) FhirParser
 				.parseResource(responseObject.getBody());
 		return populateEligibilityRespModel(eligibilityResponse);
@@ -185,6 +186,7 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 					}
 				}
 				if(ImisConstants.CLAIM_ADJ_CATEGORY.REJECTED_REASON.equals(adj.getCategory().getText())){
+					
 					claimItem.setRejectedReason(adj.getReason().getCoding().get(0).getCode());
 				}
 			}

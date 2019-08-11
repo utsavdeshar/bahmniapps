@@ -37,7 +37,7 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 
 @Controller
-public class InsuranceController {
+public class BahmniUIController {
 
 	private final FInsuranceServiceFactory insuranceImplFactory;
 	private final AFhirConstructorService fhirConstructorService;
@@ -51,7 +51,7 @@ public class InsuranceController {
 	}
 
 	@Autowired
-	public InsuranceController(FhirConstructorServiceImpl fhirConstructorServiceImpl,
+	public BahmniUIController(FhirConstructorServiceImpl fhirConstructorServiceImpl,
 			OpenmrsOdooServiceImpl openmrsOdooServiceImpl, FhirResourceDaoServiceImpl fhirServiceImpl,
 			FInsuranceServiceFactory insuranceImplFactory, RestTemplateFactory restFactory,
 			AFhirConstructorService fhirConstructorService, AppProperties props) {
