@@ -200,50 +200,15 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 		
 		EligibilityRequest eligibilityRequest = new EligibilityRequest();
 		
-		List<Identifier> identifierList = new ArrayList<>();
-		Identifier identifier = new Identifier();
-		identifier.setSystem("SenderID");
-		identifierList.add(identifier);
-		eligibilityRequest.setIdentifier(identifierList);
-
-
 		//patient
 		Reference patientReference = new Reference();
 		patientReference.setReference("Patient/" + eligibilityParam.getChfID());
 		eligibilityRequest.setPatient(patientReference);
-		
-		/*
-	
-
-		List<ItemComponent> listItemComponent = populateELigibilityItems(eligibilityParam.getItemCode());
-		eligibilityRequest.setItem(listItemComponent);*/
+		System.out.println(eligibilityRequest.setPatient(patientReference));
 
 		return eligibilityRequest;
 	}
 
-	/*private List<ItemComponent> populateELigibilityItems(List<EligibilityItemRequest> listItem) {
-		List<ItemComponent> listItemComponent = new ArrayList<>();
-		for (EligibilityItemRequest eligibleItem : listItem) {
-			ItemComponent itemComponent = new ItemComponent();
-			itemComponent.setSequence(eligibleItem.getSequence());
-
-			CodeableConcept codeConceptCategory = new CodeableConcept();
-			codeConceptCategory.setText(eligibleItem.getCategory());
-			itemComponent.setCategory(codeConceptCategory);
-
-			
-
-			CodeableConcept codeConceptService = new CodeableConcept();
-			codeConceptService.setText(eligibleItem.getCode());
-			itemComponent.setService(codeConceptService);
-
-			Money value = new Money();
-			value.setValue(eligibleItem.getAllowedMoney());
-			itemComponent.setUnitPrice(value);
-			listItemComponent.add(itemComponent);
-		}
-		return listItemComponent;
-	}*/
 	
 	
 

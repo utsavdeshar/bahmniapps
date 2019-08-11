@@ -77,7 +77,7 @@ public class InsuranceController {
 		} else {
 			EligibilityRequest eligRequest = fhirConstructorService.constructFhirEligibilityRequest(eligibilityParams);
 			EligibilityResponseModel eligibilityResponse = insuranceImplFactory.
-					getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getElibilityResponse(eligRequest);
+					getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).checkEligibility(eligRequest);
 			// String nhisId = eligibilityResponse.getNhisId();
 			String patientId = eligibilityResponse.getPatientId();
 			String status = eligibilityResponse.getStatus();

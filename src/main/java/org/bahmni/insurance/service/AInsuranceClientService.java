@@ -29,18 +29,12 @@ public abstract class AInsuranceClientService {
 	public abstract ClaimResponseModel submitClaim(Claim claimRequest) throws RestClientException, URISyntaxException;
 
 	public abstract ClaimResponseModel getClaimResponse(String claimID);
-	public abstract EligibilityResponseModel getElibilityResponse(EligibilityRequest eligbilityRequest)
-			throws RestClientException, URISyntaxException, FHIRException;
-
+	
+	public abstract EligibilityResponseModel checkEligibility(EligibilityRequest eligibilityRequest) throws RestClientException, URISyntaxException;
+	
 	public abstract ClaimResponse getClaimStatus(Task claimStatusRequest);
 
 	public abstract String loginCheck();
-
-	public abstract EligibilityResponseModel getDummyEligibilityResponse(EligibilityRequest eligRequest);
-
-	public abstract ClaimResponseModel getDummyClaimResponse(Claim claimRequest);
-	
-	public abstract ClaimTrackingModel getDummyClaimTrack();
 
 
 }
