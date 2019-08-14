@@ -18,6 +18,8 @@ import org.bahmni.insurance.service.FInsuranceServiceFactory;
 import org.bahmni.insurance.serviceImpl.FhirConstructorServiceImpl;
 import org.bahmni.insurance.serviceImpl.OpenmrsOdooServiceImpl;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
+import org.hl7.fhir.dstu3.model.Money;
+import org.hl7.fhir.dstu3.model.UnsignedIntType;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
@@ -62,18 +64,18 @@ public class BahmniUIController {
 		// this.restFactory = restFactory;
 	}
 
-	@RequestMapping(value = "/add-info", method = RequestMethod.GET)
+	@RequestMapping(value="/add-info", method = RequestMethod.GET)
 	public String addInfo(Insurance insurance) {
 		return "add-info";
 	}
 
-	@RequestMapping(value = "/add-info", method = RequestMethod.POST)
+	@RequestMapping(value="/add-info", method = RequestMethod.POST)
 	public String showWelcomePage(@ModelAttribute @Valid Insurance insurance, BindingResult bindingResult, Model model,
-			@RequestParam String nhisNumber, @RequestParam Boolean isMember,@RequestBody EligibilityParam eligibilityParams) throws IOException, RestClientException, FHIRException, URISyntaxException {
+			@RequestParam String nhisNumber,EligibilityParam eligibilityParams) throws IOException, RestClientException, FHIRException, URISyntaxException {
 		if (bindingResult.hasErrors()) {
 			System.out.println("BINDING RESULT ERROR");
 			model.addAttribute("error", bindingResult.getAllErrors());
-			return "error-page";
+			return "add-info";
 		} else {
 			EligibilityRequest eligRequest = fhirConstructorService.constructFhirEligibilityRequest(eligibilityParams);
 			EligibilityResponseModel eligibilityResponse = insuranceImplFactory.
@@ -82,7 +84,7 @@ public class BahmniUIController {
 			String patientId = eligibilityResponse.getPatientId();
 			String status = eligibilityResponse.getStatus();
 			BigDecimal benefitBalance = eligibilityResponse.getEligibilityBalance().get(0).getBenefitBalance();
-			String code = eligibilityResponse.getEligibilityBalance().get(0).getCode();
+			String code = eligibilityResponse.getEligibilityBalance().get(0).getCategory();
 			String term = eligibilityResponse.getEligibilityBalance().get(0).getTerm();
 
 			model.addAttribute("patientId", patientId);
@@ -92,7 +94,6 @@ public class BahmniUIController {
 			model.addAttribute("term", term);
 			model.addAttribute("insurance", insurance);
 			model.addAttribute("nhisNumber", insurance.getNhisNumber());
-			model.addAttribute("isMember", isMember);
 
 			return "index";
 

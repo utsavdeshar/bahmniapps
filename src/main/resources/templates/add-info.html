@@ -1,57 +1,23 @@
-
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
-
 <head>
-    <link rel="stylesheet" href="css/stylesheet.css"></head>
-
+	<link href="../static/css/stylesheet.css" th:href="@{/css/stylesheet.css}" rel="stylesheet" />
+</head>
 <body>
-
-    <div class="Wrapper">
-
-
-        <!-- main content -->
-        <div class="Content">
-            <div class="container-fluid">
-                <div class="row">
-
-                    <div class="container">
-
-                        <form th:action="@{/add-info}" method="POST" class="full-screen-form">
-                            <h3 th:text="Welcome"></h3>
-                            <br />
-
-                            <div class="form-group row">
-                                <label for="nhisNumber" class="col-sm-2 col-form-label">NHIS Number</label>
-                                <div class="col-sm-10">
-                                    <input type="text" id="nhisNumber" name="nhisNumber" th:placeholder="nhisNumber" class="form-control" /> <br/>
-                                </div>
-                                <label for="isMember" class="col-sm-2 col-form-label">Is Member</label>
-                                <div class="col-sm-5">
-                                    <input type="checkbox" id="isMember" name="isMember"  th:placeholder="isMember" class="form-control" /> <br/>
-                                </div>
-                            </div>
-                            <button class="btn" name="Submit" value="Submit" type="Submit" th:text="Submit"></button>
-
-                        </form>
-
-                    </div>
-
-                </div> <!--/ end row-->
-            </div><!--/ end container-fluid-->
+	<div class="Wrapper">
+<!-- main content -->
+		<div class="Content">
+			<form th:action="@{/add-info}" method="POST" class="full-screen-form">
+				<div class="title"><h5 th:text="Insurance"></h5></div>
+				<div class="wrap-input">
+					<span class="label-input">NHIS NUMBER *</span>
+						<input class="input" type="text" name="nhisNumber" placeholder="Enter NHIS NUMBER">
+				</div>
+				<button class="btn">
+					<span> Submit </span>
+				</button>
+             </form>
         </div><!--/ end content-->
-
-    
-
-    </div><!-- end wrapper -->
-     <script src="https://code.jquery.com/jquery-1.11.1.min.js"
-        integrity="sha256-VAvG3sHdS5LqTT+5A/aeq/bZGa/Uj04xKxY8KM/w9EE="
-        crossorigin="anonymous"></script>
- 
- 
-    <script
-        src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
-        integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
-        crossorigin="anonymous"></script>
+    </div><!-- end wrapper --> 
 </body>
 </html>
