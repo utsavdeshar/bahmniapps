@@ -2,7 +2,6 @@ package org.bahmni.insurance.serviceImpl;
 
 import static org.apache.log4j.Logger.getLogger;
 
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,12 +11,9 @@ import java.util.List;
 import org.apache.commons.codec.binary.Base64;
 import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.ImisConstants;
-import org.bahmni.insurance.auth.AuthenticationFilter;
-import org.bahmni.insurance.auth.OpenMRSAuthenticator;
 import org.bahmni.insurance.client.RestTemplateFactory;
 import org.bahmni.insurance.model.ClaimLineItemResponse;
 import org.bahmni.insurance.model.ClaimResponseModel;
-import org.bahmni.insurance.model.ClaimTrackingModel;
 import org.bahmni.insurance.model.EligibilityBalance;
 import org.bahmni.insurance.model.EligibilityResponseModel;
 import org.bahmni.insurance.service.AInsuranceClientService;
@@ -27,7 +23,10 @@ import org.hl7.fhir.dstu3.model.ClaimResponse.AdjudicationComponent;
 import org.hl7.fhir.dstu3.model.ClaimResponse.ItemComponent;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.EligibilityResponse;
+import org.hl7.fhir.dstu3.model.EligibilityResponse.BenefitComponent;
+import org.hl7.fhir.dstu3.model.EligibilityResponse.BenefitsComponent;
 import org.hl7.fhir.dstu3.model.EligibilityResponse.InsuranceComponent;
+import org.hl7.fhir.dstu3.model.Money;
 import org.hl7.fhir.dstu3.model.Task;
 import org.hl7.fhir.exceptions.FHIRException;/*
 												import org.openmrs.module.fhir.api.client.ClientHttpEntity;
@@ -38,7 +37,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -130,37 +128,8 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		String jsonClaimRequest = FhirParser.encodeResourceToString(claimRequest);
 		ResponseEntity<String> responseObject = sendPostRequest(jsonClaimRequest, properties.openImisFhirApiClaim);
 		ClaimResponse claimResponse = (ClaimResponse) FhirParser.parseResource(responseObject.getBody());
-		System.out.println("ClaimResponse : "+FhirParser.encodeResourceToString(claimResponse));
 		return populateClaimRespModel(claimResponse);
 	}
-
-	@Override
-	public EligibilityResponseModel getElibilityResponse(EligibilityRequest eligbilityRequest)
-			throws RestClientException, URISyntaxException, FHIRException {
-		String jsonEligRequest = FhirParser.encodeResourceToString(eligbilityRequest);
-		ResponseEntity<String> responseObject = sendPostRequest(jsonEligRequest, properties.openImisFhirApiElig);
-		System.out.println("eligibilityResponse :"+responseObject.getBody());
-		EligibilityResponse eligibilityResponse = (EligibilityResponse) FhirParser
-				.parseResource(responseObject.getBody());
-		return populateEligibilityRespModel(eligibilityResponse);
-	}
-
-	@Override
-	public ClaimResponse getClaimStatus(Task claimStatusRequest) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ClaimResponseModel getDummyClaimResponse(Claim claimRequest) {
-		String claimResponseBody = sendGetRequest(properties.dummyClaimResponseUrl);
-		ClaimResponse dummyClaimResponse = (ClaimResponse) FhirParser.parseResource(claimResponseBody);
-		String jsonClaimRequest = FhirParser.encodeResourceToString(claimRequest);
-		logger.debug("jsonClaimRequest ==> " + jsonClaimRequest);
-		return populateClaimRespModel(dummyClaimResponse);
-
-	}
-
 	private ClaimResponseModel populateClaimRespModel(ClaimResponse claimResponse) {
 		ClaimResponseModel clmRespModel = new ClaimResponseModel();
 		
@@ -186,7 +155,6 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 					}
 				}
 				if(ImisConstants.CLAIM_ADJ_CATEGORY.REJECTED_REASON.equals(adj.getCategory().getText())){
-					
 					claimItem.setRejectedReason(adj.getReason().getCoding().get(0).getCode());
 				}
 			}
@@ -199,59 +167,47 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	}
 
 	@Override
-	public EligibilityResponseModel getDummyEligibilityResponse(EligibilityRequest eligRequest) throws FHIRException {
-		String eligibilityResponseBody = sendGetRequest(properties.dummyEligibiltyResponseUrl);
-		EligibilityResponse dummyEligibiltyResponse = (EligibilityResponse) FhirParser
-				.parseResource(eligibilityResponseBody);
-		return populateEligibilityRespModel(dummyEligibiltyResponse);
+	public EligibilityResponseModel checkEligibility(EligibilityRequest eligbilityRequest){
+		String jsonEligRequest = FhirParser.encodeResourceToString(eligbilityRequest);
+		ResponseEntity<String> responseObject = sendPostRequest(jsonEligRequest, properties.openImisFhirApiElig);
+		EligibilityResponse eligibilityResponse = (EligibilityResponse) FhirParser.parseResource(responseObject.getBody());
+		return populateEligibilityRespModel(eligibilityResponse);
 	}
-
-	private EligibilityResponseModel populateEligibilityRespModel(EligibilityResponse eligibilityResponse)
-			throws FHIRException {
+	private EligibilityResponseModel populateEligibilityRespModel(EligibilityResponse eligibilityResponse) {
 		EligibilityResponseModel eligRespModel = new EligibilityResponseModel();
-		eligRespModel.setNhisId(eligibilityResponse.getId());
+		/*eligRespModel.setNhisId(eligibilityResponse.getId());
 		eligRespModel.setPatientId(eligibilityResponse.getId());
-		eligRespModel.setStatus(eligibilityResponse.getStatus().toString());
-
+		eligRespModel.setStatus(eligibilityResponse.getStatus().toString());*/	
 		List<EligibilityBalance> eligibilityBalance = new ArrayList<>();
-		for (InsuranceComponent responseItem : eligibilityResponse.getInsurance()) {
+		
+		for (InsuranceComponent insurance : eligibilityResponse.getInsurance()) {
 			EligibilityBalance eligBalance = new EligibilityBalance();
-			eligBalance.setCode(responseItem.getBenefitBalance().get(0).getTerm().getCoding().get(0).getCode());
-			eligBalance.setTerm(responseItem.getBenefitBalance().get(0).getFinancial().get(0).getType().getCoding()
-					.get(0).getCode());
-			eligBalance.setBenefitBalance(
-					responseItem.getBenefitBalance().get(0).getFinancial().get(0).getAllowedMoney().getValue());
-			eligibilityBalance.add(eligBalance);
-			// nhisId
-			// patientId
-			// status
-			// Balance
+			
+			for (BenefitsComponent benefitBalance : insurance.getBenefitBalance()){
+				eligBalance.setCategory(benefitBalance.getCategory().getText());
+
+				if (benefitBalance.getFinancial().size() >= 0) {
+					
+					for(BenefitComponent financial : benefitBalance.getFinancial()) {
+						
+						if (financial.getAllowed() instanceof Money) {
+							eligBalance.setBenefitBalance(financial.getAllowedMoney().getValue());
+						}
+					}
+				}
+			}
+			eligibilityBalance.add(eligBalance);	
+
 		}
-
 		eligRespModel.setEligibilityBalance(eligibilityBalance);
-
 		return eligRespModel;
 	}
+	
 
 	@Override
-	public ClaimTrackingModel getDummyClaimTrack() {
-		String claimTrackingSample = sendGetRequest(properties.dummyClaimTrackUrl);
-		Task dummyClaimTrack = (Task) FhirParser.parseResource(claimTrackingSample);
-		return populateClaimTrackModel(dummyClaimTrack);
-
-	}
-
-	private ClaimTrackingModel populateClaimTrackModel(Task task) {
-		ClaimTrackingModel clmTrackModel = new ClaimTrackingModel();
-		clmTrackModel.setClaimId(task.getId());
-		clmTrackModel.setClaimOwner(task.getOwner().getDisplay());
-		clmTrackModel.setClaimStatus(task.getStatus().toString());
-		clmTrackModel.setClaimDesc(task.getDescription());
-		clmTrackModel.setClaimSignature(task.getRelevantHistory().get(0).getDisplay());
-		clmTrackModel.setDateProcessed(task.getExecutionPeriod().getStart());
-		clmTrackModel.setDateAuthorized(task.getAuthoredOn());
-		clmTrackModel.setDateLastModified(task.getLastModified());
-		return clmTrackModel;
+	public ClaimResponse getClaimStatus(Task claimStatusRequest) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
@@ -266,9 +222,4 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		return populateClaimRespModel(claimResponse); 
 		
 	}
-
-
-	
-	
-
 }

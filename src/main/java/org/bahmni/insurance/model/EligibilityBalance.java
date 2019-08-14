@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 public class EligibilityBalance {
 	
 	private BigDecimal benefitBalance;
-	private String code ;
+	private String category ;
 	private String term;
 	
 	public BigDecimal getBenefitBalance() {
@@ -14,11 +14,12 @@ public class EligibilityBalance {
 	public void setBenefitBalance(BigDecimal benefitBalance) {
 		this.benefitBalance = benefitBalance;
 	}
-	public String getCode() {
-		return code;
+	
+	public String getCategory() {
+		return category;
 	}
-	public void setCode(String code) {
-		this.code = code;
+	public void setCategory(String category) {
+		this.category = category;
 	}
 	public String getTerm() {
 		return term;

@@ -10,13 +10,11 @@ import java.util.List;
 import org.apache.commons.codec.binary.Base64;
 import org.bahmni.insurance.AppProperties;
 import org.bahmni.insurance.ImisConstants;
-import org.bahmni.insurance.exception.ApiException;
 import org.bahmni.insurance.exception.FhirFormatException;
 import org.bahmni.insurance.model.BahmniDiagnosis;
 import org.bahmni.insurance.model.ClaimLineItemRequest;
 import org.bahmni.insurance.model.ClaimParam;
 import org.bahmni.insurance.model.EligibilityParam;
-import org.bahmni.insurance.model.Mapping;
 import org.bahmni.insurance.model.Diagnosis;
 import org.bahmni.insurance.model.VisitSummary;
 import org.bahmni.insurance.service.AFhirConstructorService;
@@ -52,8 +50,8 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 
 	@Autowired
 	private AppProperties properties;
-
-	@Autowired
+	
+	@Autowired 
 	private BahmniOpenmrsApiClientServiceImpl bahmniApiService;
 
 	@Override
@@ -111,44 +109,38 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 		claimReq.setPatient(patientReference);
 
 		// BillablePeriod
-
+		
 		Period period = new Period();
 		VisitSummary visitDetails = bahmniApiService.getVisitDetail(claimParam.getVisitUUID());
-		period.setStart(new Date(visitDetails.getStartDateTime()));
-		if (visitDetails.getStopDateTime() != null) {
-			period.setEnd(new Date(visitDetails.getStopDateTime()));
-		} else {
-			throw new ApiException("Visit is not closed yet ! cannot proceed !");
-		}
-
+		period.setStart(new Date( visitDetails.getStartDateTime()));
+		if( visitDetails.getStopDateTime() != null) {
+			period.setEnd(new Date( visitDetails.getStopDateTime()));
+		} //TODO: validation if visitendDate is not closed
+		
 		claimReq.setBillablePeriod(period);
 		claimReq.setCreated(new Date());
 
-		// Diagnosis
-		BahmniDiagnosis bahmniDianosis = bahmniApiService.getDiagnosis(claimParam.getPatientUUID(),
-				claimParam.getVisitUUID());
+		// Diagnosis 
+		BahmniDiagnosis bahmniDianosis  =  bahmniApiService.getDiagnosis(claimParam.getPatientUUID(), claimParam.getVisitUUID());
 		int sequence = 1;
-		for (Diagnosis diag : bahmniDianosis.getDiagnosis()) {
+		for (Diagnosis diag :bahmniDianosis.getDiagnosis() ) {
 			Claim.DiagnosisComponent diagnosisComponent = new Claim.DiagnosisComponent();
 			CodeableConcept concept = new CodeableConcept();
 			Coding code = new Coding();
-			
-			for (Mapping mapp :  diag.getCodedAnswer().getMappings()) {
-				if (ImisConstants.ICD_10.equalsIgnoreCase(mapp.getSource())){
-					code.setCode(mapp.getCode());
-				}
-			}
+			code.setCode(diag.getCodedAnswer().getMappings().get(0).getCode()); // TODO: extract from openmrs api
 			concept.addCoding(code);
 			diagnosisComponent.setDiagnosis(concept);
 			diagnosisComponent.setSequence(sequence);
 			CodeableConcept conceptType = new CodeableConcept();
-			conceptType.setText("icd_0"); // TODO: remove hardcoded
+			conceptType.setText("icd_0"); //TODO: remove hardcoded
 			diagnosisComponent.addType(conceptType);
 			claimReq.addDiagnosis(diagnosisComponent);
 			sequence++;
 		}
-		sequence = 0;
+		sequence=0;
+		
 
+		
 		// Items/services for claims
 
 		List<ItemComponent> listItemComponent = populateClaimableItems(claimParam.getItem());
@@ -164,21 +156,16 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 		facilityReference.setReference("Location/" + properties.openImisHFCode);
 		claimReq.setFacility(facilityReference);
 		claimReq.setId(claimParam.getClaimId());
-
-		Money total = new Money();
+		
+		Money total  = new Money();
 		total.setValue(claimParam.getTotal());
 		claimReq.setTotal(total);
-
-		CodeableConcept typeValue = new CodeableConcept();
-		if (ImisConstants.CLAIM_VISIT_TYPE.OTHERS.equals(visitDetails.getVisitType())) {
-			typeValue.setText(ImisConstants.CLAIM_VISIT_TYPE.OTHERS_CODE);
-		} else if (ImisConstants.CLAIM_VISIT_TYPE.EMERGENCY.equals(visitDetails.getVisitType())) {
-			typeValue.setText(ImisConstants.CLAIM_VISIT_TYPE.EMERGENCY_CODE);
-		} else if (ImisConstants.CLAIM_VISIT_TYPE.REFFERALS.equals(visitDetails.getVisitType())) {
-			typeValue.setText(ImisConstants.CLAIM_VISIT_TYPE.REFFERALS_CODE);
-		}
+		
+		
+		CodeableConcept typeValue =  new CodeableConcept();
+		typeValue.setText(visitDetails.getVisitType()) ; 
 		claimReq.setType(typeValue);
-
+		
 		return claimReq;
 	}
 
@@ -207,57 +194,23 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 		}
 		return listItemComponent;
 	}
-
+	
 	@Override
-	public EligibilityRequest constructFhirEligibilityRequest(EligibilityParam eligibilityParam) throws IOException {
-
+	public EligibilityRequest constructFhirEligibilityRequest(EligibilityParam eligibilityParam)  throws IOException {
+		
 		EligibilityRequest eligibilityRequest = new EligibilityRequest();
-
-		/*
-		 * List<Identifier> identifierList = new ArrayList<>(); Identifier identifier =
-		 * new Identifier(); identifier.setSystem("SenderID");
-		 * identifierList.add(identifier);
-		 * eligibilityRequest.setIdentifier(identifierList);
-		 */
-
-		// patient
+		
+		//patient
 		Reference patientReference = new Reference();
 		patientReference.setReference("Patient/" + eligibilityParam.getChfID());
 		eligibilityRequest.setPatient(patientReference);
-
-		/*
-		 * 
-		 * 
-		 * List<ItemComponent> listItemComponent =
-		 * populateELigibilityItems(eligibilityParam.getItemCode());
-		 * eligibilityRequest.setItem(listItemComponent);
-		 */
+		System.out.println(eligibilityRequest.setPatient(patientReference));
 
 		return eligibilityRequest;
 	}
 
-	/*
-	 * private List<ItemComponent>
-	 * populateELigibilityItems(List<EligibilityItemRequest> listItem) {
-	 * List<ItemComponent> listItemComponent = new ArrayList<>(); for
-	 * (EligibilityItemRequest eligibleItem : listItem) { ItemComponent
-	 * itemComponent = new ItemComponent();
-	 * itemComponent.setSequence(eligibleItem.getSequence());
-	 * 
-	 * CodeableConcept codeConceptCategory = new CodeableConcept();
-	 * codeConceptCategory.setText(eligibleItem.getCategory());
-	 * itemComponent.setCategory(codeConceptCategory);
-	 * 
-	 * 
-	 * 
-	 * CodeableConcept codeConceptService = new CodeableConcept();
-	 * codeConceptService.setText(eligibleItem.getCode());
-	 * itemComponent.setService(codeConceptService);
-	 * 
-	 * Money value = new Money(); value.setValue(eligibleItem.getAllowedMoney());
-	 * itemComponent.setUnitPrice(value); listItemComponent.add(itemComponent); }
-	 * return listItemComponent; }
-	 */
+	
+	
 
 	@Override
 	public Task constructFhirClaimTrackRequest(String insuranceID) throws IOException {

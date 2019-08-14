@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class AppProperties {
-
 	@Value("${openmrs.db.url}")
 	public String openmrsDBUrl;
 
@@ -44,16 +43,6 @@ public class AppProperties {
 
 	@Value("${openmrs.odoo.api}")
 	public String openmrsOdooApi;
-	
-	@Value("${dummy.claimResponse.url}")
-	public String dummyClaimResponseUrl;
-	
-
-	@Value("${dummy.eligibilityResponse.url}")
-	public String dummyEligibiltyResponseUrl;
-	
-	@Value("${dummy.claimTrack.url}")
-	public String dummyClaimTrackUrl;
 	
 	@Value("${openimis.enterer.id}")
 	public String openImisEntererId;
