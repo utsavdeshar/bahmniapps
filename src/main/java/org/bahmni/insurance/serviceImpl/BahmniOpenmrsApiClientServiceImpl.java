@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
+import org.bahmni.insurance.exception.ApiException;
 import org.bahmni.insurance.model.BahmniDiagnosis;
 import org.bahmni.insurance.model.ClaimLineItemResponse;
 import org.bahmni.insurance.model.Diagnosis;
@@ -81,6 +82,8 @@ public class BahmniOpenmrsApiClientServiceImpl implements IApiClientService {
 		VisitSummary visit = null;
 		if(visitDetailsJson != null){
 			visit = InsuranceUtils.mapFromJson(visitDetailsJson, VisitSummary.class);
+		} else {
+			throw new ApiException(" VisitSummary is null ");
 		}
 		return visit;
 	}

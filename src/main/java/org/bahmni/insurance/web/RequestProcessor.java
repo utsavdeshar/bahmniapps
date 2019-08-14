@@ -22,10 +22,12 @@ import org.bahmni.insurance.model.ClaimTrackingModel;
 import org.bahmni.insurance.model.EligibilityParam;
 import org.bahmni.insurance.model.EligibilityResponseModel;
 import org.bahmni.insurance.model.FhirResourceModel;
+import org.bahmni.insurance.model.VisitSummary;
 import org.bahmni.insurance.service.AFhirConstructorService;
 import org.bahmni.insurance.service.AInsuranceClientService;
 import org.bahmni.insurance.service.FInsuranceServiceFactory;
 import org.bahmni.insurance.service.IOpenmrsOdooService;
+import org.bahmni.insurance.serviceImpl.BahmniOpenmrsApiClientServiceImpl;
 import org.bahmni.insurance.serviceImpl.FhirConstructorServiceImpl;
 import org.bahmni.insurance.serviceImpl.OpenmrsOdooServiceImpl;
 import org.bahmni.insurance.utils.InsuranceUtils;
@@ -47,6 +49,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.context.request.WebRequest;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.DataFormatException;
 import ca.uhn.fhir.parser.IParser;
@@ -60,6 +65,7 @@ public class RequestProcessor {
 	private final IOpenmrsOdooService odooService;
 	private final IFhirResourceDaoService fhirDaoService;
 	private final FInsuranceServiceFactory insuranceImplFactory;
+	private final BahmniOpenmrsApiClientServiceImpl bahmniOpenmrsService;
 	private final IParser FhirParser = FhirContext.forDstu3().newJsonParser();
 
 	private final AppProperties properties;
@@ -70,13 +76,15 @@ public class RequestProcessor {
 			OpenmrsOdooServiceImpl openmrsOdooServiceImpl, FhirResourceDaoServiceImpl fhirServiceImpl,
 			FInsuranceServiceFactory insuranceImplFactory, RestTemplateFactory restFactory,
 			AuthenticationFilter authenticationFilter,
-			AInsuranceClientService insuranceClientService,AppProperties props) {
+			AInsuranceClientService insuranceClientService,AppProperties props,
+			BahmniOpenmrsApiClientServiceImpl bahmniOpenmrsService) {
 		this.fhirConstructorService = fhirConstructorServiceImpl;
 		this.odooService = openmrsOdooServiceImpl;
 		this.fhirDaoService = fhirServiceImpl;
 		this.insuranceImplFactory = insuranceImplFactory;
 		this.properties = props;
 		this.authenticationFilter = authenticationFilter;
+		this.bahmniOpenmrsService = bahmniOpenmrsService;
 	}
 
 	@ExceptionHandler({ AccessDeniedException.class })
@@ -187,6 +195,21 @@ public class RequestProcessor {
 	public ResponseEntity<String> generatePatient(HttpServletResponse response, @RequestBody String personJson) {
 		logger.debug("generatePatient : ");
 		return fhirConstructorService.createFhirPatient(personJson);
+	}
+	
+	@RequestMapping(method = RequestMethod.GET, value = "/visit/{visitUUID}", produces = "application/json")
+	@ResponseBody
+	public VisitSummary getVisitDetails(HttpServletResponse response, @PathVariable("visitUUID") String visitUUID) throws JsonParseException, JsonMappingException, IOException {
+		logger.debug("getVisitDetails : ");
+		return bahmniOpenmrsService.getVisitDetail(visitUUID);
+
+	}
+	
+	@RequestMapping(method = RequestMethod.GET, value = "/request/authenticate", produces = "application/json")
+	@ResponseBody
+	public void authenticateOpenIMIS(HttpServletResponse response) throws JsonParseException, JsonMappingException, IOException {
+		logger.debug("Authenticated : ");
+
 	}
 
 	/*

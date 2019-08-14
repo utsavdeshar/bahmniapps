@@ -23,7 +23,10 @@ import org.hl7.fhir.dstu3.model.ClaimResponse.AdjudicationComponent;
 import org.hl7.fhir.dstu3.model.ClaimResponse.ItemComponent;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.EligibilityResponse;
+import org.hl7.fhir.dstu3.model.EligibilityResponse.BenefitComponent;
+import org.hl7.fhir.dstu3.model.EligibilityResponse.BenefitsComponent;
 import org.hl7.fhir.dstu3.model.EligibilityResponse.InsuranceComponent;
+import org.hl7.fhir.dstu3.model.Money;
 import org.hl7.fhir.dstu3.model.Task;
 import org.hl7.fhir.exceptions.FHIRException;/*
 												import org.openmrs.module.fhir.api.client.ClientHttpEntity;
@@ -125,7 +128,6 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		String jsonClaimRequest = FhirParser.encodeResourceToString(claimRequest);
 		ResponseEntity<String> responseObject = sendPostRequest(jsonClaimRequest, properties.openImisFhirApiClaim);
 		ClaimResponse claimResponse = (ClaimResponse) FhirParser.parseResource(responseObject.getBody());
-		System.out.println("ClaimResponse : "+FhirParser.encodeResourceToString(claimResponse));
 		return populateClaimRespModel(claimResponse);
 	}
 	private ClaimResponseModel populateClaimRespModel(ClaimResponse claimResponse) {
@@ -167,33 +169,40 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	@Override
 	public EligibilityResponseModel checkEligibility(EligibilityRequest eligbilityRequest){
 		String jsonEligRequest = FhirParser.encodeResourceToString(eligbilityRequest);
-		System.out.println("json format for checking" + jsonEligRequest);
 		ResponseEntity<String> responseObject = sendPostRequest(jsonEligRequest, properties.openImisFhirApiElig);
-		System.out.println("response object" + responseObject);
 		EligibilityResponse eligibilityResponse = (EligibilityResponse) FhirParser.parseResource(responseObject.getBody());
-		System.out.println("Eligibility Response : " + FhirParser.encodeResourceToString(eligibilityResponse) );
 		return populateEligibilityRespModel(eligibilityResponse);
 	}
-	private EligibilityResponseModel populateEligibilityRespModel(EligibilityResponse eligibilityResponse)
-			throws FHIRException {
+	private EligibilityResponseModel populateEligibilityRespModel(EligibilityResponse eligibilityResponse) {
 		EligibilityResponseModel eligRespModel = new EligibilityResponseModel();
-		eligRespModel.setNhisId(eligibilityResponse.getId());
+		/*eligRespModel.setNhisId(eligibilityResponse.getId());
 		eligRespModel.setPatientId(eligibilityResponse.getId());
-		eligRespModel.setStatus(eligibilityResponse.getStatus().toString());
-		
+		eligRespModel.setStatus(eligibilityResponse.getStatus().toString());*/	
 		List<EligibilityBalance> eligibilityBalance = new ArrayList<>();
-		for (InsuranceComponent responseItem : eligibilityResponse.getInsurance()) {
+		
+		for (InsuranceComponent insurance : eligibilityResponse.getInsurance()) {
 			EligibilityBalance eligBalance = new EligibilityBalance();
-			eligBalance.setCode(responseItem.getBenefitBalance().get(0).getTerm().getCoding().get(0).getCode());
-			eligBalance.setTerm(responseItem.getBenefitBalance().get(0).getFinancial().get(0).getType().getCoding()
-					.get(0).getCode());
-			eligBalance.setBenefitBalance(
-					responseItem.getBenefitBalance().get(0).getFinancial().get(0).getAllowedMoney().getValue());
-			eligibilityBalance.add(eligBalance);
+			
+			for (BenefitsComponent benefitBalance : insurance.getBenefitBalance()){
+				eligBalance.setCategory(benefitBalance.getCategory().getText());
+
+				if (benefitBalance.getFinancial().size() >= 0) {
+					
+					for(BenefitComponent financial : benefitBalance.getFinancial()) {
+						
+						if (financial.getAllowed() instanceof Money) {
+							eligBalance.setBenefitBalance(financial.getAllowedMoney().getValue());
+						}
+					}
+				}
+			}
+			eligibilityBalance.add(eligBalance);	
+
 		}
 		eligRespModel.setEligibilityBalance(eligibilityBalance);
 		return eligRespModel;
 	}
+	
 
 	@Override
 	public ClaimResponse getClaimStatus(Task claimStatusRequest) {
