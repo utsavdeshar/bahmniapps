@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<link href="../static/css/stylesheet.css" th:href="@{/css/stylesheet.css}" rel="stylesheet" />
+</head>
+<body>
+	 <form action = "https://uat.connectips.com:7443/connectipswebgw/loginpage"  method = "post">
+    
+	<br> MERCHANT ID <input type = "text" name = "MERCHANTID" id = "MERCHANTID"
+    value = "161" / > 
+	<br> APP ID <input type = "text" name = "APPID" id = "APPID"  value = "MER-161-APP-1" / > 
+	<br> APP NAME <input type = "text" name = "APPNAME"  id = "APPNAME" value = "Ace Travels" / > 
+	<br> TXN ID <input type = "text"   name = "TXNID" id = "TXNID" value = "8080" / > 
+	<br> TXN DATE <input type = "text"   name = "TXNDATE" id = "TXNDATE" value = "13-07-2019" / >  
+	<br>  Page 10 of 16   connectIPS Process & Interface Document For Merchant Public
+    TXN CRNCY 
+	<input type = "text" name = "TXNCRNCY" id = "TXNCRNCY" value = "NPR" / > 
+	<br> TXN AMT <input type = "text" name = "TXNAMT" id = "TXNAMT" value = "1000" / > 
+	<br> REFERENCE ID <input type = "text"
+    name = "REFERENCEID" id = "REFERENCEID" value = "12321" / >  
+	<br> REMARKS <input type = "text"
+    name = "REMARKS" id = "REMARKS" value = "Flight booking" / >
+	<br> PARTICULARS <input type = "text"
+    name = "PARTICULARS" id = "PARTICULARS" value = "Flight" / > 
+
+	<br> TOKEN <input type = "text" name = "TOKEN" id = "TOKEN" value ="ZRzNpwdoOVdq4zEalerecVoDdqc2KtUfU0g+8Qq/Iew6HOZIxPVl/TBNu3TQV/7lY21uLsnoxQGaXoXtekt/dBdC4aTLdelCBR4P60yUmQMoB9l+byn737uf2zJ0FrsY79ct1NZiJCHsmlzMcHpcz9YsjGYK1ZoqBhV42alYx2KzrKMO9/wG/ks6vF2VMJsidwLyQ1vk0exFNOA3j3GgEo7NZc4mNygFUIGE43bUIgRGSNBa07DUCtrAW4nmKAxZLX+mN+B0KJ/hlwrlY/UcJKnpFnhljfRKT+5vmE1I9fNkbwNC5D8kpY2Yl1cByCbTsYVbqVUAbx4xMfVCmfMI2Q==" / >
+     <br>
+	 
+    <input type = "submit" value = "Submit">
+</form>
+</body>
+</html>

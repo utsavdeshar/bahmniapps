@@ -17,6 +17,7 @@ import org.bahmni.insurance.model.ClaimResponseModel;
 import org.bahmni.insurance.model.EligibilityBalance;
 import org.bahmni.insurance.model.EligibilityResponseModel;
 import org.bahmni.insurance.service.AInsuranceClientService;
+import org.bahmni.insurance.utils.InsuranceUtils;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.hl7.fhir.dstu3.model.ClaimResponse.AdjudicationComponent;
@@ -128,6 +129,8 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		String jsonClaimRequest = FhirParser.encodeResourceToString(claimRequest);
 		ResponseEntity<String> responseObject = sendPostRequest(jsonClaimRequest, properties.openImisFhirApiClaim);
 		ClaimResponse claimResponse = (ClaimResponse) FhirParser.parseResource(responseObject.getBody());
+		System.out.println(FhirParser.encodeResourceToString(claimResponse));
+
 		return populateClaimRespModel(claimResponse);
 	}
 	private ClaimResponseModel populateClaimRespModel(ClaimResponse claimResponse) {

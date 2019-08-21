@@ -18,6 +18,9 @@ public class ImisConstants {
 	}
 
 	public static class CLAIM_VISIT_TYPE {
+		public final static String OPD = "OPD";
+		public final static String IPD = "IPD";
+
 		public final static String OTHERS_CODE = "O";
 		public final static String EMERGENCY_CODE = "E";
 		public final static String REFFERALS_CODE = "R";

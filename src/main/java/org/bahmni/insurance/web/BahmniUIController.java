@@ -18,8 +18,6 @@ import org.bahmni.insurance.service.FInsuranceServiceFactory;
 import org.bahmni.insurance.serviceImpl.FhirConstructorServiceImpl;
 import org.bahmni.insurance.serviceImpl.OpenmrsOdooServiceImpl;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
-import org.hl7.fhir.dstu3.model.Money;
-import org.hl7.fhir.dstu3.model.UnsignedIntType;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
@@ -29,7 +27,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -66,9 +63,10 @@ public class BahmniUIController {
 
 	@RequestMapping(value="/add-info", method = RequestMethod.GET)
 	public String addInfo(Insurance insurance) {
+		
 		return "add-info";
 	}
-
+	
 	@RequestMapping(value="/add-info", method = RequestMethod.POST)
 	public String showWelcomePage(@ModelAttribute @Valid Insurance insurance, BindingResult bindingResult, Model model,
 			@RequestParam String nhisNumber,EligibilityParam eligibilityParams) throws IOException, RestClientException, FHIRException, URISyntaxException {

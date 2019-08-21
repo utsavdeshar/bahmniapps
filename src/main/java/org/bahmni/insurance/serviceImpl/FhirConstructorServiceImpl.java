@@ -18,6 +18,7 @@ import org.bahmni.insurance.model.EligibilityParam;
 import org.bahmni.insurance.model.Diagnosis;
 import org.bahmni.insurance.model.VisitSummary;
 import org.bahmni.insurance.service.AFhirConstructorService;
+import org.bahmni.insurance.utils.InsuranceUtils;
 import org.bahmni.insurance.validation.FhirInstanceValidator;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.Claim.ItemComponent;
@@ -86,7 +87,12 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 
 	@Override
 	public Claim constructFhirClaimRequest(ClaimParam claimParam) throws IOException {
+		
 
+		//TODO: harcoded remove
+		/*claimParam.setVisitUUID("ce9b91a8-36b5-4e8b-9e48-e78fe81a0ceb"); 
+		claimParam.setClaimId("J16");
+		claimParam.setPatientUUID("5ccf3326-5318-4726-b74a-6236fd5d1d18");*/
 		Claim claimReq = new Claim();
 
 		// claim number
@@ -100,7 +106,7 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 		identifier2.setType(codeableConcept2);
 		identifier2.setUse(IdentifierUse.USUAL);
 		identifier2.setValue(claimParam.getClaimId());
-		identifierList.add(identifier2);
+		identifierList.add(identifier2); 
 		claimReq.setIdentifier(identifierList);
 
 		// Insuree patient
@@ -112,10 +118,21 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 		
 		Period period = new Period();
 		VisitSummary visitDetails = bahmniApiService.getVisitDetail(claimParam.getVisitUUID());
+		//System.out.println("Visit Details : "+InsuranceUtils.mapToJson(visitDetails));
 		period.setStart(new Date( visitDetails.getStartDateTime()));
 		if( visitDetails.getStopDateTime() != null) {
 			period.setEnd(new Date( visitDetails.getStopDateTime()));
-		} //TODO: validation if visitendDate is not closed
+		} 
+		
+		CodeableConcept typeValue = new CodeableConcept();
+		if (ImisConstants.CLAIM_VISIT_TYPE.OPD.equals(visitDetails.getVisitType()) || ImisConstants.CLAIM_VISIT_TYPE.IPD.equals(visitDetails.getVisitType())) {
+			typeValue.setText(ImisConstants.CLAIM_VISIT_TYPE.OTHERS_CODE);
+		} else if (ImisConstants.CLAIM_VISIT_TYPE.EMERGENCY.equals(visitDetails.getVisitType())) {
+			typeValue.setText(ImisConstants.CLAIM_VISIT_TYPE.EMERGENCY_CODE);
+		} else if (ImisConstants.CLAIM_VISIT_TYPE.REFFERALS.equals(visitDetails.getVisitType())) {
+			typeValue.setText(ImisConstants.CLAIM_VISIT_TYPE.REFFERALS_CODE);
+		}
+		claimReq.setType(typeValue);
 		
 		claimReq.setBillablePeriod(period);
 		claimReq.setCreated(new Date());
@@ -155,16 +172,11 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 		Reference facilityReference = new Reference();
 		facilityReference.setReference("Location/" + properties.openImisHFCode);
 		claimReq.setFacility(facilityReference);
-		claimReq.setId(claimParam.getClaimId());
+		claimReq.setId(claimParam.getClaimId()); //TODO: remove hardcode claimParam.setClaimId("L192991")
 		
-		Money total  = new Money();
+		Money total = new Money();
 		total.setValue(claimParam.getTotal());
 		claimReq.setTotal(total);
-		
-		
-		CodeableConcept typeValue =  new CodeableConcept();
-		typeValue.setText(visitDetails.getVisitType()) ; 
-		claimReq.setType(typeValue);
 		
 		return claimReq;
 	}
