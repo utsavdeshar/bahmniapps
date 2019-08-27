@@ -146,6 +146,7 @@ public class RequestProcessor {
 	@ResponseBody
 	public ClaimResponseModel getClaimResponse(HttpServletResponse response,@PathVariable("claimId") String claimId)
 			throws IOException {
+		//claimId = "901"; //TODO: remove hardcoded
 		ClaimResponseModel claimResponseModel = insuranceImplFactory
 				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getClaimResponse(claimId);
 		System.out.println("claimResponseModel : " + InsuranceUtils.mapToJson(claimResponseModel));
