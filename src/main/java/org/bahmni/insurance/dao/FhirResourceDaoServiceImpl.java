@@ -83,7 +83,7 @@ public class FhirResourceDaoServiceImpl implements IFhirResourceDaoService {
 	@Override
 	public String getClaimRequestByClaimId(String claimId) {
 		List<String> result = jdbcTemplate.query(
-				"SELECT resource FROM fhir_resource where resource->>'id'= '" + claimId + "' order by ts limit 1 ",
+				"SELECT resource FROM fhir_resource where resource->>'id'= '" + claimId + "' order by ts desc limit 1 ",
 				(rs, rowNum) -> rs.getString("resource"));
 		if (result.size() > 0) {
 			return result.get(0);
