@@ -160,7 +160,7 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 			Coding code = new Coding();
 			String ICDCode = diag.getCodedAnswer().getMappings().get(0).getCode();
 			if(ICDCode.contains(".") && icdDottedFormat.equals("false")) {
-				ICDCode = ICDCode.split(".")[0];
+				ICDCode = ICDCode.split("\\.")[0];
 			}
 			code.setCode(ICDCode); 
 			concept.addCoding(code);

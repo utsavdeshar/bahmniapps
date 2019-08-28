@@ -10,4 +10,5 @@ public interface IFhirResourceDaoService {
     List<FhirResourceModel> findAll();
 	int insertFhirResource(String fhirResource, String resourceType) throws DataAccessException;
 	List<String> getClaimId();
+	String getClaimRequestByClaimId(String claimId);
 }

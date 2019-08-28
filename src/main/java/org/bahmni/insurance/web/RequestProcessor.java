@@ -173,6 +173,12 @@ public class RequestProcessor {
 	public int addFhirClaim() {
 		return fhirDaoService.insertFhirResource();
 	}*/
+	
+	@RequestMapping(path = "/get/claimRequest/{claimId}")
+	@ResponseBody
+	public String getFhirClaim(@PathVariable("claimId") String claimId) {
+		return fhirDaoService.getClaimRequestByClaimId(claimId);
+	}
 
 	@RequestMapping(path = "/get/fhir/claim/id")
 	@ResponseBody
