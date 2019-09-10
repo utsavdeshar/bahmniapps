@@ -158,7 +158,7 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 					}
 				}
 				if(ImisConstants.CLAIM_ADJ_CATEGORY.REJECTED_REASON.equals(adj.getCategory().getText())){
-					claimItem.setRejectedReason(adj.getReason().getCoding().get(0).getCode());
+					claimItem.setRejectedReason(ImisConstants.ERROR_CODE_TO_TEXT_MAP.get(Integer.parseInt(adj.getReason().getCoding().get(0).getCode())));
 				}
 			}
 			claimItem.setSequence(responseItem.getSequenceLinkId());
