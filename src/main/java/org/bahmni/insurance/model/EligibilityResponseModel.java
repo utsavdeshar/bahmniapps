@@ -8,10 +8,6 @@ public class EligibilityResponseModel {
 
 	private String nhisId;
 	private String patientId;
-	private String status;
-	private Date cardIssued;
-	private Date validityFrom;
-	private Date validityTo;
 	private List<EligibilityBalance> eligibilityBalance;
 
 	
@@ -33,38 +29,6 @@ public class EligibilityResponseModel {
 		this.patientId = patientId;
 	}
 	
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
-	public Date getCardIssued() {
-		return cardIssued;
-	}
-
-	public void setCardIssued(Date cardIssued) {
-		this.cardIssued = cardIssued;
-	}
-
-	public Date getValidityFrom() {
-		return validityFrom;
-	}
-
-	public void setValidityFrom(Date validityFrom) {
-		this.validityFrom = validityFrom;
-	}
-
-	public Date getValidityTo() {
-		return validityTo;
-	}
-
-	public void setValidityTo(Date validityTo) {
-		this.validityTo = validityTo;
-	}
-
 	public List<EligibilityBalance> getEligibilityBalance() {
 		return eligibilityBalance;
 	}

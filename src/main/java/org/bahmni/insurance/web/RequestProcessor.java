@@ -95,12 +95,14 @@ public class RequestProcessor {
     	return  authenticationFilter.preHandle(request, response);
     }
 	
-	@RequestMapping(method = RequestMethod.POST, value = "/check/eligibility", produces = "application/json")
+	@RequestMapping(method = RequestMethod.GET, value = "/check/eligibility/{chfID}", produces = "application/json")
 	@ResponseBody
-	public EligibilityResponseModel checkEligibility(HttpServletResponse response, @RequestBody EligibilityParam eligibilityParams)
+	public EligibilityResponseModel checkEligibility(HttpServletResponse response, @PathVariable("chfID") String chfID)
 			throws RestClientException, URISyntaxException, DataFormatException, IOException {
 		logger.debug("checkEligibility : ");
-		EligibilityRequest eligRequest = fhirConstructorService.constructFhirEligibilityRequest(eligibilityParams);
+		
+		
+		EligibilityRequest eligRequest = fhirConstructorService.constructFhirEligibilityRequest(chfID);
 		logger.error("eligibilityRequest : "+FhirParser.encodeResourceToString(eligRequest));
 		String eligReqStr = FhirParser.encodeResourceToString(eligRequest);
 		/*if(properties.saveEligResource) {
@@ -111,7 +113,7 @@ public class RequestProcessor {
 		EligibilityResponseModel eligibilityResponseModel = insuranceImplFactory
 				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).checkEligibility(eligRequest);
 		logger.error("After eligiblity reply");
-		logger.debug("eligibilityResponseModel : " + InsuranceUtils
+		logger.error("eligibilityResponseModel : " + InsuranceUtils
 				.mapToJson(eligibilityResponseModel));
 		return eligibilityResponseModel;
 

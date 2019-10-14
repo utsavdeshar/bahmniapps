@@ -69,27 +69,23 @@ public class BahmniUIController {
 	
 	@RequestMapping(value="/add-info", method = RequestMethod.POST)
 	public String showWelcomePage(@ModelAttribute @Valid Insurance insurance, BindingResult bindingResult, Model model,
-			@RequestParam String nhisNumber,EligibilityParam eligibilityParams) throws IOException, RestClientException, FHIRException, URISyntaxException {
+			@RequestParam String nhisNumber) throws IOException, RestClientException, FHIRException, URISyntaxException {
 		if (bindingResult.hasErrors()) {
 			System.out.println("BINDING RESULT ERROR");
 			model.addAttribute("error", bindingResult.getAllErrors());
 			return "add-info";
 		} else {
-			EligibilityRequest eligRequest = fhirConstructorService.constructFhirEligibilityRequest(eligibilityParams);
+			EligibilityRequest eligRequest = fhirConstructorService.constructFhirEligibilityRequest(nhisNumber);
 			EligibilityResponseModel eligibilityResponse = insuranceImplFactory.
 					getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).checkEligibility(eligRequest);
 			// String nhisId = eligibilityResponse.getNhisId();
 			String patientId = eligibilityResponse.getPatientId();
-			String status = eligibilityResponse.getStatus();
 			BigDecimal benefitBalance = eligibilityResponse.getEligibilityBalance().get(0).getBenefitBalance();
 			String code = eligibilityResponse.getEligibilityBalance().get(0).getCategory();
-			String term = eligibilityResponse.getEligibilityBalance().get(0).getTerm();
 
 			model.addAttribute("patientId", patientId);
-			model.addAttribute("status", status);
 			model.addAttribute("benefitBalance", benefitBalance);
 			model.addAttribute("code", code);
-			model.addAttribute("term", term);
 			model.addAttribute("insurance", insurance);
 			model.addAttribute("nhisNumber", insurance.getNhisNumber());
 

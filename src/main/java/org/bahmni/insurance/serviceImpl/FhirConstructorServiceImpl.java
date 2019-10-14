@@ -226,13 +226,13 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 	}
 	
 	@Override
-	public EligibilityRequest constructFhirEligibilityRequest(EligibilityParam eligibilityParam)  throws IOException {
+	public EligibilityRequest constructFhirEligibilityRequest(String ChfID)  throws IOException {
 		
 		EligibilityRequest eligibilityRequest = new EligibilityRequest();
 		
 		//patient
 		Reference patientReference = new Reference();
-		patientReference.setReference("Patient/" + eligibilityParam.getChfID());
+		patientReference.setReference("Patient/" +ChfID);
 		eligibilityRequest.setPatient(patientReference);
 		System.out.println(eligibilityRequest.setPatient(patientReference));
 

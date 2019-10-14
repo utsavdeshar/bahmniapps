@@ -2,6 +2,7 @@ package org.bahmni.insurance.serviceImpl;
 
 import static org.apache.log4j.Logger.getLogger;
 
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -179,12 +180,16 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	private EligibilityResponseModel populateEligibilityRespModel(EligibilityResponse eligibilityResponse) {
 		EligibilityResponseModel eligRespModel = new EligibilityResponseModel();
 		/*eligRespModel.setNhisId(eligibilityResponse.getId());
-		eligRespModel.setPatientId(eligibilityResponse.getId());
-		eligRespModel.setStatus(eligibilityResponse.getStatus().toString());*/	
+		eligRespModel.setPatientId(eligibilityResponse.getId());*/	
 		List<EligibilityBalance> eligibilityBalance = new ArrayList<>();
 		
 		for (InsuranceComponent insurance : eligibilityResponse.getInsurance()) {
 			EligibilityBalance eligBalance = new EligibilityBalance();
+			
+			if(insurance.getContract().getReference() != null) {
+				String last = (insurance.getContract().getReference()).substring((insurance.getContract().getReference()).lastIndexOf('-') + 1);
+				eligBalance.setValidDate(last);
+				}
 			
 			for (BenefitsComponent benefitBalance : insurance.getBenefitBalance()){
 				eligBalance.setCategory(benefitBalance.getCategory().getText());
@@ -194,7 +199,9 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 					for(BenefitComponent financial : benefitBalance.getFinancial()) {
 						
 						if (financial.getAllowed() instanceof Money) {
-							eligBalance.setBenefitBalance(financial.getAllowedMoney().getValue());
+							if((financial.getAllowedMoney().getValue().compareTo(BigDecimal.ZERO) != 0) && (financial.getUsedMoney().getValue().compareTo(BigDecimal.ZERO) != 0)) {
+							eligBalance.setBenefitBalance(financial.getAllowedMoney().getValue().subtract(financial.getUsedMoney().getValue()));
+						}
 						}
 					}
 				}
