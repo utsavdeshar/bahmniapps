@@ -2,6 +2,7 @@ package org.bahmni.insurance.serviceImpl;
 
 import static org.apache.log4j.Logger.getLogger;
 
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -130,10 +131,10 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		ResponseEntity<String> responseObject = sendPostRequest(jsonClaimRequest, properties.openImisFhirApiClaim);
 		ClaimResponse claimResponse = (ClaimResponse) FhirParser.parseResource(responseObject.getBody());
 		System.out.println(FhirParser.encodeResourceToString(claimResponse));
-
-		return populateClaimRespModel(claimResponse);
+		BigDecimal totalclaimedAmount = claimRequest.getTotal().getValue();
+		return populateClaimRespModel(claimResponse, totalclaimedAmount);
 	}
-	private ClaimResponseModel populateClaimRespModel(ClaimResponse claimResponse) {
+	private ClaimResponseModel populateClaimRespModel(ClaimResponse claimResponse, BigDecimal totalclaimedAmount) {
 		ClaimResponseModel clmRespModel = new ClaimResponseModel();
 		
 		clmRespModel.setClaimStatus(claimResponse.getOutcome().getText());
@@ -165,6 +166,13 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 			claimLineItems.add(claimItem);
 			
 		}
+		
+		if (claimResponse.getTotalBenefit().getValue() != null) {
+			clmRespModel.setApprovedTotal(claimResponse.getTotalBenefit().getValue());
+		} else if (totalclaimedAmount != null) {
+			clmRespModel.setApprovedTotal(totalclaimedAmount);
+		}
+		
 		clmRespModel.setClaimLineItems(claimLineItems);
 		return clmRespModel;
 	}
@@ -222,7 +230,7 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	public ClaimResponseModel getClaimResponse(String claimID) {
 		String claimResponseStr = sendGetRequest(properties.imisUrl+"/ClaimResponse/"+claimID);
 		ClaimResponse claimResponse = (ClaimResponse) FhirParser.parseResource(claimResponseStr);
-		return populateClaimRespModel(claimResponse); 
+		return populateClaimRespModel(claimResponse, null); 
 		
 	}
 }
