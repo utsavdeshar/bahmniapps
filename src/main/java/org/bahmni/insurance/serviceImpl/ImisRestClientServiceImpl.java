@@ -23,6 +23,8 @@ import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.hl7.fhir.dstu3.model.ClaimResponse.AdjudicationComponent;
 import org.hl7.fhir.dstu3.model.ClaimResponse.ItemComponent;
+import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.EligibilityResponse;
 import org.hl7.fhir.dstu3.model.EligibilityResponse.BenefitComponent;
@@ -41,6 +43,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
@@ -173,43 +176,79 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	@Override
 	public EligibilityResponseModel checkEligibility(EligibilityRequest eligbilityRequest){
 		String jsonEligRequest = FhirParser.encodeResourceToString(eligbilityRequest);
-		ResponseEntity<String> responseObject = sendPostRequest(jsonEligRequest, properties.openImisFhirApiElig);
+		EligibilityResponseModel ResponseELigible;
+		if(properties.openImisPolicyEnabled) {
+			System.out.println("I am from specific policy config");
+		ResponseEntity<String> responseObject = sendPostRequest(jsonEligRequest, properties.openImisFhirApiEligPolicyEnabled);
 		EligibilityResponse eligibilityResponse = (EligibilityResponse) FhirParser.parseResource(responseObject.getBody());
-		return populateEligibilityRespModel(eligibilityResponse);
+		ResponseELigible = populateEligibilityRespModelPolicyEnabled(eligibilityResponse);
+		}else {
+			System.out.println("I am from global config");
+			ResponseEntity<String> responseObject = sendPostRequest(jsonEligRequest, properties.openImisFhirApiElig);
+			EligibilityResponse eligibilityResponse = (EligibilityResponse) FhirParser.parseResource(responseObject.getBody());
+			ResponseELigible = populateEligibilityRespModel(eligibilityResponse);	
+			
+		}
+		
+		return ResponseELigible;
+	}
+	
+	private EligibilityResponseModel populateEligibilityRespModelPolicyEnabled(EligibilityResponse eligibilityResponse) {
+		EligibilityResponseModel eligRespModel = new EligibilityResponseModel();
+		eligRespModel.setPolicy(properties.openImisPolicyEnabled);
+
+		List<EligibilityBalance> eligibilityBalance = new ArrayList<>();	
+		EligibilityBalance eligBalance = new EligibilityBalance();
+
+		for (InsuranceComponent insurance : eligibilityResponse.getInsurance()) {
+			if(insurance.getContract().getReference() != null) {
+				String last = (insurance.getContract().getReference()).substring((insurance.getContract().getReference()).lastIndexOf('/') + 1);
+				eligBalance.setValidDate(last);
+
+				}
+			for (BenefitsComponent benefitBalance : insurance.getBenefitBalance()){				
+						
+				CodeableConcept cc = benefitBalance.getCategory();
+				eligBalance.setCategory(cc.toString());
+					for(BenefitComponent financial : benefitBalance.getFinancial()) {
+						if (financial.getAllowed() instanceof Money) {
+							eligBalance.setBenefitBalance(financial.getAllowedMoney().getValue().subtract(financial.getUsedMoney().getValue()));
+									eligibilityBalance.add(eligBalance);
+
+						}
+
+					}
+
+			}	
+
+			eligRespModel.setEligibilityBalance(eligibilityBalance);
+		}
+		return eligRespModel;
 	}
 	private EligibilityResponseModel populateEligibilityRespModel(EligibilityResponse eligibilityResponse) {
 		EligibilityResponseModel eligRespModel = new EligibilityResponseModel();
 		/*eligRespModel.setNhisId(eligibilityResponse.getId());
 		eligRespModel.setPatientId(eligibilityResponse.getId());*/	
 		List<EligibilityBalance> eligibilityBalance = new ArrayList<>();
-		
-		for (InsuranceComponent insurance : eligibilityResponse.getInsurance()) {
-			EligibilityBalance eligBalance = new EligibilityBalance();
-			
-			if(insurance.getContract().getReference() != null) {
-				String last = (insurance.getContract().getReference()).substring((insurance.getContract().getReference()).lastIndexOf('-') + 1);
-				eligBalance.setValidDate(last);
-				}
-			
+		for (InsuranceComponent insurance : eligibilityResponse.getInsurance()) {	
 			for (BenefitsComponent benefitBalance : insurance.getBenefitBalance()){
-				eligBalance.setCategory(benefitBalance.getCategory().getText());
-
-				if (benefitBalance.getFinancial().size() >= 0) {
-					
-					for(BenefitComponent financial : benefitBalance.getFinancial()) {
-						
+				EligibilityBalance eligBalance = new EligibilityBalance();
+				
+				
+				for(Coding code : benefitBalance.getCategory().getCoding()) {
+					eligBalance.setCategory(code.getSystem());
+				}
+				
+				
+				for(BenefitComponent financial : benefitBalance.getFinancial()) {
 						if (financial.getAllowed() instanceof Money) {
-							if((financial.getAllowedMoney().getValue().compareTo(BigDecimal.ZERO) != 0) && (financial.getUsedMoney().getValue().compareTo(BigDecimal.ZERO) != 0)) {
-							eligBalance.setBenefitBalance(financial.getAllowedMoney().getValue().subtract(financial.getUsedMoney().getValue()));
-						}
+							eligBalance.setBenefitBalance(financial.getAllowedMoney().getValue());
+							eligibilityBalance.add(eligBalance);
 						}
 					}
-				}
 			}
-			eligibilityBalance.add(eligBalance);	
-
+			eligRespModel.setEligibilityBalance(eligibilityBalance);
 		}
-		eligRespModel.setEligibilityBalance(eligibilityBalance);
 		return eligRespModel;
 	}
 	

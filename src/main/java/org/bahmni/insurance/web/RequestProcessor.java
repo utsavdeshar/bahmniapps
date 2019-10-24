@@ -18,7 +18,6 @@ import org.bahmni.insurance.dao.FhirResourceDaoServiceImpl;
 import org.bahmni.insurance.dao.IFhirResourceDaoService;
 import org.bahmni.insurance.model.ClaimParam;
 import org.bahmni.insurance.model.ClaimResponseModel;
-import org.bahmni.insurance.model.EligibilityParam;
 import org.bahmni.insurance.model.EligibilityResponseModel;
 import org.bahmni.insurance.model.FhirResourceModel;
 import org.bahmni.insurance.model.VisitSummary;
@@ -109,10 +108,10 @@ public class RequestProcessor {
 			fhirDaoService.insertFhirResource(eligReqStr, ImisConstants.FHIR_RESOURCE_TYPE.ELIGIBILITYREQUEST.getValue() );
 		}*/
 		fhirConstructorService.validateRequest(eligReqStr);
-		logger.error("After fhir thing");
+		logger.error("After validation");
 		EligibilityResponseModel eligibilityResponseModel = insuranceImplFactory
 				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).checkEligibility(eligRequest);
-		logger.error("After eligiblity reply");
+		logger.error("After eligiblity reply" + eligibilityResponseModel );
 		logger.error("eligibilityResponseModel : " + InsuranceUtils
 				.mapToJson(eligibilityResponseModel));
 		return eligibilityResponseModel;

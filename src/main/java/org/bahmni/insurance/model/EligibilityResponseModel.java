@@ -8,6 +8,8 @@ public class EligibilityResponseModel {
 
 	private String nhisId;
 	private String patientId;
+	private Boolean policy;
+
 	private List<EligibilityBalance> eligibilityBalance;
 
 	
@@ -28,6 +30,14 @@ public class EligibilityResponseModel {
 	public void setPatientId(String patientId) {
 		this.patientId = patientId;
 	}
+	
+	public Boolean getPolicy() {
+		return policy;
+	}
+	public void setPolicy(Boolean policy) {
+		this.policy = policy;
+	}
+	
 	
 	public List<EligibilityBalance> getEligibilityBalance() {
 		return eligibilityBalance;
