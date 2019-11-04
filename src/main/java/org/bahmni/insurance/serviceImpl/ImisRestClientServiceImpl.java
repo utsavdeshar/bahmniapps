@@ -208,8 +208,7 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 				}
 			for (BenefitsComponent benefitBalance : insurance.getBenefitBalance()){				
 						
-				CodeableConcept cc = benefitBalance.getCategory();
-				eligBalance.setCategory(cc.toString());
+				eligBalance.setCategory(benefitBalance.getCategory().getText());
 					for(BenefitComponent financial : benefitBalance.getFinancial()) {
 						if (financial.getAllowed() instanceof Money) {
 							eligBalance.setBenefitBalance(financial.getAllowedMoney().getValue().subtract(financial.getUsedMoney().getValue()));
