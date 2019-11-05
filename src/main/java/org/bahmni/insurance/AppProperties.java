@@ -53,14 +53,20 @@ public class AppProperties {
 	@Value("${openimis.fhir.api.claim}")
 	public String openImisFhirApiClaim;
 	
-	@Value("${openimis.fhir.api.elig}")
-	public String openImisFhirApiElig;
-	
 	@Value("${imisconnect.eligresource.save}")
 	public boolean saveEligResource;
 	
 	@Value("${imisconnect.claimresource.save}")
 	public boolean saveClaimResource;
+	
+	@Value("${openimis.fhir.api.elig}")
+	public String openImisFhirApiElig;
+	
+	@Value("${openimis.fhir.api.elig.policy.enabled}")
+	public String openImisFhirApiEligPolicyEnabled;
+
+	@Value("${openimis.policy.enabled}")
+	public boolean openImisPolicyEnabled;
 	
 	
 

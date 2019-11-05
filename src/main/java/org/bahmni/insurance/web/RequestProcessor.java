@@ -19,7 +19,6 @@ import org.bahmni.insurance.dao.IFhirResourceDaoService;
 import org.bahmni.insurance.model.ClaimLineItemRequest;
 import org.bahmni.insurance.model.ClaimParam;
 import org.bahmni.insurance.model.ClaimResponseModel;
-import org.bahmni.insurance.model.EligibilityParam;
 import org.bahmni.insurance.model.EligibilityResponseModel;
 import org.bahmni.insurance.model.FhirResourceModel;
 import org.bahmni.insurance.model.VisitSummary;
@@ -96,23 +95,25 @@ public class RequestProcessor {
     	return  authenticationFilter.preHandle(request, response);
     }
 	
-	@RequestMapping(method = RequestMethod.POST, value = "/check/eligibility", produces = "application/json")
+	@RequestMapping(method = RequestMethod.GET, value = "/check/eligibility/{chfID}", produces = "application/json")
 	@ResponseBody
-	public EligibilityResponseModel checkEligibility(HttpServletResponse response, @RequestBody EligibilityParam eligibilityParams)
+	public EligibilityResponseModel checkEligibility(HttpServletResponse response, @PathVariable("chfID") String chfID)
 			throws RestClientException, URISyntaxException, DataFormatException, IOException {
 		logger.debug("checkEligibility : ");
-		EligibilityRequest eligRequest = fhirConstructorService.constructFhirEligibilityRequest(eligibilityParams);
+		
+		
+		EligibilityRequest eligRequest = fhirConstructorService.constructFhirEligibilityRequest(chfID);
 		logger.error("eligibilityRequest : "+FhirParser.encodeResourceToString(eligRequest));
 		String eligReqStr = FhirParser.encodeResourceToString(eligRequest);
 		/*if(properties.saveEligResource) {
 			fhirDaoService.insertFhirResource(eligReqStr, ImisConstants.FHIR_RESOURCE_TYPE.ELIGIBILITYREQUEST.getValue() );
 		}*/
 		fhirConstructorService.validateRequest(eligReqStr);
-		logger.error("After fhir thing");
+		logger.error("After validation");
 		EligibilityResponseModel eligibilityResponseModel = insuranceImplFactory
 				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).checkEligibility(eligRequest);
-		logger.error("After eligiblity reply");
-		logger.debug("eligibilityResponseModel : " + InsuranceUtils
+		logger.error("After eligiblity reply" + eligibilityResponseModel );
+		logger.error("eligibilityResponseModel : " + InsuranceUtils
 				.mapToJson(eligibilityResponseModel));
 		return eligibilityResponseModel;
 

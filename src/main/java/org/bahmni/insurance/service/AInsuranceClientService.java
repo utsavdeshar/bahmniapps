@@ -1,20 +1,13 @@
 package org.bahmni.insurance.service;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.bahmni.insurance.client.ClientHelperFactory;
 import org.bahmni.insurance.model.ClaimResponseModel;
-import org.bahmni.insurance.model.ClaimTrackingModel;
 import org.bahmni.insurance.model.EligibilityResponseModel;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.Task;
-import org.hl7.fhir.exceptions.FHIRException;
 /*import org.openmrs.module.fhir.api.helper.ClientHelper;*/
 import org.springframework.web.client.RestClientException;
 

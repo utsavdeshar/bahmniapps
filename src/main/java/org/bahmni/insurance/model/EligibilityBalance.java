@@ -6,7 +6,7 @@ public class EligibilityBalance {
 	
 	private BigDecimal benefitBalance;
 	private String category ;
-	private String term;
+	private String validDate;
 	
 	public BigDecimal getBenefitBalance() {
 		return benefitBalance;
@@ -21,14 +21,12 @@ public class EligibilityBalance {
 	public void setCategory(String category) {
 		this.category = category;
 	}
-	public String getTerm() {
-		return term;
+	public String getValidDate() {
+		return validDate;
 	}
-	public void setTerm(String term) {
-		this.term = term;
+	public void setValidDate(String validDate) {
+		this.validDate = validDate;
 	}
 	
 	
-	
-
 }

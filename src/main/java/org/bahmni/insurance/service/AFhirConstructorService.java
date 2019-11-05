@@ -24,7 +24,7 @@ public abstract class AFhirConstructorService {
 
 	public abstract Claim constructFhirClaimRequest(ClaimParam claimParamObj) throws IOException;
 
-	public abstract EligibilityRequest constructFhirEligibilityRequest(EligibilityParam eligibilityParamObj) throws IOException;
+	public abstract EligibilityRequest constructFhirEligibilityRequest(String chfID) throws IOException;
 
 	public abstract String getFhirPatient(String patientId);
 
