@@ -92,14 +92,6 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 	@Override
 	public Claim constructFhirClaimRequest(ClaimParam claimParam) throws IOException {
 		
-		//claimParam.setClaimId("903");
-
-		//TODO: harcoded remove
-		/*claimParam.setVisitUUID("ce9b91a8-36b5-4e8b-9e48-e78fe81a0ceb"); 
-		claimParam.setClaimId("J16");
-		claimParam.setPatientUUID("5ccf3326-5318-4726-b74a-6236fd5d1d18");*/
-		
-		
 		Claim claimReq = new Claim();
 
 		// claim number
@@ -122,7 +114,6 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 		claimReq.setPatient(patientReference);
 
 		// BillablePeriod
-		
 		Period period = new Period();
 		VisitSummary visitDetails = bahmniApiService.getVisitDetail(claimParam.getVisitUUID());
 		//System.out.println("Visit Details : "+InsuranceUtils.mapToJson(visitDetails));
@@ -130,13 +121,6 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 		if( visitDetails.getStopDateTime() != null) {
 			period.setEnd(new Date( visitDetails.getStopDateTime()));
 		} 
-		//TODO: remove hardcoded dates
-		/*period.setStart(InsuranceUtils.convertBahmniDateToImis("2019-01-04"));
-		period.setEnd(InsuranceUtils.convertBahmniDateToImis("2019-01-04"));
-		
-		System.out.println(period.getStart());
-		System.out.println(period.getEnd());
-*/
 		
 		CodeableConcept typeValue = new CodeableConcept();
 		if (ImisConstants.CLAIM_VISIT_TYPE.OPD.equals(visitDetails.getVisitType()) || ImisConstants.CLAIM_VISIT_TYPE.IPD.equals(visitDetails.getVisitType())) {
@@ -155,26 +139,27 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 		BahmniDiagnosis bahmniDianosis  =  bahmniApiService.getDiagnosis(claimParam.getPatientUUID(), claimParam.getVisitUUID());
 		int sequence = 1;
 		for (Diagnosis diag :bahmniDianosis.getDiagnosis() ) {
-			Claim.DiagnosisComponent diagnosisComponent = new Claim.DiagnosisComponent();
-			CodeableConcept concept = new CodeableConcept();
-			Coding code = new Coding();
-			String ICDCode = diag.getCodedAnswer().getMappings().get(0).getCode();
-			if(ICDCode.contains(".") && icdDottedFormat.equals("false")) {
-				ICDCode = ICDCode.split("\\.")[0];
+			System.out.println("diag.getAdditionalProperties().get(\"certainty\") : " + diag.getAdditionalProperties().get("certainty"));
+			if ("CONFIRMED".equals(diag.getAdditionalProperties().get("certainty"))){
+				Claim.DiagnosisComponent diagnosisComponent = new Claim.DiagnosisComponent();
+				CodeableConcept concept = new CodeableConcept();
+				Coding code = new Coding();
+				String ICDCode = diag.getCodedAnswer().getMappings().get(0).getCode();
+				if(ICDCode.contains(".") && icdDottedFormat.equals("false")) {
+					ICDCode = ICDCode.split("\\.")[0];
+				}
+				code.setCode(ICDCode); 
+				concept.addCoding(code);
+				diagnosisComponent.setDiagnosis(concept);
+				diagnosisComponent.setSequence(sequence);
+				CodeableConcept conceptType = new CodeableConcept();
+				conceptType.setText("icd_0"); //TODO: remove hardcoded
+				diagnosisComponent.addType(conceptType);
+				claimReq.addDiagnosis(diagnosisComponent);
+				sequence++;
 			}
-			code.setCode(ICDCode); 
-			concept.addCoding(code);
-			diagnosisComponent.setDiagnosis(concept);
-			diagnosisComponent.setSequence(sequence);
-			CodeableConcept conceptType = new CodeableConcept();
-			conceptType.setText("icd_0"); //TODO: remove hardcoded
-			diagnosisComponent.addType(conceptType);
-			claimReq.addDiagnosis(diagnosisComponent);
-			sequence++;
 		}
 		sequence=0;
-		
-
 		
 		// Items/services for claims
 
