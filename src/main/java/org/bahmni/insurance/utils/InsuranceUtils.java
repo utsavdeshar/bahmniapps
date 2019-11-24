@@ -60,6 +60,12 @@ public class InsuranceUtils {
 		return objectMapper.readValue(json, clazz);
 	}
 	
+	public static String convertBahmniDateStr(Date bahmniDate) {
+		SimpleDateFormat inputPutdateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		return inputPutdateFormat.format(bahmniDate);
+	}
+
+	
 	public static Date convertBahmniDateToImis(String dateStr) {
 		SimpleDateFormat inputPutdateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		SimpleDateFormat outPutDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");

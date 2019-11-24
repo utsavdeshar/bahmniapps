@@ -3,6 +3,7 @@ package org.bahmni.insurance.serviceImpl;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
@@ -88,13 +89,17 @@ public class BahmniOpenmrsApiClientServiceImpl implements IApiClientService {
 		return visit;
 	}
 	
-	public BahmniDiagnosis getDiagnosis(String patientUUID, String visitUUID) throws JsonParseException, JsonMappingException, IOException {
+	public BahmniDiagnosis getDiagnosis(String patientUUID, String visitUUID, Date fromDate) throws JsonParseException, JsonMappingException, IOException {
 		String diagnosisJson =  sendGetRequest(openmrsAPIUrl+"/bahmnicore/diagnosis/search?patientUuid="+patientUUID+"&visitUuid="+visitUUID);
 		BahmniDiagnosis bahmniDiagnosisList = null;
-		diagnosisJson = "{\"diagnosis\" : "+diagnosisJson+ "}";
-		if(diagnosisJson != null){
-			bahmniDiagnosisList = InsuranceUtils.mapFromJson(diagnosisJson, BahmniDiagnosis.class);
+		if(diagnosisJson != null && diagnosisJson.length() > 2){ //diagnosisJson contains atleast 2 chars []
+			diagnosisJson = "{\"diagnosis\" : "+diagnosisJson+ "}";
+		} else {
+			String fromDateStr = InsuranceUtils.convertBahmniDateStr(fromDate);
+			diagnosisJson =  sendGetRequest(openmrsAPIUrl+"/bahmnicore/diagnosis/search?patientUuid="+patientUUID+"&fromDate="+fromDateStr);
+			diagnosisJson = "{\"diagnosis\" : "+diagnosisJson+ "}";
 		}
+		bahmniDiagnosisList = InsuranceUtils.mapFromJson(diagnosisJson, BahmniDiagnosis.class);
 		return bahmniDiagnosisList;
 	}
 	
