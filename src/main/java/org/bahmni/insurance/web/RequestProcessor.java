@@ -21,6 +21,7 @@ import org.bahmni.insurance.model.ClaimParam;
 import org.bahmni.insurance.model.ClaimResponseModel;
 import org.bahmni.insurance.model.EligibilityResponseModel;
 import org.bahmni.insurance.model.FhirResourceModel;
+import org.bahmni.insurance.model.InsureeModel;
 import org.bahmni.insurance.model.VisitSummary;
 import org.bahmni.insurance.service.AFhirConstructorService;
 import org.bahmni.insurance.service.AInsuranceClientService;
@@ -53,6 +54,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.DataFormatException;
 import ca.uhn.fhir.parser.IParser;
+import ch.qos.logback.core.net.SyslogOutputStream;
 
 @RestController
 public class RequestProcessor {
@@ -92,6 +94,7 @@ public class RequestProcessor {
 	
 	@RequestMapping(path = "/hasInsurancePrivilege")
 	public Boolean checkPrevilage(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		System.out.println("after has privilage link");
     	return  authenticationFilter.preHandle(request, response);
     }
 	
@@ -116,6 +119,17 @@ public class RequestProcessor {
 		logger.error("eligibilityResponseModel : " + InsuranceUtils
 				.mapToJson(eligibilityResponseModel));
 		return eligibilityResponseModel;
+
+	}
+	@RequestMapping(method = RequestMethod.GET, value = "get/insuree/{chfID}", produces = "application/json")
+	@ResponseBody
+	public InsureeModel getInsuree(HttpServletResponse response,@PathVariable("chfID") String chfID)
+			throws IOException {
+		InsureeModel insureeModel = insuranceImplFactory
+				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getInsuree(chfID);
+		System.out.println("InsureeModel : " + InsuranceUtils.mapToJson(insureeModel));
+
+		return insureeModel;
 
 	}
 	
