@@ -39,6 +39,7 @@ public class AuthenticationFilter extends HandlerInterceptorAdapter {
 		}*/
 
 		Cookie[] cookies = request.getCookies();
+		System.out.println("after cookies fetch" + cookies);
 		if (cookies == null) {
 			System.out.println("cookies == null");
 			return redirectToLogin(request, response);
@@ -47,6 +48,8 @@ public class AuthenticationFilter extends HandlerInterceptorAdapter {
 		System.out.println(" authenticationResponse" + authenticationResponse);
 
 		for (Cookie cookie : cookies) {
+			System.out.println("trying to loop cookies" + cookie);
+			System.out.println("cookie name" + cookie.getName());
 			if (cookie.getName().equals(REPORTING_COOKIE_NAME)) {
 				System.out.println(" preHandle2" + cookie.getName());
 				System.out.println(" authenticationResponse" + authenticator.authenticate(cookie.getValue()));

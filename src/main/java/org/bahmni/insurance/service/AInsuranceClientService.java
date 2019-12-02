@@ -4,6 +4,7 @@ import java.net.URISyntaxException;
 
 import org.bahmni.insurance.model.ClaimResponseModel;
 import org.bahmni.insurance.model.EligibilityResponseModel;
+import org.bahmni.insurance.model.InsureeModel;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
@@ -22,6 +23,8 @@ public abstract class AInsuranceClientService {
 	public abstract ClaimResponseModel submitClaim(Claim claimRequest) throws RestClientException, URISyntaxException;
 
 	public abstract ClaimResponseModel getClaimResponse(String claimID);
+	
+	public abstract InsureeModel getInsuree(String chfID);
 	
 	public abstract EligibilityResponseModel checkEligibility(EligibilityRequest eligibilityRequest) throws RestClientException, URISyntaxException;
 	

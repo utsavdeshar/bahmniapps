@@ -17,20 +17,25 @@ import org.bahmni.insurance.model.ClaimLineItemResponse;
 import org.bahmni.insurance.model.ClaimResponseModel;
 import org.bahmni.insurance.model.EligibilityBalance;
 import org.bahmni.insurance.model.EligibilityResponseModel;
+import org.bahmni.insurance.model.InsureeModel;
 import org.bahmni.insurance.service.AInsuranceClientService;
 import org.bahmni.insurance.utils.InsuranceUtils;
+import org.hl7.fhir.dstu3.model.Address;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.hl7.fhir.dstu3.model.ClaimResponse.AdjudicationComponent;
 import org.hl7.fhir.dstu3.model.ClaimResponse.ItemComponent;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
+import org.hl7.fhir.dstu3.model.ContactPoint;
 import org.hl7.fhir.dstu3.model.EligibilityRequest;
 import org.hl7.fhir.dstu3.model.EligibilityResponse;
 import org.hl7.fhir.dstu3.model.EligibilityResponse.BenefitComponent;
 import org.hl7.fhir.dstu3.model.EligibilityResponse.BenefitsComponent;
 import org.hl7.fhir.dstu3.model.EligibilityResponse.InsuranceComponent;
+import org.hl7.fhir.dstu3.model.HumanName;
 import org.hl7.fhir.dstu3.model.Money;
+import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Task;
 import org.hl7.fhir.exceptions.FHIRException;/*
 												import org.openmrs.module.fhir.api.client.ClientHttpEntity;
@@ -277,4 +282,31 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		return populateClaimRespModel(claimResponse, null); 
 		
 	}
+	
+	@Override
+	public InsureeModel getInsuree(String chfID){
+		String insureeStr = sendGetRequest(properties.imisUrl+"/Patient/"+chfID);
+		Patient patient = (Patient) FhirParser.parseResource(insureeStr);
+		return populateInsureeModel(patient); 
+	}
+	
+	private InsureeModel populateInsureeModel(Patient patient) {
+		InsureeModel insureeModel = new InsureeModel();
+		
+		for (Address responseAddress : patient.getAddress()) {
+			insureeModel.setAddress(responseAddress.getText());
+		}
+		insureeModel.setBirthdate(patient.getBirthDate());
+		insureeModel.setGender(patient.getGender().toString());
+		for(HumanName reponseName:patient.getName()) {
+			insureeModel.setFamilyName(reponseName.getFamily());
+			insureeModel.setGivenName(reponseName.getGivenAsSingleString());			
+		}
+		for(ContactPoint responseTelephone:patient.getTelecom()) {
+			insureeModel.setTelephone(responseTelephone.getValue());
+		}
+		logger.error("After insuree detail" + insureeModel);
+		return insureeModel;
+	}
+
 }
