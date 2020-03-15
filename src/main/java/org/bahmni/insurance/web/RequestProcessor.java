@@ -92,7 +92,7 @@ public class RequestProcessor {
 		return new ResponseEntity<Object>("Access denied ", new HttpHeaders(), HttpStatus.FORBIDDEN);
 	}
 	
-	@RequestMapping(path = "/hasInsurancePrivilege")
+	@RequestMapping(method = RequestMethod.POST, path = "/hasInsurancePrivilege")
 	public Boolean checkPrevilage(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		System.out.println("after has privilage link");
     	return  authenticationFilter.preHandle(request, response);
@@ -193,14 +193,14 @@ public class RequestProcessor {
 
 	}
 	
-	@RequestMapping(path = "/openIMIS/login")
+	@RequestMapping(method = RequestMethod.POST, path = "/openIMIS/login")
 	@ResponseBody
 	public String checkLogin(HttpServletResponse response) throws RestClientException, URISyntaxException {
 		logger.debug("checkLogin");
 		return insuranceImplFactory.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).loginCheck();
 	}
 
-	@RequestMapping(path = "/get/fhir/claims")
+	@RequestMapping(method = RequestMethod.POST,path = "/get/fhir/claims")
 	@ResponseBody
 	public List<FhirResourceModel> getFhirClaim() {
 		return fhirDaoService.findAll();
@@ -212,14 +212,14 @@ public class RequestProcessor {
 		return fhirDaoService.insertFhirResource();
 	}*/
 	
-	@RequestMapping(path = "/get/claimRequest/{claimId}")
+	@RequestMapping(method = RequestMethod.POST,path = "/get/claimRequest/{claimId}")
 	@ResponseBody
 	public String getFhirClaim(@PathVariable("claimId") String claimId) {
 		//claimId = "980"; //TODO: remove hard coded
 		return fhirDaoService.getClaimRequestByClaimId(claimId);
 	}
 
-	@RequestMapping(path = "/get/fhir/claim/id")
+	@RequestMapping(method = RequestMethod.POST,path = "/get/fhir/claim/id")
 	@ResponseBody
 	public List<String> getFhirClaimId() {
 		return fhirDaoService.getClaimId();

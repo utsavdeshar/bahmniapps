@@ -113,6 +113,14 @@
    align-content: center;
    font-size: large;
 }
+.swagger {
+   width: 100%;
+   top: 0;
+   left: 50;
+   height: 30px;
+   align-content: left;
+   font-size: large;
+}
 }
 .table-th {
   font-family: Lato-Bold;
