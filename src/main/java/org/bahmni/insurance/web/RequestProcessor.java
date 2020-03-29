@@ -16,6 +16,7 @@ import org.bahmni.insurance.auth.AuthenticationFilter;
 import org.bahmni.insurance.client.RestTemplateFactory;
 import org.bahmni.insurance.dao.FhirResourceDaoServiceImpl;
 import org.bahmni.insurance.dao.IFhirResourceDaoService;
+import org.bahmni.insurance.model.BahmniDiagnosis;
 import org.bahmni.insurance.model.ClaimLineItemRequest;
 import org.bahmni.insurance.model.ClaimParam;
 import org.bahmni.insurance.model.ClaimResponseModel;
@@ -248,6 +249,14 @@ public class RequestProcessor {
 		return bahmniOpenmrsService.getVisitDetail(visitUUID);
 
 	}
+
+	@RequestMapping(method = RequestMethod.GET, value = "/diagnosis/{patientUUID}", produces = "application/json")
+	@ResponseBody
+	public BahmniDiagnosis getDiagnosisDetails(HttpServletResponse response,@PathVariable("patientUUID") String patientUUID) throws JsonParseException, JsonMappingException, IOException {
+		logger.debug("get Diagnosis Detail : " + bahmniOpenmrsService.getDiagnosis(patientUUID));
+		return bahmniOpenmrsService.getDiagnosis(patientUUID);
+
+	}
 	
 	@RequestMapping(method = RequestMethod.GET, value = "/request/authenticate", produces = "application/json")
 	@ResponseBody
@@ -264,5 +273,5 @@ public class RequestProcessor {
 	 * 
 	 * }
 	 */
-
+	
 }
