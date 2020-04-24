@@ -191,18 +191,20 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	public EligibilityResponseModel checkEligibility(EligibilityRequest eligbilityRequest){
 		String jsonEligRequest = FhirParser.encodeResourceToString(eligbilityRequest);
 		EligibilityResponseModel ResponseELigible;
-		if(properties.openImisPolicyEnabled) {
-			System.out.println("I am from specific policy config");
+		/*
+		 * if(properties.openImisPolicyEnabled) {
+		 * System.out.println("I am from specific policy config");
+		 */
 		ResponseEntity<String> responseObject = sendPostRequest(jsonEligRequest, properties.openImisFhirApiEligPolicyEnabled);
 		EligibilityResponse eligibilityResponse = (EligibilityResponse) FhirParser.parseResource(responseObject.getBody());
 		ResponseELigible = populateEligibilityRespModelPolicyEnabled(eligibilityResponse);
-		}else {
+		/*}else {
 			System.out.println("I am from global config");
 			ResponseEntity<String> responseObject = sendPostRequest(jsonEligRequest, properties.openImisFhirApiElig);
 			EligibilityResponse eligibilityResponse = (EligibilityResponse) FhirParser.parseResource(responseObject.getBody());
 			ResponseELigible = populateEligibilityRespModel(eligibilityResponse);	
 			
-		}
+		}*/
 		
 		return ResponseELigible;
 	}
