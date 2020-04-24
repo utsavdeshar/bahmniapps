@@ -69,6 +69,8 @@ public class AppProperties {
 	public boolean openImisPolicyEnabled;
 	
 	
+	@Value("${openimis.api.remote.user}")
+	public String openImisRemoteUser;
 
 
 	

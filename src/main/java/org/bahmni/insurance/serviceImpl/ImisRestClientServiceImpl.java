@@ -89,6 +89,7 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		HttpHeaders headers = createHeaders(properties.imisUser, properties.imisPassword);
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 		headers.add("Content-Type", "application/json");
+		headers.add("remote-user", properties.openImisRemoteUser); 
 		HttpEntity<String> entity = new HttpEntity<String>(requestJson, headers);
 		return restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
 
@@ -104,6 +105,7 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		HttpHeaders headers = createHeaders(properties.imisUser, properties.imisPassword);
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 		headers.add("Content-Type", "application/json");
+		headers.add("remote-user", properties.openImisRemoteUser); 
 		HttpEntity<String> entity = new HttpEntity<String>(headers);
 		return restTemplate.exchange(url, HttpMethod.GET, entity, String.class).getBody();
 
