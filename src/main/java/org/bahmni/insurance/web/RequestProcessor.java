@@ -4,6 +4,7 @@ import static org.apache.log4j.Logger.getLogger;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -172,7 +173,7 @@ public class RequestProcessor {
 		ClaimResponseModel claimResponseModel = insuranceImplFactory
 				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).submitClaim(claimRequest);
 		logger.error("claimResponseModel : " + InsuranceUtils.mapToJson(claimResponseModel));
-		return claimResponseModel;
+		return claimResponseModel;	
 		/*ClaimResponseModel claimResponseModel = insuranceImplFactory
 				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getClaimResponse("L21");
 		System.out.println("claimResponseModel : " + InsuranceUtils.mapToJson(claimResponseModel));
@@ -250,11 +251,13 @@ public class RequestProcessor {
 
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/diagnosis/{patientUUID}", produces = "application/json")
+	@RequestMapping(method = RequestMethod.GET, value = "/diagnosis/{patientUUID}/{visitUUID}/{fromDate}", produces = "application/json")
 	@ResponseBody
-	public BahmniDiagnosis getDiagnosisDetails(HttpServletResponse response,@PathVariable("patientUUID") String patientUUID) throws JsonParseException, JsonMappingException, IOException {
-		logger.debug("get Diagnosis Detail : " + bahmniOpenmrsService.getDiagnosis(patientUUID));
-		return bahmniOpenmrsService.getDiagnosis(patientUUID);
+	public BahmniDiagnosis getDiagnosisDetails(HttpServletResponse response,@PathVariable("patientUUID")
+	String patientUUID,@PathVariable("visitUUID") String visitUUID,@PathVariable("fromDate")Date fromDate)
+ throws JsonParseException, JsonMappingException, IOException {
+		logger.debug("get Diagnosis Detail : " + bahmniOpenmrsService.getDiagnosis(patientUUID ,visitUUID,fromDate));
+		return bahmniOpenmrsService.getDiagnosis(patientUUID,visitUUID,fromDate);
 
 	}
 	

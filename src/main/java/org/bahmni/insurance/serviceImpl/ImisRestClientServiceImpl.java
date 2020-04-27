@@ -19,7 +19,6 @@ import org.bahmni.insurance.model.EligibilityBalance;
 import org.bahmni.insurance.model.EligibilityResponseModel;
 import org.bahmni.insurance.model.InsureeModel;
 import org.bahmni.insurance.service.AInsuranceClientService;
-import org.bahmni.insurance.utils.InsuranceUtils;
 import org.hl7.fhir.dstu3.model.Address;
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.Bundle.BundleEntryComponent;
@@ -95,6 +94,7 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		HttpHeaders headers = createHeaders(properties.imisUser, properties.imisPassword);
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 		headers.add("Content-Type", "application/json");
+		headers.add("remote-user", properties.openImisRemoteUser); 
 		HttpEntity<String> entity = new HttpEntity<String>(requestJson, headers);
 		return restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
 
@@ -110,6 +110,7 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 		HttpHeaders headers = createHeaders(properties.imisUser, properties.imisPassword);
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 		headers.add("Content-Type", "application/json");
+		headers.add("remote-user", properties.openImisRemoteUser); 
 		HttpEntity<String> entity = new HttpEntity<String>(headers);
 		return restTemplate.exchange(url, HttpMethod.GET, entity, String.class).getBody();
 

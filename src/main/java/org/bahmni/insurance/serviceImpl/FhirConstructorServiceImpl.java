@@ -138,7 +138,8 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 		claimReq.setCreated(new Date());
 
 		// Diagnosis 
-		BahmniDiagnosis bahmniDianosis  =  bahmniApiService.getDiagnosis(claimParam.getPatientUUID());
+
+		BahmniDiagnosis bahmniDianosis  =  bahmniApiService.getDiagnosis(claimParam.getPatientUUID(), claimParam.getVisitUUID(), new Date( visitDetails.getStartDateTime()));
 		int sequence = 1;
 		for (Diagnosis diag :bahmniDianosis.getDiagnosis() ) {
 			System.out.println("diag.getAdditionalProperties().get(\"certainty\") : " + diag.getAdditionalProperties().get("certainty"));
