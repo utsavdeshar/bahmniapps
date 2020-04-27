@@ -19,8 +19,10 @@ import org.bahmni.insurance.model.EligibilityBalance;
 import org.bahmni.insurance.model.EligibilityResponseModel;
 import org.bahmni.insurance.model.InsureeModel;
 import org.bahmni.insurance.service.AInsuranceClientService;
-import org.bahmni.insurance.utils.InsuranceUtils;
 import org.hl7.fhir.dstu3.model.Address;
+import org.hl7.fhir.dstu3.model.Bundle;
+import org.hl7.fhir.dstu3.model.Bundle.BundleEntryComponent;
+import org.hl7.fhir.dstu3.model.Bundle.BundleLinkComponent;
 import org.hl7.fhir.dstu3.model.Claim;
 import org.hl7.fhir.dstu3.model.ClaimResponse;
 import org.hl7.fhir.dstu3.model.ClaimResponse.AdjudicationComponent;
@@ -34,8 +36,11 @@ import org.hl7.fhir.dstu3.model.EligibilityResponse.BenefitComponent;
 import org.hl7.fhir.dstu3.model.EligibilityResponse.BenefitsComponent;
 import org.hl7.fhir.dstu3.model.EligibilityResponse.InsuranceComponent;
 import org.hl7.fhir.dstu3.model.HumanName;
+import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.dstu3.model.Money;
 import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.dstu3.model.Resource;
+import org.hl7.fhir.dstu3.model.ResourceType;
 import org.hl7.fhir.dstu3.model.Task;
 import org.hl7.fhir.exceptions.FHIRException;/*
 												import org.openmrs.module.fhir.api.client.ClientHttpEntity;
@@ -191,20 +196,11 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	public EligibilityResponseModel checkEligibility(EligibilityRequest eligbilityRequest){
 		String jsonEligRequest = FhirParser.encodeResourceToString(eligbilityRequest);
 		EligibilityResponseModel ResponseELigible;
-		/*
-		 * if(properties.openImisPolicyEnabled) {
-		 * System.out.println("I am from specific policy config");
-		 */
+		
 		ResponseEntity<String> responseObject = sendPostRequest(jsonEligRequest, properties.openImisFhirApiEligPolicyEnabled);
 		EligibilityResponse eligibilityResponse = (EligibilityResponse) FhirParser.parseResource(responseObject.getBody());
 		ResponseELigible = populateEligibilityRespModelPolicyEnabled(eligibilityResponse);
-		/*}else {
-			System.out.println("I am from global config");
-			ResponseEntity<String> responseObject = sendPostRequest(jsonEligRequest, properties.openImisFhirApiElig);
-			EligibilityResponse eligibilityResponse = (EligibilityResponse) FhirParser.parseResource(responseObject.getBody());
-			ResponseELigible = populateEligibilityRespModel(eligibilityResponse);	
-			
-		}*/
+		
 		
 		return ResponseELigible;
 	}
@@ -289,28 +285,44 @@ public class ImisRestClientServiceImpl extends AInsuranceClientService {
 	
 	@Override
 	public InsureeModel getInsuree(String chfID){
-		String insureeStr = sendGetRequest(properties.imisUrl+"/Patient/"+chfID);
-		Patient patient = (Patient) FhirParser.parseResource(insureeStr);
-		return populateInsureeModel(patient); 
+		System.out.println(properties.imisUrl+"Patient/?identifier="+chfID);
+
+		String insureeStr = sendGetRequest(properties.imisUrl+"Patient/?identifier="+chfID);
+		//Patient patient = (Patient) FhirParser.parseResource(insureeStr);
+		Bundle bundle = (Bundle)FhirParser.parseResource(insureeStr);
+		return populateInsureeModel(bundle); 
 	}
 	
-	private InsureeModel populateInsureeModel(Patient patient) {
+	private InsureeModel populateInsureeModel(Bundle bundle) {
 		InsureeModel insureeModel = new InsureeModel();
+		for(BundleEntryComponent entry: bundle.getEntry()) {
+			Patient patient = (Patient) entry.getResource();
+			
+			insureeModel.setUuId(patient.getIdentifier().get(0).getValue());
+			
+			for(HumanName reponseName:patient.getName()) {
+				insureeModel.setFamilyName(reponseName.getFamily());
+				insureeModel.setGivenName(reponseName.getGivenAsSingleString());			
+			}
+			
+			insureeModel.setBirthdate(patient.getBirthDate());
+			insureeModel.setGender(patient.getGender().toString());
+			
+			for (Address responseAddress : patient.getAddress()) {
+				insureeModel.setAddress(responseAddress.getText());
+			}
 		
-		for (Address responseAddress : patient.getAddress()) {
-			insureeModel.setAddress(responseAddress.getText());
-		}
-		insureeModel.setBirthdate(patient.getBirthDate());
-		insureeModel.setGender(patient.getGender().toString());
-		for(HumanName reponseName:patient.getName()) {
-			insureeModel.setFamilyName(reponseName.getFamily());
-			insureeModel.setGivenName(reponseName.getGivenAsSingleString());			
-		}
-		for(ContactPoint responseTelephone:patient.getTelecom()) {
+			for(ContactPoint responseTelephone:patient.getTelecom()) {
 			insureeModel.setTelephone(responseTelephone.getValue());
+			}
 		}
+		
 		logger.error("After insuree detail" + insureeModel);
 		return insureeModel;
-	}
+		}
+		
+	
+
+	
 
 }

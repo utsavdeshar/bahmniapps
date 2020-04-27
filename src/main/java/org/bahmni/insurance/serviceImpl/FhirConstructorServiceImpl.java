@@ -15,6 +15,7 @@ import org.bahmni.insurance.model.BahmniDiagnosis;
 import org.bahmni.insurance.model.ClaimLineItemRequest;
 import org.bahmni.insurance.model.ClaimParam;
 import org.bahmni.insurance.model.EligibilityParam;
+import org.bahmni.insurance.model.InsureeModel;
 import org.bahmni.insurance.model.Diagnosis;
 import org.bahmni.insurance.model.VisitSummary;
 import org.bahmni.insurance.service.AFhirConstructorService;
@@ -110,13 +111,14 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 
 		// Insuree patient
 		Reference patientReference = new Reference();
-		patientReference.setReference("Patient/" + claimParam.getInsureeId());
+		patientReference.setReference("Patient/" + InsureeModel.getUuId());
+		System.out.println("Patient/" + claimParam.getInsureeId());
 		claimReq.setPatient(patientReference);
 
 		// BillablePeriod
 		Period period = new Period();
 		VisitSummary visitDetails = bahmniApiService.getVisitDetail(claimParam.getVisitUUID());
-		//System.out.println("Visit Details : "+InsuranceUtils.mapToJson(visitDetails));
+		System.out.println("Visit Details : "+InsuranceUtils.mapToJson(visitDetails));
 		period.setStart(new Date( visitDetails.getStartDateTime()));
 		if( visitDetails.getStopDateTime() != null) {
 			period.setEnd(new Date( visitDetails.getStopDateTime()));
@@ -136,6 +138,7 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 		claimReq.setCreated(new Date());
 
 		// Diagnosis 
+
 		BahmniDiagnosis bahmniDianosis  =  bahmniApiService.getDiagnosis(claimParam.getPatientUUID(), claimParam.getVisitUUID(), new Date( visitDetails.getStartDateTime()));
 		int sequence = 1;
 		for (Diagnosis diag :bahmniDianosis.getDiagnosis() ) {
@@ -211,13 +214,13 @@ public class FhirConstructorServiceImpl extends AFhirConstructorService {
 	}
 	
 	@Override
-	public EligibilityRequest constructFhirEligibilityRequest(String ChfID)  throws IOException {
+	public EligibilityRequest constructFhirEligibilityRequest(String chfID)  throws IOException {
 		
 		EligibilityRequest eligibilityRequest = new EligibilityRequest();
 		
 		//patient
 		Reference patientReference = new Reference();
-		patientReference.setReference("Patient/" +ChfID);
+		patientReference.setReference("Patient/" +chfID);
 		eligibilityRequest.setPatient(patientReference);
 		System.out.println(eligibilityRequest.setPatient(patientReference));
 

@@ -89,6 +89,7 @@ public class BahmniOpenmrsApiClientServiceImpl implements IApiClientService {
 		return visit;
 	}
 	
+
 	public BahmniDiagnosis getDiagnosis(String patientUUID, String visitUUID, Date fromDate) throws JsonParseException, JsonMappingException, IOException {
 		String diagnosisJson =  sendGetRequest(openmrsAPIUrl+"/bahmnicore/diagnosis/search?patientUuid="+patientUUID+"&visitUuid="+visitUUID);
 		BahmniDiagnosis bahmniDiagnosisList = null;

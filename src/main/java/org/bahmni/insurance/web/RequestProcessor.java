@@ -4,6 +4,7 @@ import static org.apache.log4j.Logger.getLogger;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,6 +17,7 @@ import org.bahmni.insurance.auth.AuthenticationFilter;
 import org.bahmni.insurance.client.RestTemplateFactory;
 import org.bahmni.insurance.dao.FhirResourceDaoServiceImpl;
 import org.bahmni.insurance.dao.IFhirResourceDaoService;
+import org.bahmni.insurance.model.BahmniDiagnosis;
 import org.bahmni.insurance.model.ClaimLineItemRequest;
 import org.bahmni.insurance.model.ClaimParam;
 import org.bahmni.insurance.model.ClaimResponseModel;
@@ -171,7 +173,7 @@ public class RequestProcessor {
 		ClaimResponseModel claimResponseModel = insuranceImplFactory
 				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).submitClaim(claimRequest);
 		logger.error("claimResponseModel : " + InsuranceUtils.mapToJson(claimResponseModel));
-		return claimResponseModel;
+		return claimResponseModel;	
 		/*ClaimResponseModel claimResponseModel = insuranceImplFactory
 				.getInsuranceServiceImpl(ImisConstants.OPENIMIS_FHIR, properties).getClaimResponse("L21");
 		System.out.println("claimResponseModel : " + InsuranceUtils.mapToJson(claimResponseModel));
@@ -248,6 +250,16 @@ public class RequestProcessor {
 		return bahmniOpenmrsService.getVisitDetail(visitUUID);
 
 	}
+
+	@RequestMapping(method = RequestMethod.GET, value = "/diagnosis/{patientUUID}/{visitUUID}/{fromDate}", produces = "application/json")
+	@ResponseBody
+	public BahmniDiagnosis getDiagnosisDetails(HttpServletResponse response,@PathVariable("patientUUID")
+	String patientUUID,@PathVariable("visitUUID") String visitUUID,@PathVariable("fromDate")Date fromDate)
+ throws JsonParseException, JsonMappingException, IOException {
+		logger.debug("get Diagnosis Detail : " + bahmniOpenmrsService.getDiagnosis(patientUUID ,visitUUID,fromDate));
+		return bahmniOpenmrsService.getDiagnosis(patientUUID,visitUUID,fromDate);
+
+	}
 	
 	@RequestMapping(method = RequestMethod.GET, value = "/request/authenticate", produces = "application/json")
 	@ResponseBody
@@ -264,5 +276,5 @@ public class RequestProcessor {
 	 * 
 	 * }
 	 */
-
+	
 }
